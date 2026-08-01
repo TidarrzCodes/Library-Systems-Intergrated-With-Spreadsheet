@@ -8,7 +8,6 @@
   <script src="https://unpkg.com/html5-qrcode"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
     rel="stylesheet">
-  <!-- FontAwesome for Social Icons & Contacts -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
@@ -52,7 +51,6 @@
       padding-bottom: 40px;
     }
 
-    /* HEADER & NAVBAR BM400 */
     .bm-header-container {
       width: 100%;
       background: #ffffff;
@@ -60,7 +58,6 @@
       margin-bottom: 28px;
     }
 
-    /* 1. Top Info Bar */
     .bm-top-bar {
       display: flex;
       width: 100%;
@@ -113,7 +110,6 @@
       color: var(--bm-green-dark);
     }
 
-    /* 2. Main Navigation Bar */
     .bm-navbar {
       max-width: 1280px;
       margin: 0 auto;
@@ -132,62 +128,6 @@
       font-size: 18px;
     }
 
-    .bm-badge-circle {
-      width: 38px;
-      height: 38px;
-      background: var(--bm-green-primary);
-      color: white;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 800;
-      font-size: 14px;
-    }
-
-    .bm-nav-links {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-      list-style: none;
-    }
-
-    .bm-nav-links li {
-      font-size: 14px;
-      font-weight: 700;
-      color: #1e293b;
-      cursor: pointer;
-      transition: color 0.2s;
-    }
-
-    .bm-nav-links li:hover {
-      color: var(--bm-green-dark);
-    }
-
-    .bm-nav-links .dot {
-      color: #cbd5e1;
-      font-size: 10px;
-    }
-
-    .btn-enrolment {
-      background: var(--bm-green-dark);
-      color: white;
-      padding: 10px 22px;
-      border-radius: 6px;
-      font-weight: 700;
-      font-size: 14px;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      transition: background 0.2s;
-    }
-
-    .btn-enrolment:hover {
-      background: #0d803a;
-    }
-
-    /* MAIN CONTENT CARD */
     .card {
       background: var(--card-bg);
       width: 100%;
@@ -494,7 +434,6 @@
       border-radius: 8px;
     }
 
-    /* RESPONSIVE LAYOUT MOBILE */
     @media (max-width: 850px) {
       .bm-top-left {
         width: 100%;
@@ -503,10 +442,6 @@
       }
 
       .bm-top-right {
-        display: none;
-      }
-
-      .bm-nav-links {
         display: none;
       }
 
@@ -523,9 +458,7 @@
 
     .bm-logo-img {
       height: 40px;
-      /* Sesuaikan tinggi logo dengan navbar */
       width: auto;
-      /* Menjaga rasio gambar agar tidak gepeng */
       object-fit: contain;
     }
   </style>
@@ -535,7 +468,6 @@
 
   <!-- BM400 HEADER & NAVBAR -->
   <header class="bm-header-container">
-    <!-- Top Bar -->
     <div class="bm-top-bar">
       <div class="bm-top-left">
         <a href="#"><i class="fab fa-instagram"></i></a>
@@ -549,7 +481,6 @@
       </div>
     </div>
 
-    <!-- Main Navigation Bar -->
     <nav class="bm-navbar">
       <div class="bm-logo-group">
         <img src="https://baktimulya400cibubur.sch.id/wp-content/uploads/2025/01/Logo-bm_cibubur-1.png"
@@ -651,7 +582,7 @@
   </div>
 
   <script>
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbyr6B_sTiAOkF5ZhcYdpwlmu4DoCXi-0lgdHKSglNkH13YN0mEBcYrcHC4fXIKVu982/exec";
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbybmBwha3KCqaw1St7t6SUpSvvECbytlVBgdyDlBGd-zfVhT8rk-zuI-kpuxfUKVmK0/exec";
 
     let currentMode = '';
     let currentSiswa = { nis: '', nama: '', role: '' };
@@ -742,7 +673,7 @@
         }
       } catch (err) {
         console.error("Camera Access Error:", err);
-        showAlert(alertId, '⚠️ Camera access denied or blocked.', 'danger');
+        showAlert(alertId, '⚠️ Camera access denied or blocked. Please allow camera in browser site settings.', 'danger');
       }
     }
 
@@ -764,58 +695,51 @@
     }
 
     async function processNisScan(nis) {
-  if (!nis) return;
-  showAlert('alert-siswa', '🔍 Checking Student/User ID...', 'success');
+      if (!nis) return;
+      showAlert('alert-siswa', '🔍 Checking Student ID...', 'success');
 
-  try {
-    const response = await fetch(`${GAS_URL}?action=getSiswa&nis=${encodeURIComponent(nis)}`);
-    const res = await response.json();
+      try {
+        const response = await fetch(`${GAS_URL}?action=getSiswa&nis=${encodeURIComponent(nis)}`);
+        const res = await response.json();
 
-    if (res.success) {
-      currentSiswa = { 
-        nis: String(nis).trim(), 
-        nama: res.nama, 
-        role: String(res.role || '').trim().toLowerCase() 
-      };
+        if (res.success) {
+          const userRole = String(res.role || '').trim().toLowerCase();
+          const userName = String(res.nama || '').trim().toLowerCase();
 
-      // DETEKSI ROLE ADMIN
-      const userRole = String(res.role || '').trim().toLowerCase();
-      const userName = String(res.nama || '').trim().toLowerCase();
+          currentSiswa = { nis: String(nis).trim(), nama: res.nama, role: userRole };
 
-      const isUserAdmin = userRole === 'admin' || userName.includes('admin');
+          const isUserAdmin = userRole === 'admin' || userName.includes('admin');
 
-      if (isUserAdmin) {
-        hideAlert('alert-siswa');
-        document.getElementById('input-nis').value = '';
-        
-        // RE-DIRECT WAJIB KE ?page=admin (Bukan admin.html!)
-        const baseUrl = GAS_URL.split('?')[0];
-        window.location.href = baseUrl + '?page=admin';
-        return;
+          if (isUserAdmin) {
+            hideAlert('alert-siswa');
+            document.getElementById('input-nis').value = '';
+            
+            // REDIRECT KE ADMIN.HTML (Karena frontend sekarang di-hosting di luar)
+            window.location.href = 'admin.html';
+            return;
+          }
+
+          document.getElementById('info-siswa').innerText = `👤 Student: ${res.nama} (${nis})`;
+
+          hideAlert('alert-siswa');
+          document.getElementById('input-nis').value = '';
+
+          showStep('step-buku');
+
+          if (currentMode === 'return') {
+            document.getElementById('container-tabel-pinjaman').style.display = 'block';
+            await loadBukuDipinjam(nis);
+          } else {
+            document.getElementById('container-tabel-pinjaman').style.display = 'none';
+            startCamera('buku');
+          }
+        } else {
+          showAlert('alert-siswa', res.message, 'danger');
+        }
+      } catch (err) {
+        showAlert('alert-siswa', '❌ Failed to connect to server!', 'danger');
       }
-
-      // JIKA USER ADALAH SISWA
-      document.getElementById('info-siswa').innerText = `👤 Student: ${res.nama} (${nis})`;
-
-      hideAlert('alert-siswa');
-      document.getElementById('input-nis').value = '';
-
-      showStep('step-buku');
-
-      if (currentMode === 'return') {
-        document.getElementById('container-tabel-pinjaman').style.display = 'block';
-        await loadBukuDipinjam(nis);
-      } else {
-        document.getElementById('container-tabel-pinjaman').style.display = 'none';
-        startCamera('buku');
-      }
-    } else {
-      showAlert('alert-siswa', res.message, 'danger');
     }
-  } catch (err) {
-    showAlert('alert-siswa', '❌ Failed to connect to server!', 'danger');
-  }
-}
 
     function handleBukuManual(e) {
       if (e.key === 'Enter') {
