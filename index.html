@@ -764,46 +764,58 @@
     }
 
     async function processNisScan(nis) {
-      if (!nis) return;
-      showAlert('alert-siswa', '🔍 Checking Student ID...', 'success');
+  if (!nis) return;
+  showAlert('alert-siswa', '🔍 Checking Student/User ID...', 'success');
 
-      try {
-        const response = await fetch(`${GAS_URL}?action=getSiswa&nis=${encodeURIComponent(nis)}`);
-        const res = await response.json();
+  try {
+    const response = await fetch(`${GAS_URL}?action=getSiswa&nis=${encodeURIComponent(nis)}`);
+    const res = await response.json();
 
-        if (res.success) {
-          currentSiswa = { nis: String(nis).trim(), nama: res.nama, role: res.role || '' };
+    if (res.success) {
+      currentSiswa = { 
+        nis: String(nis).trim(), 
+        nama: res.nama, 
+        role: String(res.role || '').trim().toLowerCase() 
+      };
 
-          const isUserAdmin = (res.role && res.role.toLowerCase() === 'admin') || (res.nama && res.nama.toLowerCase().includes('admin'));
+      // DETEKSI ROLE ADMIN
+      const userRole = String(res.role || '').trim().toLowerCase();
+      const userName = String(res.nama || '').trim().toLowerCase();
 
-          if (isUserAdmin) {
-            hideAlert('alert-siswa');
-            document.getElementById('input-nis').value = '';
-            window.location.href = 'admin.html';
-            return;
-          }
+      const isUserAdmin = userRole === 'admin' || userName.includes('admin');
 
-          document.getElementById('info-siswa').innerText = `👤 Student: ${res.nama} (${nis})`;
-
-          hideAlert('alert-siswa');
-          document.getElementById('input-nis').value = '';
-
-          showStep('step-buku');
-
-          if (currentMode === 'return') {
-            document.getElementById('container-tabel-pinjaman').style.display = 'block';
-            await loadBukuDipinjam(nis);
-          } else {
-            document.getElementById('container-tabel-pinjaman').style.display = 'none';
-            startCamera('buku');
-          }
-        } else {
-          showAlert('alert-siswa', res.message, 'danger');
-        }
-      } catch (err) {
-        showAlert('alert-siswa', '❌ Failed to connect to server!', 'danger');
+      if (isUserAdmin) {
+        hideAlert('alert-siswa');
+        document.getElementById('input-nis').value = '';
+        
+        // RE-DIRECT WAJIB KE ?page=admin (Bukan admin.html!)
+        const baseUrl = GAS_URL.split('?')[0];
+        window.location.href = baseUrl + '?page=admin';
+        return;
       }
+
+      // JIKA USER ADALAH SISWA
+      document.getElementById('info-siswa').innerText = `👤 Student: ${res.nama} (${nis})`;
+
+      hideAlert('alert-siswa');
+      document.getElementById('input-nis').value = '';
+
+      showStep('step-buku');
+
+      if (currentMode === 'return') {
+        document.getElementById('container-tabel-pinjaman').style.display = 'block';
+        await loadBukuDipinjam(nis);
+      } else {
+        document.getElementById('container-tabel-pinjaman').style.display = 'none';
+        startCamera('buku');
+      }
+    } else {
+      showAlert('alert-siswa', res.message, 'danger');
     }
+  } catch (err) {
+    showAlert('alert-siswa', '❌ Failed to connect to server!', 'danger');
+  }
+}
 
     function handleBukuManual(e) {
       if (e.key === 'Enter') {
