@@ -24,12 +24,32 @@
       --success-light: #ecfdf5;
       --danger: #ef4444;
       --danger-light: #fef2f2;
+      --bg-color: #0f172a;
+      --card-bg: #1e293b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border-color: #334155;
+      --radius: 16px;
+    }
+
+    [data-theme="light"] {
+      --bm-green-primary: #41c863;
+      --bm-green-dark: #12a14b;
+      --bm-green-light: #d8f3e0;
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --primary-light: #eef2ff;
+      --info: #0284c7;
+      --info-light: #f0f9ff;
+      --success: #10b981;
+      --success-light: #ecfdf5;
+      --danger: #ef4444;
+      --danger-light: #fef2f2;
       --bg-color: #f1f5f9;
       --card-bg: #ffffff;
       --text-main: #0f172a;
       --text-muted: #64748b;
       --border-color: #e2e8f0;
-      --radius: 16px;
     }
 
     * {
@@ -41,15 +61,16 @@
 
     body {
       background: var(--bg-color);
-      background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+      background-image: radial-gradient(var(--border-color) 1px, transparent 1px);
       background-size: 24px 24px;
       color: var(--text-main);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center; /* Mengatur card tepat di tengah layar secara vertikal */
+      justify-content: center;
       padding: 20px;
+      transition: background 0.3s ease, color 0.3s ease;
     }
 
     .card {
@@ -58,9 +79,51 @@
       max-width: 500px;
       padding: 32px 24px;
       border-radius: 24px;
-      box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.05), 0 8px 10px -6px rgba(15, 23, 42, 0.01);
-      border: 1px solid rgba(255, 255, 255, 0.8);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+      border: 1px solid var(--border-color);
       position: relative;
+      transition: background 0.3s ease, border-color 0.3s ease;
+    }
+
+    /* Top Info Bar inside Card (Live Clock & Theme Icon) */
+    .card-top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .live-clock {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      letter-spacing: 0.5px;
+    }
+
+    .btn-theme-icon {
+      background: var(--bg-color);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .btn-theme-icon:hover {
+      opacity: 0.85;
+      transform: translateY(-1px);
     }
 
     .brand-badge {
@@ -147,14 +210,14 @@
     }
 
     .btn-back {
-      background: #f8fafc;
+      background: var(--bg-color);
       color: var(--text-muted);
       margin-top: 20px;
       border: 1px solid var(--border-color);
     }
 
     .btn-back:hover {
-      background: #f1f5f9;
+      background: var(--card-bg);
       color: var(--text-main);
     }
 
@@ -183,7 +246,7 @@
       border: 2px solid var(--border-color);
       border-radius: var(--radius);
       padding: 6px;
-      background: #0f172a;
+      background: #000000;
       margin-bottom: 20px;
       position: relative;
       overflow: hidden;
@@ -280,14 +343,14 @@
       border-radius: var(--radius);
       font-size: 14px;
       outline: none;
-      background: #f8fafc;
+      background: var(--bg-color);
       transition: all 0.2s ease;
       color: var(--text-main);
     }
 
     input[type="text"]:focus {
       border-color: var(--bm-green-dark);
-      background: #ffffff;
+      background: var(--card-bg);
       box-shadow: 0 0 0 4px rgba(18, 161, 75, 0.15);
     }
 
@@ -318,6 +381,7 @@
       border: 1px solid var(--border-color);
       border-radius: var(--radius);
       overflow: hidden;
+      background: var(--card-bg);
     }
 
     table {
@@ -327,7 +391,7 @@
     }
 
     th {
-      background-color: #f8fafc;
+      background-color: var(--bg-color);
       color: var(--text-muted);
       font-weight: 700;
       text-transform: uppercase;
@@ -370,6 +434,16 @@
 
   <!-- MAIN CIRCULATION CARD -->
   <div class="card">
+    <!-- Top Bar inside Card: Live Clock (Center) & Theme Toggle (Icon Only) -->
+    <div class="card-top-bar">
+      <div class="live-clock" id="live-clock">
+        ⏳ Loading...
+      </div>
+      <button class="btn-theme-icon" id="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Theme">
+        <span id="theme-icon">☀️</span>
+      </button>
+    </div>
+
     <!-- STEP 1: OPTIONS MENU -->
     <div id="step-options" class="step active">
       <div class="header">
@@ -465,6 +539,47 @@
     let currentMode = '';
     let currentSiswa = { nis: '', nama: '', role: '' };
     let html5QrCode = null;
+
+    window.addEventListener('DOMContentLoaded', () => {
+      // Set Default Dark Mode
+      document.documentElement.setAttribute('data-theme', 'dark');
+      document.getElementById('theme-icon').innerText = '☀️';
+
+      // Start Live Clock
+      updateLiveClock();
+      setInterval(updateLiveClock, 1000);
+    });
+
+    // --- LIVE CLOCK FUNCTION ---
+    function updateLiveClock() {
+      const now = new Date();
+      const options = { 
+        weekday: 'short', 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric', 
+        hour: '2-digit', 
+        minute: '2-digit', 
+        second: '2-digit', 
+        hour12: false 
+      };
+      const timeString = now.toLocaleString('id-ID', options);
+      document.getElementById('live-clock').innerHTML = `🕒 ${timeString}`;
+    }
+
+    // --- THEME TOGGLE FUNCTION (ICON ONLY) ---
+    function toggleTheme() {
+      const currentTheme = document.documentElement.getAttribute('data-theme');
+      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', newTheme);
+
+      const iconEl = document.getElementById('theme-icon');
+      if (newTheme === 'light') {
+        iconEl.innerText = '🌙';
+      } else {
+        iconEl.innerText = '☀️';
+      }
+    }
 
     function playBeep() {
       try {
