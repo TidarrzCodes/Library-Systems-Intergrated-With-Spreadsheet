@@ -233,7 +233,7 @@
       }
     }
 
-    /* Webcam Container */
+    /* Webcam Container yang Responsif & Proporsional */
     .webcam-container {
       border: 2px solid var(--border-color);
       border-radius: var(--radius);
@@ -243,14 +243,29 @@
       position: relative;
       overflow: hidden;
       box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+      max-width: 400px;  /* Batasi lebar maksimal agar tidak terlalu melebar di PC */
+      margin-left: auto;
+      margin-right: auto;
     }
 
     .cam-box {
       width: 100%;
-      height: 220px;
+      height: 260px; /* Batasi tinggi kotak kamera */
       border-radius: 10px;
       overflow: hidden;
       position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Memastikan video kamera dari library tidak melar/memanjang */
+    #reader-admin-siswa video,
+    #reader-admin-buku video {
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover !important;
+      border-radius: 8px;
     }
 
     .scanner-laser {
