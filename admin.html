@@ -11,6 +11,26 @@
 
   <style>
     :root {
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --primary-light: #1e1b4b;
+      --success: #10b981;
+      --success-hover: #059669;
+      --success-light: #064e3b;
+      --warning: #f59e0b;
+      --warning-hover: #d97706;
+      --warning-light: #451a03;
+      --danger: #ef4444;
+      --danger-light: #450a0a;
+      --bg-color: #0f172a;
+      --card-bg: #1e293b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border-color: #334155;
+      --radius: 16px;
+    }
+
+    [data-theme="light"] {
       --primary: #4f46e5;
       --primary-hover: #4338ca;
       --primary-light: #eef2ff;
@@ -27,7 +47,6 @@
       --text-main: #0f172a;
       --text-muted: #64748b;
       --border-color: #e2e8f0;
-      --radius: 16px;
     }
 
     * {
@@ -39,11 +58,12 @@
 
     body {
       background: var(--bg-color);
-      background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+      background-image: radial-gradient(var(--border-color) 1px, transparent 1px);
       background-size: 24px 24px;
       color: var(--text-main);
       min-height: 100vh;
       padding: 24px 16px;
+      transition: background 0.3s ease, color 0.3s ease;
     }
 
     .container {
@@ -60,9 +80,10 @@
       background: var(--card-bg);
       padding: 16px 20px;
       border-radius: var(--radius);
-      box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.8);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+      border: 1px solid var(--border-color);
       gap: 12px;
+      transition: background 0.3s ease, border-color 0.3s ease;
     }
 
     .nav-header h1 {
@@ -74,15 +95,56 @@
       gap: 8px;
     }
 
+    /* Live Clock in Center */
+    .live-clock {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+      text-align: center;
+      letter-spacing: 0.5px;
+    }
+
+    /* Right side controls */
+    .header-right-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-theme-icon {
+      background: var(--bg-color);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .btn-theme-icon:hover {
+      opacity: 0.85;
+      transform: translateY(-1px);
+    }
+
     .btn-home {
       text-decoration: none;
-      background: #f8fafc;
+      background: var(--bg-color);
       color: var(--text-muted);
       border: 1px solid var(--border-color);
-      padding: 10px 14px;
-      border-radius: 12px;
+      padding: 8px 12px;
+      border-radius: 10px;
       font-weight: 700;
-      font-size: 13px;
+      font-size: 12px;
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       display: inline-flex;
       align-items: center;
@@ -91,7 +153,6 @@
     }
 
     .btn-home:hover {
-      background: #f1f5f9;
       color: var(--text-main);
       transform: translateY(-1px);
     }
@@ -109,10 +170,11 @@
       padding: 18px 20px;
       border-radius: var(--radius);
       border: 1px solid var(--border-color);
-      box-shadow: 0 10px 15px -3px rgba(15, 23, 42, 0.03);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
       display: flex;
       align-items: center;
       gap: 14px;
+      transition: background 0.3s ease, border-color 0.3s ease;
     }
 
     .stat-icon {
@@ -178,8 +240,7 @@
     }
 
     .btn-nav-action:hover {
-      background: #f8fafc;
-      border-color: #cbd5e1;
+      border-color: var(--primary);
       transform: translateY(-2px);
     }
 
@@ -187,7 +248,37 @@
       background: var(--primary);
       color: white;
       border-color: var(--primary);
-      box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);
+      box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3);
+    }
+
+    /* Sub Navigation Pills inside Parent Tab */
+    .sub-action-bar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 18px;
+      background: var(--bg-color);
+      padding: 4px;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+    }
+
+    .btn-sub-action {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      background: transparent;
+      font-weight: 700;
+      font-size: 12px;
+      color: var(--text-muted);
+      border-radius: 9px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-sub-action.active {
+      background: var(--card-bg);
+      color: var(--primary);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
 
     /* Main Container & Form Layout */
@@ -195,9 +286,10 @@
       background: var(--card-bg);
       padding: 24px;
       border-radius: 20px;
-      box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.8);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+      border: 1px solid var(--border-color);
       margin-bottom: 20px;
+      transition: background 0.3s ease, border-color 0.3s ease;
     }
 
     .card h2 {
@@ -212,45 +304,38 @@
       gap: 8px;
     }
 
-    .tab-content {
+    .tab-content, .sub-tab-content {
       display: none;
     }
 
-    .tab-content.active {
+    .tab-content.active, .sub-tab-content.active {
       display: block;
       animation: fadeIn 0.3s ease;
     }
 
     @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(6px);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
-    /* Webcam Container yang Responsif & Proporsional */
+    /* Webcam Container */
     .webcam-container {
       border: 2px solid var(--border-color);
       border-radius: var(--radius);
       padding: 6px;
-      background: #0f172a;
+      background: #000000;
       margin-bottom: 18px;
       position: relative;
       overflow: hidden;
-      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
-      max-width: 400px;  /* Batasi lebar maksimal agar tidak terlalu melebar di PC */
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+      max-width: 400px;
       margin-left: auto;
       margin-right: auto;
     }
 
     .cam-box {
       width: 100%;
-      height: 260px; /* Batasi tinggi kotak kamera */
+      height: 260px;
       border-radius: 10px;
       overflow: hidden;
       position: relative;
@@ -259,7 +344,6 @@
       justify-content: center;
     }
 
-    /* Memastikan video kamera dari library tidak melar/memanjang */
     #reader-admin-siswa video,
     #reader-admin-buku video {
       width: 100% !important;
@@ -282,17 +366,9 @@
     }
 
     @keyframes scan {
-      0% {
-        top: 5%;
-      }
-
-      50% {
-        top: 90%;
-      }
-
-      100% {
-        top: 5%;
-      }
+      0% { top: 5%; }
+      50% { top: 90%; }
+      100% { top: 5%; }
     }
 
     .form-group {
@@ -309,6 +385,7 @@
 
     input[type="text"],
     input[type="email"],
+    input[type="date"],
     select {
       width: 100%;
       padding: 12px 14px;
@@ -316,23 +393,27 @@
       border-radius: var(--radius);
       font-size: 14px;
       outline: none;
-      background: #f8fafc;
+      background: var(--bg-color);
       transition: all 0.2s ease;
       color: var(--text-main);
     }
 
     input[type="text"]:focus,
     input[type="email"]:focus,
+    input[type="date"]:focus,
     select:focus {
       border-color: var(--primary);
-      background: #ffffff;
-      box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15);
+      box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+    }
+
+    .search-box {
+      margin-bottom: 14px;
     }
 
     .btn-scan {
       background: var(--warning-light);
-      color: #b45309;
-      border: 1px solid #fde68a;
+      color: var(--warning);
+      border: 1px solid var(--border-color);
       padding: 12px;
       border-radius: var(--radius);
       cursor: pointer;
@@ -348,8 +429,7 @@
     }
 
     .btn-scan:hover {
-      background: #fef3c7;
-      color: #92400e;
+      opacity: 0.9;
     }
 
     .btn {
@@ -368,14 +448,8 @@
       gap: 8px;
     }
 
-    .btn:active {
-      transform: scale(0.98);
-    }
-
-    .btn:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
+    .btn:active { transform: scale(0.98); }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
     .btn-siswa {
       background: linear-gradient(135deg, #10b981, #059669);
@@ -384,8 +458,29 @@
 
     .btn-buku {
       background: linear-gradient(135deg, #6366f1, #4f46e5);
-      box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);
+      box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3);
     }
+
+    .btn-secondary {
+      background: #64748b;
+      color: white;
+      margin-top: 8px;
+    }
+    .btn-secondary:hover { background: #475569; }
+
+    .btn-action-sm {
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 10px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      margin-right: 2px;
+      display: inline-block;
+    }
+    .btn-edit { background: #fef08a; color: #854d0e; }
+    .btn-delete { background: #fee2e2; color: #991b1b; }
+    .btn-suspend { background: #ffedd5; color: #9a3412; }
 
     .alert {
       margin-top: 16px;
@@ -397,124 +492,146 @@
       line-height: 1.4;
     }
 
-    .alert-success {
-      background: var(--success-light);
-      color: #047857;
-      border: 1px solid #a7f3d0;
+    .alert-success { background: var(--success-light); color: var(--success); border: 1px solid var(--border-color); }
+    .alert-danger { background: var(--danger-light); color: var(--danger); border: 1px solid var(--border-color); }
+
+    /* UI/UX Modern Filter Pills */
+    .report-header-flex {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      gap: 12px;
+      flex-wrap: wrap;
     }
 
-    .alert-danger {
-      background: var(--danger-light);
-      color: #b91c1c;
-      border: 1px solid #fca5a5;
+    .filter-pills-container {
+      display: flex;
+      background: var(--bg-color);
+      padding: 4px;
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      gap: 4px;
+      overflow-x: auto;
+      max-width: 100%;
+      margin-bottom: 12px;
     }
 
-    /* Table Styles for Transaction Report */
+    .filter-pill {
+      background: transparent;
+      border: none;
+      padding: 8px 14px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      border-radius: 10px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .filter-pill:hover {
+      color: var(--text-main);
+    }
+
+    .filter-pill.active {
+      background: var(--card-bg);
+      color: var(--primary);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+
+    .custom-date-wrapper {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg-color);
+      padding: 6px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      animation: fadeIn 0.25s ease;
+      margin-bottom: 16px;
+    }
+
+    .custom-date-wrapper label {
+      font-size: 12px;
+      margin: 0;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    .custom-date-wrapper input[type="date"] {
+      border: 1px solid var(--border-color);
+      background: var(--card-bg);
+      padding: 6px 10px;
+      font-size: 13px;
+      border-radius: 8px;
+      width: auto;
+      color: var(--text-main);
+    }
+
+    /* Table Styles */
     .table-container {
       border: 1px solid var(--border-color);
       border-radius: var(--radius);
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
+      overflow-x: hidden;
+      margin-top: 12px;
+      background: var(--card-bg);
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 13px;
+      font-size: 12px;
       text-align: left;
-      white-space: nowrap;
+      table-layout: fixed;
     }
 
     th {
-      background-color: #f8fafc;
+      background-color: var(--bg-color);
       color: var(--text-muted);
       font-weight: 700;
       text-transform: uppercase;
-      font-size: 11px;
+      font-size: 10px;
       letter-spacing: 0.5px;
       border-bottom: 1px solid var(--border-color);
-      padding: 12px 14px;
+      padding: 10px 8px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     td {
-      padding: 12px 14px;
+      padding: 10px 8px;
       border-bottom: 1px solid var(--border-color);
       color: var(--text-main);
       font-weight: 500;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
-    tr:last-child td {
-      border-bottom: none;
-    }
+    tr:last-child td { border-bottom: none; }
 
     .badge-status {
-      padding: 4px 8px;
-      border-radius: 10px;
-      font-size: 11px;
+      padding: 3px 6px;
+      border-radius: 8px;
+      font-size: 9px;
       font-weight: 700;
       text-transform: uppercase;
+      display: inline-block;
     }
 
-    .badge-pinjam {
-      background: var(--primary-light);
-      color: var(--primary);
-    }
-
-    .badge-kembali {
-      background: var(--success-light);
-      color: var(--success);
-    }
-
-    #reader-admin-siswa video,
-    #reader-admin-buku video {
-      object-fit: cover !important;
-      border-radius: 8px;
-    }
+    .badge-pinjam { background: var(--primary-light); color: var(--primary); }
+    .badge-kembali { background: var(--success-light); color: var(--success); }
 
     @media (max-width: 640px) {
-      body {
-        padding: 16px 10px;
-      }
-
-      .nav-header {
-        flex-direction: column;
-        align-items: stretch;
-        text-align: center;
-        padding: 16px;
-      }
-
-      .nav-header h1 {
-        justify-content: center;
-      }
-
-      .btn-home {
-        justify-content: center;
-        width: 100%;
-      }
-
-      .stats-grid {
-        grid-template-columns: 1fr;
-        gap: 12px;
-      }
-
-      .action-bar {
-        flex-direction: column;
-        gap: 8px;
-      }
-
-      .btn-nav-action {
-        width: 100%;
-      }
-
-      .card {
-        padding: 20px 16px;
-      }
-
-      input[type="text"],
-      input[type="email"],
-      select {
-        font-size: 16px;
-      }
+      body { padding: 16px 10px; }
+      .nav-header { flex-direction: column; align-items: center; text-align: center; padding: 16px; gap: 14px; }
+      .header-right-controls { justify-content: center; width: 100%; }
+      .report-header-flex { flex-direction: column; align-items: stretch; }
+      .filter-pills-container { width: 100%; justify-content: flex-start; }
+      table { font-size: 11px; }
+      th, td { padding: 8px 4px; }
     }
   </style>
 </head>
@@ -522,15 +639,25 @@
 <body>
 
   <div class="container">
-    <!-- Nav Header -->
+    <!-- Nav Header (Admin Control Panel + Live Clock Center + Theme Logo + Back Button) -->
     <div class="nav-header">
       <h1>⚙️ Admin Control Panel</h1>
-      <a href="index.html" class="btn-home">
-        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-        </svg>
-        Back to Scanner
-      </a>
+      
+      <div class="live-clock" id="live-clock">
+        ⏳ Loading...
+      </div>
+
+      <div class="header-right-controls">
+        <button class="btn-theme-icon" id="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Theme">
+          <span id="theme-icon">☀️</span>
+        </button>
+        <a href="index.html" class="btn-home">
+          <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+          </svg>
+          Back
+        </a>
+      </div>
     </div>
 
     <!-- Real-time Stats -->
@@ -551,121 +678,217 @@
       </div>
     </div>
 
-    <!-- Action Navigation Buttons -->
+    <!-- Main Parent Navigation Tabs -->
     <div class="action-bar">
-      <button class="btn-nav-action active" onclick="switchTab('user')">👤 Add User / Student</button>
-      <button class="btn-nav-action" onclick="switchTab('buku')">📚 Manage Master Books</button>
+      <button class="btn-nav-action active" onclick="switchTab('user')">👤 User Management</button>
+      <button class="btn-nav-action" onclick="switchTab('buku')">📚 Book Management</button>
       <button class="btn-nav-action" onclick="switchTab('laporan')">📊 Transaction Report</button>
     </div>
 
-    <!-- TAB 1: ADD USER / STUDENT -->
+    <!-- PARENT TAB 1: USER MANAGEMENT -->
     <div id="tab-user" class="tab-content active">
       <div class="card">
-        <h2>👤 Add New User / Student</h2>
-
-        <button type="button" class="btn-scan" onclick="startAdminCamera('siswa')">
-          <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z">
-            </path>
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z">
-            </path>
-          </svg>
-          Scan ID Card QR
-        </button>
-
-        <div class="webcam-container" id="box-cam-siswa" style="display: none;">
-          <div class="scanner-laser"></div>
-          <div id="reader-admin-siswa" class="cam-box"></div>
+        <!-- Sub Navigation for User -->
+        <div class="sub-action-bar">
+          <button class="btn-sub-action active" id="btn-sub-adduser" onclick="switchSubTab('user', 'add')">➕ Add User</button>
+          <button class="btn-sub-action" id="btn-sub-manageuser" onclick="switchSubTab('user', 'manage')">📋 Manage Users</button>
         </div>
 
-        <form onsubmit="submitSiswa(event)">
-          <div class="form-group">
-            <label for="nis">Student ID / User ID</label>
-            <input type="text" id="nis" placeholder="Scanned result or type ID..." required>
+        <!-- SUB TAB 1.1: ADD / EDIT USER -->
+        <div id="subtab-user-add" class="sub-tab-content active">
+          <h2 id="user-form-title">👤 Add New User / Student</h2>
+
+          <button type="button" class="btn-scan" onclick="startAdminCamera('siswa')">
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z">
+              </path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z">
+              </path>
+            </svg>
+            Scan ID Card QR
+          </button>
+
+          <div class="webcam-container" id="box-cam-siswa" style="display: none;">
+            <div class="scanner-laser"></div>
+            <div id="reader-admin-siswa" class="cam-box"></div>
           </div>
-          <div class="form-group">
-            <label for="nama-siswa">Full Name</label>
-            <input type="text" id="nama-siswa" placeholder="e.g., John Doe" required>
+
+          <form onsubmit="submitSiswa(event)">
+            <input type="hidden" id="form-mode-user" value="add">
+            <div class="form-group">
+              <label for="nis">Student ID / User ID</label>
+              <input type="text" id="nis" placeholder="Scanned result or type ID..." required>
+            </div>
+            <div class="form-group">
+              <label for="nama-siswa">Full Name</label>
+              <input type="text" id="nama-siswa" placeholder="e.g., John Doe" required>
+            </div>
+            <div class="form-group">
+              <label for="kelas-siswa">Class / Grade</label>
+              <input type="text" id="kelas-siswa" placeholder="e.g., 10 IPA 1">
+            </div>
+            <div class="form-group">
+              <label for="email-siswa">Email Address</label>
+              <input type="email" id="email-siswa" placeholder="e.g., student@school.sch.id">
+            </div>
+            <div class="form-group">
+              <label for="role-user">Role / Status</label>
+              <select id="role-user">
+                <option value="siswa">Student</option>
+                <option value="admin">Library Admin</option>
+                <option value="suspended">Suspended</option>
+              </select>
+            </div>
+            <button type="submit" id="btn-submit-siswa" class="btn btn-siswa">Save User Data</button>
+            <button type="button" id="btn-cancel-user" class="btn btn-secondary" style="display: none;" onclick="resetUserForm()">Cancel Edit</button>
+          </form>
+          <div id="alert-siswa" class="alert"></div>
+        </div>
+
+        <!-- SUB TAB 1.2: MANAGE USERS & SEARCH -->
+        <div id="subtab-user-manage" class="sub-tab-content">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 10px; flex-wrap: wrap;">
+            <h3 style="font-size: 15px; font-weight: 800; color: var(--text-main);">📋 Registered Users List</h3>
+            <button class="btn-home" onclick="loadUserList()">🔄 Refresh</button>
           </div>
-          <div class="form-group">
-            <label for="kelas-siswa">Class / Grade</label>
-            <input type="text" id="kelas-siswa" placeholder="e.g., 10 IPA 1">
+          <div class="search-box">
+            <input type="text" id="input-search-user" placeholder="🔍 Search by name, NIS, class, or email..." oninput="filterUserList()">
           </div>
-          <div class="form-group">
-            <label for="email-siswa">Email Address</label>
-            <input type="email" id="email-siswa" placeholder="e.g., student@school.sch.id">
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 18%;">NIS / ID</th>
+                  <th style="width: 22%;">Name</th>
+                  <th style="width: 15%;">Class</th>
+                  <th style="width: 15%;">Role</th>
+                  <th style="width: 30%;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="tabel-user-body">
+                <tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Loading users...</td></tr>
+              </tbody>
+            </table>
           </div>
-          <div class="form-group">
-            <label for="role-user">Role</label>
-            <select id="role-user">
-              <option value="siswa">Student</option>
-              <option value="admin">Library Admin</option>
-            </select>
-          </div>
-          <button type="submit" id="btn-submit-siswa" class="btn btn-siswa">Save User Data</button>
-        </form>
-        <div id="alert-siswa" class="alert"></div>
+        </div>
       </div>
     </div>
 
-    <!-- TAB 2: MANAGE BOOKS -->
+    <!-- PARENT TAB 2: BOOK MANAGEMENT -->
     <div id="tab-buku" class="tab-content">
       <div class="card">
-        <h2>📚 Manage Master Books</h2>
-
-        <button type="button" class="btn-scan" onclick="startAdminCamera('buku')">
-          <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z">
-            </path>
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z">
-            </path>
-          </svg>
-          Scan Book Barcode
-        </button>
-
-        <div class="webcam-container" id="box-cam-buku" style="display: none;">
-          <div class="scanner-laser"></div>
-          <div id="reader-admin-buku" class="cam-box"></div>
+        <!-- Sub Navigation for Books -->
+        <div class="sub-action-bar">
+          <button class="btn-sub-action active" id="btn-sub-addbook" onclick="switchSubTab('buku', 'add')">➕ Add Book</button>
+          <button class="btn-sub-action" id="btn-sub-managebook" onclick="switchSubTab('buku', 'manage')">📚 Manage Books</button>
         </div>
 
-        <form onsubmit="submitBuku(event)">
-          <div class="form-group">
-            <label for="barcode-buku">Book Barcode / ISBN</label>
-            <input type="text" id="barcode-buku" placeholder="Scanned result or type Barcode..." required>
+        <!-- SUB TAB 2.1: ADD / EDIT BOOK -->
+        <div id="subtab-buku-add" class="sub-tab-content active">
+          <h2 id="buku-form-title">📚 Add Master Book</h2>
+
+          <button type="button" class="btn-scan" onclick="startAdminCamera('buku')">
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z">
+              </path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z">
+              </path>
+            </svg>
+            Scan Book Barcode
+          </button>
+
+          <div class="webcam-container" id="box-cam-buku" style="display: none;">
+            <div class="scanner-laser"></div>
+            <div id="reader-admin-buku" class="cam-box"></div>
           </div>
-          <div class="form-group">
-            <label for="judul-buku">Book Title</label>
-            <input type="text" id="judul-buku" placeholder="e.g., The Great Gatsby" required>
+
+          <form onsubmit="submitBuku(event)">
+            <input type="hidden" id="form-mode-buku" value="add">
+            <div class="form-group">
+              <label for="barcode-buku">Book Barcode / ISBN</label>
+              <input type="text" id="barcode-buku" placeholder="Scanned result or type Barcode..." required>
+            </div>
+            <div class="form-group">
+              <label for="judul-buku">Book Title</label>
+              <input type="text" id="judul-buku" placeholder="e.g., The Great Gatsby" required>
+            </div>
+            <div class="form-group">
+              <label for="pengarang-buku">Author (Optional)</label>
+              <input type="text" id="pengarang-buku" placeholder="e.g., F. Scott Fitzgerald">
+            </div>
+            <button type="submit" id="btn-submit-buku" class="btn btn-buku">Save Master Book</button>
+            <button type="button" id="btn-cancel-buku" class="btn btn-secondary" style="display: none;" onclick="resetBukuForm()">Cancel Edit</button>
+          </form>
+          <div id="alert-buku" class="alert"></div>
+        </div>
+
+        <!-- SUB TAB 2.2: MANAGE BOOKS & SEARCH -->
+        <div id="subtab-buku-manage" class="sub-tab-content">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 10px; flex-wrap: wrap;">
+            <h3 style="font-size: 15px; font-weight: 800; color: var(--text-main);">📚 Master Books List</h3>
+            <button class="btn-home" onclick="loadBukuList()">🔄 Refresh</button>
           </div>
-          <div class="form-group">
-            <label for="pengarang-buku">Author (Optional)</label>
-            <input type="text" id="pengarang-buku" placeholder="e.g., F. Scott Fitzgerald">
+          <div class="search-box">
+            <input type="text" id="input-search-buku" placeholder="🔍 Search by barcode, title, or author..." oninput="filterBukuList()">
           </div>
-          <button type="submit" id="btn-submit-buku" class="btn btn-buku">Save Master Book</button>
-        </form>
-        <div id="alert-buku" class="alert"></div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 25%;">Barcode</th>
+                  <th style="width: 35%;">Title</th>
+                  <th style="width: 20%;">Author</th>
+                  <th style="width: 20%;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="tabel-buku-body">
+                <tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Loading books...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- TAB 3: TRANSACTION REPORT -->
+    <!-- PARENT TAB 3: TRANSACTION REPORT -->
     <div id="tab-laporan" class="tab-content">
       <div class="card">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 10px;">
+        <div class="report-header-flex">
           <h2>📊 Transaction History Report</h2>
           <button class="btn-home" onclick="loadLaporanTransaksi()">🔄 Refresh</button>
+        </div>
+
+        <!-- Modern UI Filter Pills -->
+        <div class="filter-pills-container">
+          <button class="filter-pill active" onclick="setFilter('hari_ini', this)">Hari Ini</button>
+          <button class="filter-pill" onclick="setFilter('7_hari', this)">7 Hari Terakhir</button>
+          <button class="filter-pill" onclick="setFilter('1_bulan', this)">1 Bulan</button>
+          <button class="filter-pill" onclick="setFilter('custom', this)">Tanggal Tertentu</button>
+          <button class="filter-pill" onclick="setFilter('semua', this)">Semua</button>
+        </div>
+
+        <!-- Hidden Custom Date Input Area -->
+        <div id="custom-date-box" class="custom-date-wrapper">
+          <label for="input-custom-date">Pilih Tanggal:</label>
+          <input type="date" id="input-custom-date" onchange="filterLaporanData()">
+        </div>
+
+        <!-- Search Bar for Transaction Report -->
+        <div class="search-box">
+          <input type="text" id="input-search-laporan" placeholder="🔍 Search transaction records..." oninput="filterLaporanData()">
         </div>
 
         <div class="table-container">
           <table>
             <thead>
               <tr>
-                <th>Date / Time</th>
-                <th>Student ID</th>
-                <th>Name</th>
-                <th>Book Barcode</th>
-                <th>Status</th>
+                <th style="width: 22%;">Date / Time</th>
+                <th style="width: 15%;">Student ID</th>
+                <th style="width: 20%;">Name</th>
+                <th style="width: 23%;">Book Title</th>
+                <th style="width: 20%;">Status</th>
               </tr>
             </thead>
             <tbody id="tabel-laporan-body">
@@ -680,21 +903,66 @@
   </div>
 
   <script>
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbybmBwha3KCqaw1St7t6SUpSvvECbytlVBgdyDlBGd-zfVhT8rk-zuI-kpuxfUKVmK0/exec";
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbwv8s5zpA2RKVwBoT3dD1lV7yYhicl9fx7XHmcu8YIteFInTSJ_sQYy16xbUTvQO-ju/exec";
 
     let adminHtml5QrCode = null;
+    let globalLaporanData = [];
+    let globalUserData = [];
+    let globalBukuData = [];
+    let currentFilterType = 'hari_ini';
 
     window.addEventListener('DOMContentLoaded', () => {
+      // Set Default Dark Mode
+      document.documentElement.setAttribute('data-theme', 'dark');
+      document.getElementById('theme-icon').innerText = '☀️';
+
+      // Start Live Clock
+      updateLiveClock();
+      setInterval(updateLiveClock, 1000);
+
       loadDashboardStats();
+      loadUserList();
+      loadBukuList();
     });
+
+    // --- LIVE CLOCK FUNCTION ---
+    function updateLiveClock() {
+      const now = new Date();
+      const options = { 
+        weekday: 'short', 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric', 
+        hour: '2-digit', 
+        minute: '2-digit', 
+        second: '2-digit', 
+        hour12: false 
+      };
+      const timeString = now.toLocaleString('id-ID', options);
+      document.getElementById('live-clock').innerHTML = `🕒 ${timeString}`;
+    }
+
+    // --- THEME TOGGLE FUNCTION (ICON ONLY) ---
+    function toggleTheme() {
+      const currentTheme = document.documentElement.getAttribute('data-theme');
+      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', newTheme);
+
+      const iconEl = document.getElementById('theme-icon');
+      if (newTheme === 'light') {
+        iconEl.innerText = '🌙';
+      } else {
+        iconEl.innerText = '☀️';
+      }
+    }
 
     function switchTab(tabName) {
       stopAdminCamera();
 
-      const buttons = document.querySelectorAll('.btn-nav-action');
+      const buttons = document.querySelectorAll('.action-bar .btn-nav-action');
       buttons.forEach(btn => btn.classList.remove('active'));
 
-      const tabs = document.querySelectorAll('.tab-content');
+      const tabs = document.querySelectorAll('.container > .card, .tab-content');
       tabs.forEach(tab => tab.classList.remove('active'));
 
       if (tabName === 'user') {
@@ -707,6 +975,39 @@
         buttons[2].classList.add('active');
         document.getElementById('tab-laporan').classList.add('active');
         loadLaporanTransaksi();
+      }
+    }
+
+    function switchSubTab(parent, subType) {
+      stopAdminCamera();
+      if (parent === 'user') {
+        document.getElementById('btn-sub-adduser').classList.remove('active');
+        document.getElementById('btn-sub-manageuser').classList.remove('active');
+        document.getElementById('subtab-user-add').classList.remove('active');
+        document.getElementById('subtab-user-manage').classList.remove('active');
+
+        if (subType === 'add') {
+          document.getElementById('btn-sub-adduser').classList.add('active');
+          document.getElementById('subtab-user-add').classList.add('active');
+        } else {
+          document.getElementById('btn-sub-manageuser').classList.add('active');
+          document.getElementById('subtab-user-manage').classList.add('active');
+          loadUserList();
+        }
+      } else if (parent === 'buku') {
+        document.getElementById('btn-sub-addbook').classList.remove('active');
+        document.getElementById('btn-sub-managebook').classList.remove('active');
+        document.getElementById('subtab-buku-add').classList.remove('active');
+        document.getElementById('subtab-buku-manage').classList.remove('active');
+
+        if (subType === 'add') {
+          document.getElementById('btn-sub-addbook').classList.add('active');
+          document.getElementById('subtab-buku-add').classList.add('active');
+        } else {
+          document.getElementById('btn-sub-managebook').classList.add('active');
+          document.getElementById('subtab-buku-manage').classList.add('active');
+          loadBukuList();
+        }
       }
     }
 
@@ -823,11 +1124,67 @@
       document.getElementById('box-cam-buku').style.display = 'none';
     }
 
-    // Submit Handler: Add User / Student
+    // --- USER MANAGEMENT FUNCTIONS ---
+    async function loadUserList() {
+      const tbody = document.getElementById('tabel-user-body');
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Loading users...</td></tr>';
+      try {
+        const response = await fetch(`${GAS_URL}?action=getAllUsers`);
+        const res = await response.json();
+        if (res.success && res.data) {
+          globalUserData = res.data;
+          filterUserList();
+        } else {
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No users found.</td></tr>';
+        }
+      } catch (err) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--danger);">Failed to load users.</td></tr>';
+      }
+    }
+
+    function filterUserList() {
+      const keyword = document.getElementById('input-search-user').value.toLowerCase().trim();
+      const filtered = globalUserData.filter(user => {
+        return (
+          user.nis.toLowerCase().includes(keyword) ||
+          user.nama.toLowerCase().includes(keyword) ||
+          user.kelas.toLowerCase().includes(keyword) ||
+          user.email.toLowerCase().includes(keyword) ||
+          user.role.toLowerCase().includes(keyword)
+        );
+      });
+      renderUserTable(filtered);
+    }
+
+    function renderUserTable(data) {
+      const tbody = document.getElementById('tabel-user-body');
+      tbody.innerHTML = '';
+      if (data.length > 0) {
+        data.forEach(user => {
+          tbody.innerHTML += `
+            <tr>
+              <td title="${user.nis}"><b>${user.nis}</b></td>
+              <td title="${user.nama}">${user.nama}</td>
+              <td title="${user.kelas}">${user.kelas}</td>
+              <td><span class="badge-status ${user.role === 'admin' ? 'badge-pinjam' : user.role === 'suspended' ? 'badge-kembali' : ''}">${user.role}</span></td>
+              <td>
+                <button class="btn-action-sm btn-edit" onclick="editUser('${user.nis}', '${user.nama}', '${user.kelas}', '${user.role}', '${user.email}')">Edit</button>
+                <button class="btn-action-sm btn-suspend" onclick="suspendUser('${user.nis}', '${user.role}')">${user.role === 'suspended' ? 'Act' : 'Susp'}</button>
+                <button class="btn-action-sm btn-delete" onclick="deleteUser('${user.nis}')">Del</button>
+              </td>
+            </tr>
+          `;
+        });
+      } else {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No matching users found.</td></tr>';
+      }
+    }
+
     async function submitSiswa(e) {
       e.preventDefault();
       await stopAdminCamera();
 
+      const mode = document.getElementById('form-mode-user').value;
       const nis = document.getElementById('nis').value.trim();
       const nama = document.getElementById('nama-siswa').value.trim();
       const kelas = document.getElementById('kelas-siswa').value.trim();
@@ -836,22 +1193,22 @@
       const btn = document.getElementById('btn-submit-siswa');
 
       btn.disabled = true;
-      showAlert('alert-siswa', '⏳ Saving user data to Google Sheets...', 'success');
+      showAlert('alert-siswa', '⏳ Saving user data...', 'success');
+
+      const actionType = mode === 'edit' ? 'updateSiswa' : 'addSiswa';
 
       try {
         const response = await fetch(GAS_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action: 'addSiswa', nis: nis, nama: nama, kelas: kelas, role: role, email: email })
+          body: JSON.stringify({ action: actionType, nis: nis, nama: nama, kelas: kelas, role: role, email: email })
         });
         const res = await response.json();
 
         if (res.success) {
           showAlert('alert-siswa', res.message, 'success');
-          document.getElementById('nis').value = '';
-          document.getElementById('nama-siswa').value = '';
-          document.getElementById('kelas-siswa').value = '';
-          document.getElementById('email-siswa').value = '';
+          resetUserForm();
+          loadUserList();
         } else {
           showAlert('alert-siswa', res.message, 'danger');
         }
@@ -862,32 +1219,155 @@
       }
     }
 
-    // Submit Handler: Add Master Book
+    function editUser(nis, nama, kelas, role, email) {
+      switchSubTab('user', 'add');
+      document.getElementById('form-mode-user').value = 'edit';
+      document.getElementById('user-form-title').innerText = '✏️ Edit User / Student';
+      document.getElementById('nis').value = nis;
+      document.getElementById('nis').readOnly = true;
+      document.getElementById('nama-siswa').value = nama;
+      document.getElementById('kelas-siswa').value = kelas;
+      document.getElementById('email-siswa').value = email;
+      document.getElementById('role-user').value = role;
+      document.getElementById('btn-submit-siswa').innerText = 'Update User Data';
+      document.getElementById('btn-cancel-user').style.display = 'block';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function resetUserForm() {
+      document.getElementById('form-mode-user').value = 'add';
+      document.getElementById('user-form-title').innerText = '👤 Add New User / Student';
+      document.getElementById('nis').value = '';
+      document.getElementById('nis').readOnly = false;
+      document.getElementById('nama-siswa').value = '';
+      document.getElementById('kelas-siswa').value = '';
+      document.getElementById('email-siswa').value = '';
+      document.getElementById('role-user').value = 'siswa';
+      document.getElementById('btn-submit-siswa').innerText = 'Save User Data';
+      document.getElementById('btn-cancel-user').style.display = 'none';
+      hideAlert('alert-siswa');
+    }
+
+    async function suspendUser(nis, currentRole) {
+      const newRole = currentRole === 'suspended' ? 'siswa' : 'suspended';
+      if (!confirm(`Are you sure you want to change status of [${nis}] to ${newRole}?`)) return;
+
+      try {
+        const response = await fetch(GAS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'updateUserRole', nis: nis, role: newRole })
+        });
+        const res = await response.json();
+        if (res.success) {
+          loadUserList();
+        } else {
+          alert(res.message);
+        }
+      } catch (err) {
+        alert('Failed to update user status.');
+      }
+    }
+
+    async function deleteUser(nis) {
+      if (!confirm(`Are you sure you want to delete user ID [${nis}]?`)) return;
+
+      try {
+        const response = await fetch(GAS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'deleteSiswa', nis: nis })
+        });
+        const res = await response.json();
+        if (res.success) {
+          loadUserList();
+        } else {
+          alert(res.message);
+        }
+      } catch (err) {
+        alert('Failed to delete user.');
+      }
+    }
+
+    // --- MASTER BOOKS MANAGEMENT FUNCTIONS ---
+    async function loadBukuList() {
+      const tbody = document.getElementById('tabel-buku-body');
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Loading books...</td></tr>';
+      try {
+        const response = await fetch(`${GAS_URL}?action=getAllBooks`);
+        const res = await response.json();
+        if (res.success && res.data) {
+          globalBukuData = res.data;
+          filterBukuList();
+        } else {
+          tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">No books found.</td></tr>';
+        }
+      } catch (err) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--danger);">Failed to load books.</td></tr>';
+      }
+    }
+
+    function filterBukuList() {
+      const keyword = document.getElementById('input-search-buku').value.toLowerCase().trim();
+      const filtered = globalBukuData.filter(buku => {
+        return (
+          buku.barcode.toLowerCase().includes(keyword) ||
+          buku.judul.toLowerCase().includes(keyword) ||
+          buku.pengarang.toLowerCase().includes(keyword)
+        );
+      });
+      renderBukuTable(filtered);
+    }
+
+    function renderBukuTable(data) {
+      const tbody = document.getElementById('tabel-buku-body');
+      tbody.innerHTML = '';
+      if (data.length > 0) {
+        data.forEach(buku => {
+          tbody.innerHTML += `
+            <tr>
+              <td title="${buku.barcode}"><b>${buku.barcode}</b></td>
+              <td title="${buku.judul}">${buku.judul}</td>
+              <td title="${buku.pengarang}">${buku.pengarang}</td>
+              <td>
+                <button class="btn-action-sm btn-edit" onclick="editBuku('${buku.barcode}', '${buku.judul.replace(/'/g, "\\'")}', '${buku.pengarang.replace(/'/g, "\\'")}')">Edit</button>
+                <button class="btn-action-sm btn-delete" onclick="deleteBuku('${buku.barcode}')">Del</button>
+              </td>
+            </tr>
+          `;
+        });
+      } else {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">No matching books found.</td></tr>';
+      }
+    }
+
     async function submitBuku(e) {
       e.preventDefault();
       await stopAdminCamera();
 
+      const mode = document.getElementById('form-mode-buku').value;
       const barcode = document.getElementById('barcode-buku').value.trim();
       const judul = document.getElementById('judul-buku').value.trim();
       const pengarang = document.getElementById('pengarang-buku').value.trim();
       const btn = document.getElementById('btn-submit-buku');
 
       btn.disabled = true;
-      showAlert('alert-buku', '⏳ Saving book data to Google Sheets...', 'success');
+      showAlert('alert-buku', '⏳ Saving book data...', 'success');
+
+      const actionType = mode === 'edit' ? 'updateBuku' : 'addBuku';
 
       try {
         const response = await fetch(GAS_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action: 'addBuku', barcode: barcode, judul: judul, pengarang: pengarang })
+          body: JSON.stringify({ action: actionType, barcode: barcode, judul: judul, pengarang: pengarang })
         });
         const res = await response.json();
 
         if (res.success) {
           showAlert('alert-buku', res.message, 'success');
-          document.getElementById('barcode-buku').value = '';
-          document.getElementById('judul-buku').value = '';
-          document.getElementById('pengarang-buku').value = '';
+          resetBukuForm();
+          loadBukuList();
         } else {
           showAlert('alert-buku', res.message, 'danger');
         }
@@ -898,7 +1378,52 @@
       }
     }
 
-    // Load Transaction Report Log
+    function editBuku(barcode, judul, pengarang) {
+      switchSubTab('buku', 'add');
+      document.getElementById('form-mode-buku').value = 'edit';
+      document.getElementById('buku-form-title').innerText = '✏️ Edit Master Book';
+      document.getElementById('barcode-buku').value = barcode;
+      document.getElementById('barcode-buku').readOnly = true;
+      document.getElementById('judul-buku').value = judul;
+      document.getElementById('pengarang-buku').value = pengarang;
+      document.getElementById('btn-submit-buku').innerText = 'Update Master Book';
+      document.getElementById('btn-cancel-buku').style.display = 'block';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function resetBukuForm() {
+      document.getElementById('form-mode-buku').value = 'add';
+      document.getElementById('buku-form-title').innerText = '📚 Add Master Book';
+      document.getElementById('barcode-buku').value = '';
+      document.getElementById('barcode-buku').readOnly = false;
+      document.getElementById('judul-buku').value = '';
+      document.getElementById('pengarang-buku').value = '';
+      document.getElementById('btn-submit-buku').innerText = 'Save Master Book';
+      document.getElementById('btn-cancel-buku').style.display = 'none';
+      hideAlert('alert-buku');
+    }
+
+    async function deleteBuku(barcode) {
+      if (!confirm(`Are you sure you want to delete book [${barcode}]?`)) return;
+
+      try {
+        const response = await fetch(GAS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'deleteBuku', barcode: barcode })
+        });
+        const res = await response.json();
+        if (res.success) {
+          loadBukuList();
+        } else {
+          alert(res.message);
+        }
+      } catch (err) {
+        alert('Failed to delete book.');
+      }
+    }
+
+    // --- TRANSACTION REPORT FUNCTIONS ---
     async function loadLaporanTransaksi() {
       const tbody = document.getElementById('tabel-laporan-body');
       tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Loading transaction history...</td></tr>';
@@ -907,20 +1432,9 @@
         const response = await fetch(`${GAS_URL}?action=getLaporanTransaksi`);
         const res = await response.json();
 
-        tbody.innerHTML = '';
-        if (res.success && res.data.length > 0) {
-          res.data.forEach(item => {
-            const badgeClass = item.status.toLowerCase().includes('pinjam') || item.status.toLowerCase().includes('borrow') ? 'badge-pinjam' : 'badge-kembali';
-            tbody.innerHTML += `
-            <tr>
-              <td>${item.waktu}</td>
-              <td><b>${item.nis}</b></td>
-              <td>${item.nama}</td>
-              <td><b>${item.barcode}</b></td>
-              <td><span class="badge-status ${badgeClass}">${item.status}</span></td>
-            </tr>
-          `;
-          });
+        if (res.success && res.data) {
+          globalLaporanData = res.data;
+          filterLaporanData();
         } else {
           tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No transaction history found.</td></tr>';
         }
@@ -929,11 +1443,120 @@
       }
     }
 
+    function setFilter(type, btnElement) {
+      currentFilterType = type;
+      document.querySelectorAll('.filter-pill').forEach(btn => btn.classList.remove('active'));
+      btnElement.classList.add('active');
+
+      const customBox = document.getElementById('custom-date-box');
+      if (type === 'custom') {
+        customBox.style.display = 'flex';
+        if (!document.getElementById('input-custom-date').value) {
+          const todayStr = new Date().toISOString().split('T')[0];
+          document.getElementById('input-custom-date').value = todayStr;
+        }
+      } else {
+        customBox.style.display = 'none';
+      }
+
+      filterLaporanData();
+    }
+
+    function parseItemDate(waktuStr) {
+      if (!waktuStr || waktuStr === '-') return null;
+      try {
+        const parts = waktuStr.split(" ");
+        const dateParts = parts[0].split("/");
+        if (dateParts.length === 3) {
+          return new Date(dateParts[2], dateParts[1] - 1, dateParts[0]);
+        }
+      } catch (e) {}
+      return new Date(waktuStr);
+    }
+
+    function filterLaporanData() {
+      const customDateVal = document.getElementById('input-custom-date').value;
+      const searchKeyword = document.getElementById('input-search-laporan').value.toLowerCase().trim();
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+
+      let filtered = globalLaporanData.filter(item => {
+        const itemDate = parseItemDate(item.waktu);
+        let matchDate = true;
+
+        if (itemDate && !isNaN(itemDate)) {
+          const itemDateOnly = new Date(itemDate);
+          itemDateOnly.setHours(0, 0, 0, 0);
+
+          if (currentFilterType === 'hari_ini') {
+            matchDate = (itemDateOnly.getTime() === now.getTime());
+          } else if (currentFilterType === '7_hari') {
+            const limit7Days = new Date(now);
+            limit7Days.setDate(limit7Days.getDate() - 7);
+            matchDate = (itemDateOnly >= limit7Days && itemDateOnly <= now);
+          } else if (currentFilterType === '1_bulan') {
+            const limit1Month = new Date(now);
+            limit1Month.setMonth(limit1Month.getMonth() - 1);
+            matchDate = (itemDateOnly >= limit1Month && itemDateOnly <= now);
+          } else if (currentFilterType === 'custom') {
+            if (customDateVal) {
+              const targetDate = new Date(customDateVal);
+              targetDate.setHours(0, 0, 0, 0);
+              matchDate = (itemDateOnly.getTime() === targetDate.getTime());
+            }
+          }
+        } else if (currentFilterType !== 'semua') {
+          matchDate = false;
+        }
+
+        const judulBuku = item.judul || item.bookTitle || '-';
+        const matchSearch = (
+          String(item.waktu).toLowerCase().includes(searchKeyword) ||
+          String(item.nis).toLowerCase().includes(searchKeyword) ||
+          String(item.nama).toLowerCase().includes(searchKeyword) ||
+          String(item.barcode).toLowerCase().includes(searchKeyword) ||
+          String(judulBuku).toLowerCase().includes(searchKeyword) ||
+          String(item.status).toLowerCase().includes(searchKeyword)
+        );
+
+        return matchDate && matchSearch;
+      });
+
+      renderLaporanTable(filtered);
+    }
+
+    function renderLaporanTable(data) {
+      const tbody = document.getElementById('tabel-laporan-body');
+      tbody.innerHTML = '';
+
+      if (data.length > 0) {
+        data.forEach(item => {
+          const badgeClass = item.status.toLowerCase().includes('pinjam') || item.status.toLowerCase().includes('borrow') ? 'badge-pinjam' : 'badge-kembali';
+          const judulBuku = item.judul || item.bookTitle || '-';
+          tbody.innerHTML += `
+            <tr>
+              <td title="${item.waktu}">${item.waktu}</td>
+              <td title="${item.nis}"><b>${item.nis}</b></td>
+              <td title="${item.nama}">${item.nama}</td>
+              <td title="${judulBuku}">${judulBuku}</td>
+              <td><span class="badge-status ${badgeClass}">${item.status}</span></td>
+            </tr>
+          `;
+        });
+      } else {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Tidak ada riwayat transaksi yang cocok.</td></tr>';
+      }
+    }
+
     function showAlert(id, msg, type) {
       const el = document.getElementById(id);
       el.innerText = msg;
       el.className = `alert alert-${type}`;
       el.style.display = 'block';
+    }
+
+    function hideAlert(id) {
+      document.getElementById(id).style.display = 'none';
     }
   </script>
 </body>
