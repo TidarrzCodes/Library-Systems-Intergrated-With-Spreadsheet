@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RNX - Digital Library System</title>
+  <title>Scan|BM400 Cibubur|Digital Library System</title>
   <script src="https://unpkg.com/html5-qrcode"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
     rel="stylesheet">
@@ -447,7 +447,7 @@
     <!-- STEP 1: OPTIONS MENU -->
     <div id="step-options" class="step active">
       <div class="header">
-        <div class="brand-badge">📚 RNX Digital Library</div>
+        <div class="brand-badge">📚 BM400 Digital Library</div>
         <h1>Self-Service Circulation</h1>
         <p>Select transaction mode to start scanning</p>
       </div>
@@ -473,8 +473,8 @@
     <!-- STEP 2: SCAN IDENTITY (QR CODE) -->
     <div id="step-siswa" class="step">
       <div class="header">
-        <h1 id="mode-title">Scan Student/Admin QR</h1>
-        <p>Point Student or Admin QR Card at the camera area</p>
+        <h1 id="mode-title">Scan Your QR</h1>
+        <p>Point Your QR Card at the camera area</p>
       </div>
 
       <div class="webcam-container">
@@ -485,8 +485,8 @@
       <div class="divider"><span>Or</span></div>
 
       <div class="form-group">
-        <label for="input-nis">Enter Student ID Manually</label>
-        <input type="text" id="input-nis" placeholder="Type Student ID then press Enter..."
+        <label for="input-nis">Enter Your QR ID Manually</label>
+        <input type="text" id="input-nis" placeholder="Type Your QR ID then press Enter..."
           onkeypress="handleNisManual(event)">
       </div>
       <div id="alert-siswa" class="alert"></div>
