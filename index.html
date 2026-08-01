@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bakti Mulya 400 - Digital Library System</title>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <!-- FontAwesome for Social Icons & Contacts -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    :root {
+      --bm-green-primary: #41c863;
+      --bm-green-dark: #12a14b;
+      --bm-green-light: #d8f3e0;
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --primary-light: #eef2ff;
+      --info: #0284c7;
+      --info-light: #f0f9ff;
+      --success: #10b981;
+      --success-light: #ecfdf5;
+      --danger: #ef4444;
+      --danger-light: #fef2f2;
+      --bg-color: #f1f5f9;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+      --radius: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background: var(--bg-color);
+      background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+      background-size: 24px 24px;
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-bottom: 40px;
+    }
+
+    /* HEADER & NAVBAR BM400 */
+    .bm-header-container {
+      width: 100%;
+      background: #ffffff;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      margin-bottom: 28px;
+    }
+
+    /* 1. Top Info Bar */
+    .bm-top-bar {
+      display: flex;
+      width: 100%;
+      height: 42px;
+      font-size: 13px;
+    }
+
+    .bm-top-left {
+      background: var(--bm-green-primary);
+      width: 30%;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 40px;
+      gap: 16px;
+    }
+
+    .bm-top-left a {
+      color: white;
+      font-size: 15px;
+      transition: opacity 0.2s;
+      text-decoration: none;
+    }
+
+    .bm-top-left a:hover {
+      opacity: 0.8;
+    }
+
+    .bm-top-right {
+      background: var(--bm-green-light);
+      width: 70%;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 5%;
+      gap: 24px;
+      color: #1e3a29;
+      font-weight: 600;
+    }
+
+    .bm-top-right a {
+      color: #1e3a29;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .bm-top-right a:hover {
+      color: var(--bm-green-dark);
+    }
+
+    /* 2. Main Navigation Bar */
+    .bm-navbar {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .bm-logo-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      color: var(--bm-green-dark);
+      font-size: 18px;
+    }
+
+    .bm-badge-circle {
+      width: 38px;
+      height: 38px;
+      background: var(--bm-green-primary);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 14px;
+    }
+
+    .bm-nav-links {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      list-style: none;
+    }
+
+    .bm-nav-links li {
+      font-size: 14px;
+      font-weight: 700;
+      color: #1e293b;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+
+    .bm-nav-links li:hover {
+      color: var(--bm-green-dark);
+    }
+
+    .bm-nav-links .dot {
+      color: #cbd5e1;
+      font-size: 10px;
+    }
+
+    .btn-enrolment {
+      background: var(--bm-green-dark);
+      color: white;
+      padding: 10px 22px;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 14px;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.2s;
+    }
+
+    .btn-enrolment:hover {
+      background: #0d803a;
+    }
+
+    /* MAIN CONTENT CARD */
+    .card {
+      background: var(--card-bg);
+      width: 100%;
+      max-width: 500px;
+      padding: 32px 24px;
+      border-radius: 24px;
+      box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.05), 0 8px 10px -6px rgba(15, 23, 42, 0.01);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      position: relative;
+    }
+
+    .brand-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: var(--bm-green-light);
+      color: var(--bm-green-dark);
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    .header h1 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text-main);
+      letter-spacing: -0.5px;
+      line-height: 1.2;
+    }
+
+    .header p {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-top: 8px;
+      line-height: 1.5;
+    }
+
+    .btn-group {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 16px 20px;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      color: white;
+    }
+
+    .btn:active {
+      transform: scale(0.97);
+    }
+
+    .btn-borrow {
+      background: linear-gradient(135deg, #41c863, #12a14b);
+      box-shadow: 0 10px 15px -3px rgba(18, 161, 75, 0.3);
+    }
+
+    .btn-borrow:hover {
+      background: linear-gradient(135deg, #32b553, #0e853d);
+      box-shadow: 0 12px 20px -3px rgba(18, 161, 75, 0.4);
+      transform: translateY(-2px);
+    }
+
+    .btn-return {
+      background: linear-gradient(135deg, #0284c7, #0369a1);
+      box-shadow: 0 10px 15px -3px rgba(2, 132, 199, 0.3);
+    }
+
+    .btn-return:hover {
+      background: linear-gradient(135deg, #0369a1, #075985);
+      box-shadow: 0 12px 20px -3px rgba(2, 132, 199, 0.4);
+      transform: translateY(-2px);
+    }
+
+    .btn-back {
+      background: #f8fafc;
+      color: var(--text-muted);
+      margin-top: 20px;
+      border: 1px solid var(--border-color);
+    }
+
+    .btn-back:hover {
+      background: #f1f5f9;
+      color: var(--text-main);
+    }
+
+    .step {
+      display: none;
+    }
+
+    .step.active {
+      display: block;
+      animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .webcam-container {
+      border: 2px solid var(--border-color);
+      border-radius: var(--radius);
+      padding: 6px;
+      background: #0f172a;
+      margin-bottom: 20px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .cam-box {
+      width: 100%;
+      height: 240px;
+      border-radius: 10px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .scanner-laser {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, #ef4444, transparent);
+      box-shadow: 0 0 15px #ef4444;
+      animation: scan 2s infinite ease-in-out;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    @keyframes scan {
+      0% {
+        top: 5%;
+      }
+
+      50% {
+        top: 90%;
+      }
+
+      100% {
+        top: 5%;
+      }
+    }
+
+    .badge-siswa {
+      background: var(--bm-green-light);
+      color: var(--bm-green-dark);
+      border: 1px solid #a7f3d0;
+      padding: 14px 18px;
+      border-radius: var(--radius);
+      font-weight: 700;
+      font-size: 14px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      text-align: center;
+      margin: 20px 0;
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .divider::before,
+    .divider::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .divider span {
+      padding: 0 10px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--text-main);
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      font-size: 14px;
+      outline: none;
+      background: #f8fafc;
+      transition: all 0.2s ease;
+      color: var(--text-main);
+    }
+
+    input[type="text"]:focus {
+      border-color: var(--bm-green-dark);
+      background: #ffffff;
+      box-shadow: 0 0 0 4px rgba(18, 161, 75, 0.15);
+    }
+
+    .alert {
+      padding: 14px 16px;
+      border-radius: var(--radius);
+      margin-top: 16px;
+      font-size: 13px;
+      font-weight: 600;
+      display: none;
+      line-height: 1.4;
+    }
+
+    .alert-success {
+      background: var(--success-light);
+      color: #047857;
+      border: 1px solid #a7f3d0;
+    }
+
+    .alert-danger {
+      background: var(--danger-light);
+      color: #b91c1c;
+      border: 1px solid #fca5a5;
+    }
+
+    .table-container {
+      margin-top: 12px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    th {
+      background-color: #f8fafc;
+      color: var(--text-muted);
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    th,
+    td {
+      padding: 12px 16px;
+      text-align: left;
+    }
+
+    td {
+      border-bottom: 1px solid var(--border-color);
+      color: var(--text-main);
+      font-weight: 500;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    #reader-siswa video,
+    #reader-buku video {
+      object-fit: cover !important;
+      border-radius: 8px;
+    }
+
+    /* RESPONSIVE LAYOUT MOBILE */
+    @media (max-width: 850px) {
+      .bm-top-left {
+        width: 100%;
+        justify-content: center;
+        padding-right: 0;
+      }
+
+      .bm-top-right {
+        display: none;
+      }
+
+      .bm-nav-links {
+        display: none;
+      }
+
+      .bm-navbar {
+        justify-content: space-between;
+      }
+    }
+
+    @media (max-width: 640px) {
+      input[type="text"] {
+        font-size: 16px;
+      }
+    }
+
+    .bm-logo-img {
+      height: 40px;
+      /* Sesuaikan tinggi logo dengan navbar */
+      width: auto;
+      /* Menjaga rasio gambar agar tidak gepeng */
+      object-fit: contain;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- BM400 HEADER & NAVBAR -->
+  <header class="bm-header-container">
+    <!-- Top Bar -->
+    <div class="bm-top-bar">
+      <div class="bm-top-left">
+        <a href="#"><i class="fab fa-instagram"></i></a>
+        <a href="#"><i class="fab fa-facebook-f"></i></a>
+        <a href="#"><i class="fab fa-tiktok"></i></a>
+        <a href="#"><i class="fab fa-youtube"></i></a>
+      </div>
+      <div class="bm-top-right">
+        <a href="#"><i class="far fa-envelope"></i> info@baktimulya400cibubur.sch.id</a>
+        <a href="#"><i class="fas fa-phone"></i> +6281213146400</a>
+      </div>
+    </div>
+
+    <!-- Main Navigation Bar -->
+    <nav class="bm-navbar">
+      <div class="bm-logo-group">
+        <img src="https://baktimulya400cibubur.sch.id/wp-content/uploads/2025/01/Logo-bm_cibubur-1.png"
+          alt="Logo Bakti Mulya 400" class="bm-logo-img">
+        <span>Bakti Mulya 400 Cibubur</span>
+      </div>
+    </nav>
+  </header>
+
+  <!-- MAIN CIRCULATION CARD -->
+  <div class="card">
+    <!-- STEP 1: OPTIONS MENU -->
+    <div id="step-options" class="step active">
+      <div class="header">
+        <div class="brand-badge">📚 BM400 Digital Library</div>
+        <h1>Self-Service Circulation</h1>
+        <p>Select transaction mode to start scanning</p>
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-borrow" onclick="selectMode('borrow')">
+          <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253">
+            </path>
+          </svg>
+          Borrow Book
+        </button>
+        <button class="btn btn-return" onclick="selectMode('return')">
+          <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+          </svg>
+          Return Book
+        </button>
+      </div>
+    </div>
+
+    <!-- STEP 2: SCAN IDENTITY (QR CODE) -->
+    <div id="step-siswa" class="step">
+      <div class="header">
+        <h1 id="mode-title">Scan Student/Admin QR</h1>
+        <p>Point Student or Admin QR Card at the camera area</p>
+      </div>
+
+      <div class="webcam-container">
+        <div class="scanner-laser"></div>
+        <div id="reader-siswa" class="cam-box"></div>
+      </div>
+
+      <div class="divider"><span>Or</span></div>
+
+      <div class="form-group">
+        <label for="input-nis">Enter Student ID Manually</label>
+        <input type="text" id="input-nis" placeholder="Type Student ID then press Enter..."
+          onkeypress="handleNisManual(event)">
+      </div>
+      <div id="alert-siswa" class="alert"></div>
+      <button class="btn btn-back" onclick="resetToHome()">← Cancel / Go Back</button>
+    </div>
+
+    <!-- STEP 3: SCAN BOOK BARCODE -->
+    <div id="step-buku" class="step">
+      <div class="badge-siswa" id="info-siswa">👤 Student: -</div>
+
+      <div class="webcam-container">
+        <div class="scanner-laser"></div>
+        <div id="reader-buku" class="cam-box"></div>
+      </div>
+
+      <div class="divider"><span>Or</span></div>
+
+      <div class="form-group">
+        <label for="input-barcode">Enter Book Barcode Manually</label>
+        <input type="text" id="input-barcode" placeholder="Type Book Barcode then press Enter..."
+          onkeypress="handleBukuManual(event)">
+      </div>
+
+      <div id="alert-buku" class="alert"></div>
+
+      <div id="container-tabel-pinjaman" style="display: none;">
+        <p
+          style="font-size: 12px; font-weight: 700; margin-top: 20px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">
+          Currently Borrowed Books:</p>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Barcode</th>
+                <th>Borrowed Date</th>
+              </tr>
+            </thead>
+            <tbody id="tabel-pinjaman-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <button class="btn btn-back" onclick="resetToHome()">✓ Finish & Exit</button>
+    </div>
+  </div>
+
+  <script>
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbyr6B_sTiAOkF5ZhcYdpwlmu4DoCXi-0lgdHKSglNkH13YN0mEBcYrcHC4fXIKVu982/exec";
+
+    let currentMode = '';
+    let currentSiswa = { nis: '', nama: '', role: '' };
+    let html5QrCode = null;
+
+    function playBeep() {
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.15);
+      } catch (e) { }
+    }
+
+    function selectMode(mode) {
+      currentMode = mode;
+      document.getElementById('mode-title').innerText = mode === 'borrow' ? '📖 Scan QR (Borrow)' : '📦 Scan QR (Return)';
+      showStep('step-siswa');
+      startCamera('siswa');
+    }
+
+    async function startCamera(target) {
+      await stopCamera();
+
+      const alertId = target === 'siswa' ? 'alert-siswa' : 'alert-buku';
+      const elementId = target === 'siswa' ? 'reader-siswa' : 'reader-buku';
+
+      const config = {
+        fps: 15,
+        qrbox: target === 'buku' ? { width: 260, height: 110 } : { width: 180, height: 180 },
+        formatsToSupport: [
+          Html5QrcodeSupportedFormats.QR_CODE,
+          Html5QrcodeSupportedFormats.EAN_13,
+          Html5QrcodeSupportedFormats.EAN_8,
+          Html5QrcodeSupportedFormats.CODE_128,
+          Html5QrcodeSupportedFormats.CODE_39
+        ]
+      };
+
+      html5QrCode = new Html5Qrcode(elementId);
+
+      try {
+        const devices = await Html5Qrcode.getCameras();
+
+        if (devices && devices.length > 0) {
+          let selectedCamId = null;
+
+          const backCameras = devices.filter(device => {
+            const label = device.label.toLowerCase();
+            const isBack = label.includes('back') || label.includes('rear') || label.includes('belakang') || label.includes('environment') || label.includes('0');
+            const isUltraWide = label.includes('ultra') || label.includes('0.5') || label.includes('aux') || label.includes('macro') || label.includes('depth');
+
+            return isBack && !isUltraWide;
+          });
+
+          if (backCameras.length > 0) {
+            const mainCam = backCameras.find(device => {
+              const label = device.label.toLowerCase();
+              return label.includes('main') || label.includes('primary') || label.includes('1x') || label.includes('camera 0');
+            });
+
+            selectedCamId = mainCam ? mainCam.id : backCameras[0].id;
+          } else {
+            const anyBack = devices.find(d => d.label.toLowerCase().includes('back') || d.label.toLowerCase().includes('rear'));
+            selectedCamId = anyBack ? anyBack.id : devices[devices.length - 1].id;
+          }
+
+          await html5QrCode.start(
+            selectedCamId,
+            config,
+            async (decodedText) => {
+              playBeep();
+              await stopCamera();
+
+              if (target === 'siswa') processNisScan(decodedText);
+              else if (target === 'buku') processBukuScan(decodedText);
+            },
+            () => { }
+          );
+        } else {
+          showAlert(alertId, '⚠️ Camera not found!', 'danger');
+        }
+      } catch (err) {
+        console.error("Camera Access Error:", err);
+        showAlert(alertId, '⚠️ Camera access denied or blocked.', 'danger');
+      }
+    }
+
+    async function stopCamera() {
+      if (html5QrCode && html5QrCode.isScanning) {
+        try {
+          await html5QrCode.stop();
+          html5QrCode.clear();
+        } catch (err) { }
+      }
+    }
+
+    function handleNisManual(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        playBeep();
+        processNisScan(e.target.value.trim());
+      }
+    }
+
+    async function processNisScan(nis) {
+      if (!nis) return;
+      showAlert('alert-siswa', '🔍 Checking Student ID...', 'success');
+
+      try {
+        const response = await fetch(`${GAS_URL}?action=getSiswa&nis=${encodeURIComponent(nis)}`);
+        const res = await response.json();
+
+        if (res.success) {
+          currentSiswa = { nis: String(nis).trim(), nama: res.nama, role: res.role || '' };
+
+          const isUserAdmin = (res.role && res.role.toLowerCase() === 'admin') || (res.nama && res.nama.toLowerCase().includes('admin'));
+
+          if (isUserAdmin) {
+            hideAlert('alert-siswa');
+            document.getElementById('input-nis').value = '';
+            window.location.href = 'admin.html';
+            return;
+          }
+
+          document.getElementById('info-siswa').innerText = `👤 Student: ${res.nama} (${nis})`;
+
+          hideAlert('alert-siswa');
+          document.getElementById('input-nis').value = '';
+
+          showStep('step-buku');
+
+          if (currentMode === 'return') {
+            document.getElementById('container-tabel-pinjaman').style.display = 'block';
+            await loadBukuDipinjam(nis);
+          } else {
+            document.getElementById('container-tabel-pinjaman').style.display = 'none';
+            startCamera('buku');
+          }
+        } else {
+          showAlert('alert-siswa', res.message, 'danger');
+        }
+      } catch (err) {
+        showAlert('alert-siswa', '❌ Failed to connect to server!', 'danger');
+      }
+    }
+
+    function handleBukuManual(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        playBeep();
+        processBukuScan(e.target.value.trim());
+      }
+    }
+
+    async function processBukuScan(barcode) {
+      if (!barcode) return;
+      showAlert('alert-buku', '⏳ Verifying book availability...', 'success');
+
+      const action = currentMode === 'borrow' ? 'pinjamBuku' : 'kembaliBuku';
+      const payload = {
+        action: action,
+        nis: String(currentSiswa.nis).trim(),
+        barcode: String(barcode).trim()
+      };
+
+      try {
+        const response = await fetch(GAS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
+        const res = await response.json();
+
+        if (res.success) {
+          showAlert('alert-buku', res.message, 'success');
+          document.getElementById('input-barcode').value = '';
+
+          if (currentMode === 'return') {
+            await loadBukuDipinjam(currentSiswa.nis);
+          } else {
+            setTimeout(() => startCamera('buku'), 1200);
+          }
+        } else {
+          showAlert('alert-buku', res.message, 'danger');
+          document.getElementById('input-barcode').value = '';
+
+          setTimeout(() => startCamera('buku'), 2500);
+        }
+      } catch (err) {
+        showAlert('alert-buku', '❌ Failed to process transaction!', 'danger');
+        setTimeout(() => startCamera('buku'), 2000);
+      }
+    }
+
+    async function loadBukuDipinjam(nis) {
+      const tbody = document.getElementById('tabel-pinjaman-body');
+      tbody.innerHTML = '<tr><td colspan="2" style="text-align:center; color: var(--text-muted);">Loading...</td></tr>';
+
+      try {
+        const response = await fetch(`${GAS_URL}?action=getBukuDipinjamSiswa&nis=${encodeURIComponent(nis)}`);
+        const res = await response.json();
+
+        tbody.innerHTML = '';
+        if (res.success && res.data.length > 0) {
+          res.data.forEach(item => {
+            tbody.innerHTML += `<tr><td><b>${item.barcode}</b></td><td>${item.tglPinjam}</td></tr>`;
+          });
+        } else {
+          tbody.innerHTML = '<tr><td colspan="2" style="text-align:center; color: var(--text-muted);">No active loans found.</td></tr>';
+        }
+
+        setTimeout(() => startCamera('buku'), 800);
+      } catch (err) {
+        tbody.innerHTML = '<tr><td colspan="2" style="text-align:center; color: var(--danger);">Failed to load data.</td></tr>';
+        setTimeout(() => startCamera('buku'), 800);
+      }
+    }
+
+    function showStep(stepId) {
+      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+      document.getElementById(stepId).classList.add('active');
+    }
+
+    async function resetToHome() {
+      await stopCamera();
+      currentMode = '';
+      currentSiswa = { nis: '', nama: '', role: '' };
+      document.getElementById('input-nis').value = '';
+      document.getElementById('input-barcode').value = '';
+      hideAlert('alert-siswa');
+      hideAlert('alert-buku');
+      showStep('step-options');
+    }
+
+    function showAlert(id, msg, type) {
+      const el = document.getElementById(id);
+      el.innerText = msg;
+      el.className = `alert alert-${type}`;
+      el.style.display = 'block';
+    }
+
+    function hideAlert(id) {
+      document.getElementById(id).style.display = 'none';
+    }
+  </script>
+</body>
+
+</html>

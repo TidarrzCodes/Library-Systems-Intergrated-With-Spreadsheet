@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - Library System</title>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --primary-light: #eef2ff;
+      --success: #10b981;
+      --success-hover: #059669;
+      --success-light: #ecfdf5;
+      --warning: #f59e0b;
+      --warning-hover: #d97706;
+      --warning-light: #fffbeb;
+      --danger: #ef4444;
+      --danger-light: #fef2f2;
+      --bg-color: #f1f5f9;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+      --radius: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background: var(--bg-color);
+      background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+      background-size: 24px 24px;
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 24px 16px;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    /* Header Bar */
+    .nav-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      background: var(--card-bg);
+      padding: 16px 20px;
+      border-radius: var(--radius);
+      box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      gap: 12px;
+    }
+
+    .nav-header h1 {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-home {
+      text-decoration: none;
+      background: #f8fafc;
+      color: var(--text-muted);
+      border: 1px solid var(--border-color);
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 13px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .btn-home:hover {
+      background: #f1f5f9;
+      color: var(--text-main);
+      transform: translateY(-1px);
+    }
+
+    /* Stats Section */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .stat-card {
+      background: var(--card-bg);
+      padding: 18px 20px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border-color);
+      box-shadow: 0 10px 15px -3px rgba(15, 23, 42, 0.03);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .stat-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+
+    .stat-icon.borrow {
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+
+    .stat-icon.return {
+      background: var(--success-light);
+      color: var(--success);
+    }
+
+    .stat-info h3 {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--text-main);
+      line-height: 1;
+    }
+
+    .stat-info p {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-top: 4px;
+    }
+
+    /* Quick Nav Controls */
+    .action-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .btn-nav-action {
+      flex: 1 1 auto;
+      padding: 12px 16px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border-color);
+      background: var(--card-bg);
+      color: var(--text-main);
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+      white-space: nowrap;
+    }
+
+    .btn-nav-action:hover {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+      transform: translateY(-2px);
+    }
+
+    .btn-nav-action.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+      box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);
+    }
+
+    /* Main Container & Form Layout */
+    .card {
+      background: var(--card-bg);
+      padding: 24px;
+      border-radius: 20px;
+      box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      margin-bottom: 20px;
+    }
+
+    .card h2 {
+      color: var(--text-main);
+      font-size: 16px;
+      font-weight: 800;
+      margin-bottom: 16px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Webcam Container */
+    .webcam-container {
+      border: 2px solid var(--border-color);
+      border-radius: var(--radius);
+      padding: 6px;
+      background: #0f172a;
+      margin-bottom: 18px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .cam-box {
+      width: 100%;
+      height: 220px;
+      border-radius: 10px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .scanner-laser {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, #ef4444, transparent);
+      box-shadow: 0 0 15px #ef4444;
+      animation: scan 2s infinite ease-in-out;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    @keyframes scan {
+      0% {
+        top: 5%;
+      }
+
+      50% {
+        top: 90%;
+      }
+
+      100% {
+        top: 5%;
+      }
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: var(--text-main);
+      font-size: 13px;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    select {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      font-size: 14px;
+      outline: none;
+      background: #f8fafc;
+      transition: all 0.2s ease;
+      color: var(--text-main);
+    }
+
+    input[type="text"]:focus,
+    input[type="email"]:focus,
+    select:focus {
+      border-color: var(--primary);
+      background: #ffffff;
+      box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15);
+    }
+
+    .btn-scan {
+      background: var(--warning-light);
+      color: #b45309;
+      border: 1px solid #fde68a;
+      padding: 12px;
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 13px;
+      margin-bottom: 18px;
+      width: 100%;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-scan:hover {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: var(--radius);
+      color: white;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .btn-siswa {
+      background: linear-gradient(135deg, #10b981, #059669);
+      box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-buku {
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);
+    }
+
+    .alert {
+      margin-top: 16px;
+      padding: 12px 14px;
+      border-radius: var(--radius);
+      font-size: 13px;
+      font-weight: 600;
+      display: none;
+      line-height: 1.4;
+    }
+
+    .alert-success {
+      background: var(--success-light);
+      color: #047857;
+      border: 1px solid #a7f3d0;
+    }
+
+    .alert-danger {
+      background: var(--danger-light);
+      color: #b91c1c;
+      border: 1px solid #fca5a5;
+    }
+
+    /* Table Styles for Transaction Report */
+    .table-container {
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    th {
+      background-color: #f8fafc;
+      color: var(--text-muted);
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--border-color);
+      padding: 12px 14px;
+    }
+
+    td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border-color);
+      color: var(--text-main);
+      font-weight: 500;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    .badge-status {
+      padding: 4px 8px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .badge-pinjam {
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+
+    .badge-kembali {
+      background: var(--success-light);
+      color: var(--success);
+    }
+
+    #reader-admin-siswa video,
+    #reader-admin-buku video {
+      object-fit: cover !important;
+      border-radius: 8px;
+    }
+
+    @media (max-width: 640px) {
+      body {
+        padding: 16px 10px;
+      }
+
+      .nav-header {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+        padding: 16px;
+      }
+
+      .nav-header h1 {
+        justify-content: center;
+      }
+
+      .btn-home {
+        justify-content: center;
+        width: 100%;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      .action-bar {
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .btn-nav-action {
+        width: 100%;
+      }
+
+      .card {
+        padding: 20px 16px;
+      }
+
+      input[type="text"],
+      input[type="email"],
+      select {
+        font-size: 16px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+    <!-- Nav Header -->
+    <div class="nav-header">
+      <h1>⚙️ Admin Control Panel</h1>
+      <a href="index.html" class="btn-home">
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+        </svg>
+        Back to Scanner
+      </a>
+    </div>
+
+    <!-- Real-time Stats -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon borrow">📖</div>
+        <div class="stat-info">
+          <h3 id="stat-pinjam-today">0</h3>
+          <p>Total Borrowed Today</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon return">📦</div>
+        <div class="stat-info">
+          <h3 id="stat-kembali-today">0</h3>
+          <p>Total Returned Today</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Navigation Buttons -->
+    <div class="action-bar">
+      <button class="btn-nav-action active" onclick="switchTab('user')">👤 Add User / Student</button>
+      <button class="btn-nav-action" onclick="switchTab('buku')">📚 Manage Master Books</button>
+      <button class="btn-nav-action" onclick="switchTab('laporan')">📊 Transaction Report</button>
+    </div>
+
+    <!-- TAB 1: ADD USER / STUDENT -->
+    <div id="tab-user" class="tab-content active">
+      <div class="card">
+        <h2>👤 Add New User / Student</h2>
+
+        <button type="button" class="btn-scan" onclick="startAdminCamera('siswa')">
+          <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z">
+            </path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z">
+            </path>
+          </svg>
+          Scan ID Card QR
+        </button>
+
+        <div class="webcam-container" id="box-cam-siswa" style="display: none;">
+          <div class="scanner-laser"></div>
+          <div id="reader-admin-siswa" class="cam-box"></div>
+        </div>
+
+        <form onsubmit="submitSiswa(event)">
+          <div class="form-group">
+            <label for="nis">Student ID / User ID</label>
+            <input type="text" id="nis" placeholder="Scanned result or type ID..." required>
+          </div>
+          <div class="form-group">
+            <label for="nama-siswa">Full Name</label>
+            <input type="text" id="nama-siswa" placeholder="e.g., John Doe" required>
+          </div>
+          <div class="form-group">
+            <label for="kelas-siswa">Class / Grade</label>
+            <input type="text" id="kelas-siswa" placeholder="e.g., 10 IPA 1">
+          </div>
+          <div class="form-group">
+            <label for="email-siswa">Email Address</label>
+            <input type="email" id="email-siswa" placeholder="e.g., student@school.sch.id">
+          </div>
+          <div class="form-group">
+            <label for="role-user">Role</label>
+            <select id="role-user">
+              <option value="siswa">Student</option>
+              <option value="admin">Library Admin</option>
+            </select>
+          </div>
+          <button type="submit" id="btn-submit-siswa" class="btn btn-siswa">Save User Data</button>
+        </form>
+        <div id="alert-siswa" class="alert"></div>
+      </div>
+    </div>
+
+    <!-- TAB 2: MANAGE BOOKS -->
+    <div id="tab-buku" class="tab-content">
+      <div class="card">
+        <h2>📚 Manage Master Books</h2>
+
+        <button type="button" class="btn-scan" onclick="startAdminCamera('buku')">
+          <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z">
+            </path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z">
+            </path>
+          </svg>
+          Scan Book Barcode
+        </button>
+
+        <div class="webcam-container" id="box-cam-buku" style="display: none;">
+          <div class="scanner-laser"></div>
+          <div id="reader-admin-buku" class="cam-box"></div>
+        </div>
+
+        <form onsubmit="submitBuku(event)">
+          <div class="form-group">
+            <label for="barcode-buku">Book Barcode / ISBN</label>
+            <input type="text" id="barcode-buku" placeholder="Scanned result or type Barcode..." required>
+          </div>
+          <div class="form-group">
+            <label for="judul-buku">Book Title</label>
+            <input type="text" id="judul-buku" placeholder="e.g., The Great Gatsby" required>
+          </div>
+          <div class="form-group">
+            <label for="pengarang-buku">Author (Optional)</label>
+            <input type="text" id="pengarang-buku" placeholder="e.g., F. Scott Fitzgerald">
+          </div>
+          <button type="submit" id="btn-submit-buku" class="btn btn-buku">Save Master Book</button>
+        </form>
+        <div id="alert-buku" class="alert"></div>
+      </div>
+    </div>
+
+    <!-- TAB 3: TRANSACTION REPORT -->
+    <div id="tab-laporan" class="tab-content">
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; gap: 10px;">
+          <h2>📊 Transaction History Report</h2>
+          <button class="btn-home" onclick="loadLaporanTransaksi()">🔄 Refresh</button>
+        </div>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Date / Time</th>
+                <th>Student ID</th>
+                <th>Name</th>
+                <th>Book Barcode</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="tabel-laporan-body">
+              <tr>
+                <td colspan="5" style="text-align: center; color: var(--text-muted);">Loading report data...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbwOaANOjJHqEZCFpb_skew19gqCIw825cR6MT-GfnmMPBdJxtYnF3kJ9UkiVP5bc5Js/exec";
+
+    let adminHtml5QrCode = null;
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadDashboardStats();
+    });
+
+    function switchTab(tabName) {
+      stopAdminCamera();
+
+      const buttons = document.querySelectorAll('.btn-nav-action');
+      buttons.forEach(btn => btn.classList.remove('active'));
+
+      const tabs = document.querySelectorAll('.tab-content');
+      tabs.forEach(tab => tab.classList.remove('active'));
+
+      if (tabName === 'user') {
+        buttons[0].classList.add('active');
+        document.getElementById('tab-user').classList.add('active');
+      } else if (tabName === 'buku') {
+        buttons[1].classList.add('active');
+        document.getElementById('tab-buku').classList.add('active');
+      } else if (tabName === 'laporan') {
+        buttons[2].classList.add('active');
+        document.getElementById('tab-laporan').classList.add('active');
+        loadLaporanTransaksi();
+      }
+    }
+
+    function playBeep() {
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.15);
+      } catch (e) { }
+    }
+
+    async function loadDashboardStats() {
+      try {
+        const response = await fetch(`${GAS_URL}?action=getStatsToday`);
+        const res = await response.json();
+        if (res.success) {
+          document.getElementById('stat-pinjam-today').innerText = res.totalPinjam || 0;
+          document.getElementById('stat-kembali-today').innerText = res.totalKembali || 0;
+        }
+      } catch (err) {
+        console.error("Failed to load statistics:", err);
+      }
+    }
+
+    async function startAdminCamera(target) {
+      await stopAdminCamera();
+
+      const elementId = target === 'siswa' ? 'reader-admin-siswa' : 'reader-admin-buku';
+      const boxId = target === 'siswa' ? 'box-cam-siswa' : 'box-cam-buku';
+      const alertId = target === 'siswa' ? 'alert-siswa' : 'alert-buku';
+
+      document.getElementById(boxId).style.display = 'block';
+
+      const config = {
+        fps: 15,
+        qrbox: target === 'buku' ? { width: 250, height: 110 } : { width: 180, height: 180 },
+        formatsToSupport: [
+          Html5QrcodeSupportedFormats.QR_CODE,
+          Html5QrcodeSupportedFormats.EAN_13,
+          Html5QrcodeSupportedFormats.EAN_8,
+          Html5QrcodeSupportedFormats.CODE_128,
+          Html5QrcodeSupportedFormats.CODE_39
+        ]
+      };
+
+      adminHtml5QrCode = new Html5Qrcode(elementId);
+
+      try {
+        const devices = await Html5Qrcode.getCameras();
+
+        if (devices && devices.length > 0) {
+          let selectedCamId = null;
+
+          const backCameras = devices.filter(device => {
+            const label = device.label.toLowerCase();
+            const isBack = label.includes('back') || label.includes('rear') || label.includes('belakang') || label.includes('environment') || label.includes('0');
+            const isUltraWide = label.includes('ultra') || label.includes('0.5') || label.includes('aux') || label.includes('macro') || label.includes('depth');
+
+            return isBack && !isUltraWide;
+          });
+
+          if (backCameras.length > 0) {
+            const mainCam = backCameras.find(device => {
+              const label = device.label.toLowerCase();
+              return label.includes('main') || label.includes('primary') || label.includes('1x') || label.includes('camera 0');
+            });
+            selectedCamId = mainCam ? mainCam.id : backCameras[0].id;
+          } else {
+            const anyBack = devices.find(d => d.label.toLowerCase().includes('back') || d.label.toLowerCase().includes('rear'));
+            selectedCamId = anyBack ? anyBack.id : devices[devices.length - 1].id;
+          }
+
+          await adminHtml5QrCode.start(
+            selectedCamId,
+            config,
+            async (decodedText) => {
+              playBeep();
+              await stopAdminCamera();
+
+              if (target === 'siswa') {
+                document.getElementById('nis').value = String(decodedText).trim();
+                showAlert('alert-siswa', `✅ QR Read: ${decodedText}`, 'success');
+              } else if (target === 'buku') {
+                document.getElementById('barcode-buku').value = String(decodedText).trim();
+                showAlert('alert-buku', `✅ Barcode Read: ${decodedText}`, 'success');
+              }
+            },
+            () => { }
+          );
+        } else {
+          showAlert(alertId, '⚠️ Camera not found!', 'danger');
+        }
+      } catch (err) {
+        console.error("Camera Activation Error:", err);
+        showAlert(alertId, '⚠️ Camera access denied or blocked.', 'danger');
+      }
+    }
+
+    async function stopAdminCamera() {
+      if (adminHtml5QrCode && adminHtml5QrCode.isScanning) {
+        try {
+          await adminHtml5QrCode.stop();
+          adminHtml5QrCode.clear();
+        } catch (err) { }
+      }
+      document.getElementById('box-cam-siswa').style.display = 'none';
+      document.getElementById('box-cam-buku').style.display = 'none';
+    }
+
+    // Submit Handler: Add User / Student
+    async function submitSiswa(e) {
+      e.preventDefault();
+      await stopAdminCamera();
+
+      const nis = document.getElementById('nis').value.trim();
+      const nama = document.getElementById('nama-siswa').value.trim();
+      const kelas = document.getElementById('kelas-siswa').value.trim();
+      const email = document.getElementById('email-siswa').value.trim();
+      const role = document.getElementById('role-user').value;
+      const btn = document.getElementById('btn-submit-siswa');
+
+      btn.disabled = true;
+      showAlert('alert-siswa', '⏳ Saving user data to Google Sheets...', 'success');
+
+      try {
+        const response = await fetch(GAS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'addSiswa', nis: nis, nama: nama, kelas: kelas, role: role, email: email })
+        });
+        const res = await response.json();
+
+        if (res.success) {
+          showAlert('alert-siswa', res.message, 'success');
+          document.getElementById('nis').value = '';
+          document.getElementById('nama-siswa').value = '';
+          document.getElementById('kelas-siswa').value = '';
+          document.getElementById('email-siswa').value = '';
+        } else {
+          showAlert('alert-siswa', res.message, 'danger');
+        }
+      } catch (err) {
+        showAlert('alert-siswa', '❌ Failed to connect to server!', 'danger');
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    // Submit Handler: Add Master Book
+    async function submitBuku(e) {
+      e.preventDefault();
+      await stopAdminCamera();
+
+      const barcode = document.getElementById('barcode-buku').value.trim();
+      const judul = document.getElementById('judul-buku').value.trim();
+      const pengarang = document.getElementById('pengarang-buku').value.trim();
+      const btn = document.getElementById('btn-submit-buku');
+
+      btn.disabled = true;
+      showAlert('alert-buku', '⏳ Saving book data to Google Sheets...', 'success');
+
+      try {
+        const response = await fetch(GAS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'addBuku', barcode: barcode, judul: judul, pengarang: pengarang })
+        });
+        const res = await response.json();
+
+        if (res.success) {
+          showAlert('alert-buku', res.message, 'success');
+          document.getElementById('barcode-buku').value = '';
+          document.getElementById('judul-buku').value = '';
+          document.getElementById('pengarang-buku').value = '';
+        } else {
+          showAlert('alert-buku', res.message, 'danger');
+        }
+      } catch (err) {
+        showAlert('alert-buku', '❌ Failed to connect to server!', 'danger');
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    // Load Transaction Report Log
+    async function loadLaporanTransaksi() {
+      const tbody = document.getElementById('tabel-laporan-body');
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Loading transaction history...</td></tr>';
+
+      try {
+        const response = await fetch(`${GAS_URL}?action=getLaporanTransaksi`);
+        const res = await response.json();
+
+        tbody.innerHTML = '';
+        if (res.success && res.data.length > 0) {
+          res.data.forEach(item => {
+            const badgeClass = item.status.toLowerCase().includes('pinjam') || item.status.toLowerCase().includes('borrow') ? 'badge-pinjam' : 'badge-kembali';
+            tbody.innerHTML += `
+            <tr>
+              <td>${item.waktu}</td>
+              <td><b>${item.nis}</b></td>
+              <td>${item.nama}</td>
+              <td><b>${item.barcode}</b></td>
+              <td><span class="badge-status ${badgeClass}">${item.status}</span></td>
+            </tr>
+          `;
+          });
+        } else {
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No transaction history found.</td></tr>';
+        }
+      } catch (err) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--danger);">Failed to load report.</td></tr>';
+      }
+    }
+
+    function showAlert(id, msg, type) {
+      const el = document.getElementById(id);
+      el.innerText = msg;
+      el.className = `alert alert-${type}`;
+      el.style.display = 'block';
+    }
+  </script>
+</body>
+
+</html>
