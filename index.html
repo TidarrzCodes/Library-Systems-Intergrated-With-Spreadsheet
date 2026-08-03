@@ -246,24 +246,25 @@
       try {
         const devices = await Html5Qrcode.getCameras();
         if (devices && devices.length > 0) {
-          // Cari kamera yang berlabel "back" atau "rear", tapi hindari kata ultra/wide/.5/macro
-          let targetCameraId = devices[0].id; // Default ke kamera pertama
-          
-          // Iterasi untuk mencari kamera utama belakang yang bersih dari kata ultra-wide
+          // Ambil perangkat pertama atau cari yang secara eksplisit BUKAN ultra-wide
+          let targetCameraId = devices[0].id;
+
+          // Jika ada lebih dari satu kamera, cari yang berlabel belakang tapi hindari kata ultra/wide/.5/macro
           for (let i = 0; i < devices.length; i++) {
             const label = devices[i].label.toLowerCase();
-            const isBack = label.includes('back') || label.includes('rear') || label.includes('environment') || label.includes('camera2 0');
-            const isUltraWide = label.includes('ultra') || label.includes('wide') || label.includes('.5') || label.includes('macro') || label.includes('tele');
+            const isBack = label.includes('back') || label.includes('rear') || label.includes('environment');
+            const isUltraWide = label.includes('ultra') || label.includes('wide') || label.includes('.5') || label.includes('macro') || label.includes('tele') || label.includes('aux') || label.includes('optic');
 
             if (isBack && !isUltraWide) {
               targetCameraId = devices[i].id;
-              break; // Langsung hentikan begitu ketemu kamera utama 1x
+              break;
             }
           }
 
-          // Jika perangkat tidak memiliki label terbaca (kebijakan privasi browser), ambil kamera terakhir (biasanya kamera utama belakang pada mayoritas Android)
-          if (targetCameraId === devices[0].id && devices.length > 1) {
-            targetCameraId = devices[devices.length - 1].id;
+          // Jika label tidak terbaca oleh browser, pilih kamera pertama dari list (biasanya lensa utama 1x di Android/iOS, bukan yang terakhir)
+          if (targetCameraId === devices[0].id && devices.length >= 2) {
+            // Cek apakah perangkat memiliki banyak lensa, ambil indeks pertama kamera belakang standar
+            targetCameraId = devices[0].id; 
           }
 
           await html5QrCode.start(
