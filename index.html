@@ -415,6 +415,22 @@
       border-bottom: none;
     }
 
+    .developer-credit {
+      text-align: center;
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border-color);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      letter-spacing: 0.5px;
+    }
+
+    .developer-credit span {
+      color: var(--bm-green-primary);
+      font-weight: 800;
+    }
+
     @media (max-width: 640px) {
       input[type="text"] {
         font-size: 16px;
@@ -458,6 +474,10 @@
           </svg>
           Return Book
         </button>
+      </div>
+
+      <div class="developer-credit">
+        Developed By <span>RNX</span>
       </div>
     </div>
 
@@ -681,8 +701,6 @@
             hideAlert('alert-siswa');
             document.getElementById('input-nis').value = '';
             
-            // --- KEAMANAN TAMBAHAN: Simpan Token Akses Admin Sah ke SessionStorage ---
-            // Token ini wajib ada agar admin.html bisa diakses. Jika URL di-type manual tanpa scan QR admin, admin.html akan menolak akses.
             sessionStorage.setItem('rnx_admin_auth', 'authenticated_' + Date.now());
             
             window.location.href = 'admin.html';
@@ -803,13 +821,18 @@
 
     function showAlert(id, msg, type) {
       const el = document.getElementById(id);
-      el.innerText = msg;
-      el.className = `alert alert-${type}`;
-      el.style.display = 'block';
+      if (el) {
+        el.innerText = msg;
+        el.className = `alert alert-${type}`;
+        el.style.display = 'block';
+      }
     }
 
     function hideAlert(id) {
-      document.getElementById(id).style.display = 'none';
+      const el = document.getElementById(id);
+      if (el) {
+        el.style.display = 'none';
+      }
     }
   </script>
 </body>
