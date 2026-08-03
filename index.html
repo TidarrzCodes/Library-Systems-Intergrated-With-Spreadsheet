@@ -85,7 +85,6 @@
       transition: background 0.3s ease, border-color 0.3s ease;
     }
 
-    /* Top Info Bar inside Card (Live Clock & Theme Icon) */
     .card-top-bar {
       display: flex;
       justify-content: space-between;
@@ -255,10 +254,18 @@
 
     .cam-box {
       width: 100%;
-      height: 240px;
+      height: 280px;
       border-radius: 10px;
       overflow: hidden;
       position: relative;
+      background: #000;
+    }
+
+    .cam-box video {
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover !important;
+      border-radius: 8px;
     }
 
     .scanner-laser {
@@ -275,17 +282,9 @@
     }
 
     @keyframes scan {
-      0% {
-        top: 5%;
-      }
-
-      50% {
-        top: 90%;
-      }
-
-      100% {
-        top: 5%;
-      }
+      0% { top: 5%; }
+      50% { top: 90%; }
+      100% { top: 5%; }
     }
 
     .badge-siswa {
@@ -416,12 +415,6 @@
       border-bottom: none;
     }
 
-    #reader-siswa video,
-    #reader-buku video {
-      object-fit: cover !important;
-      border-radius: 8px;
-    }
-
     @media (max-width: 640px) {
       input[type="text"] {
         font-size: 16px;
@@ -432,9 +425,7 @@
 
 <body>
 
-  <!-- MAIN CIRCULATION CARD -->
   <div class="card">
-    <!-- Top Bar inside Card: Live Clock (Center) & Theme Toggle (Icon Only) -->
     <div class="card-top-bar">
       <div class="live-clock" id="live-clock">
         ⏳ Loading...
@@ -541,16 +532,13 @@
     let html5QrCode = null;
 
     window.addEventListener('DOMContentLoaded', () => {
-      // Set Default Dark Mode
       document.documentElement.setAttribute('data-theme', 'dark');
       document.getElementById('theme-icon').innerText = '☀️';
 
-      // Start Live Clock
       updateLiveClock();
       setInterval(updateLiveClock, 1000);
     });
 
-    // --- LIVE CLOCK FUNCTION ---
     function updateLiveClock() {
       const now = new Date();
       const options = { 
@@ -567,7 +555,6 @@
       document.getElementById('live-clock').innerHTML = `🕒 ${timeString}`;
     }
 
-    // --- THEME TOGGLE FUNCTION (ICON ONLY) ---
     function toggleTheme() {
       const currentTheme = document.documentElement.getAttribute('data-theme');
       const newTheme = currentTheme === 'light' ? 'dark' : 'light';
@@ -610,8 +597,7 @@
       const elementId = target === 'siswa' ? 'reader-siswa' : 'reader-buku';
 
       const config = {
-        fps: 15,
-        qrbox: target === 'buku' ? { width: 260, height: 110 } : { width: 180, height: 180 },
+        fps: 20,
         formatsToSupport: [
           Html5QrcodeSupportedFormats.QR_CODE,
           Html5QrcodeSupportedFormats.EAN_13,
@@ -624,33 +610,24 @@
       html5QrCode = new Html5Qrcode(elementId);
 
       try {
-        const devices = await Html5Qrcode.getCameras();
+        // Menggunakan method bawaan Html5Qrcode yang paling aman dan kompatibel dengan berbagai jenis webcam PC/laptop sekolah
+        await html5QrCode.start(
+          { facingMode: "user" },
+          config,
+          async (decodedText) => {
+            playBeep();
+            await stopCamera();
 
-        if (devices && devices.length > 0) {
-          let selectedCamId = null;
-
-          const backCameras = devices.filter(device => {
-            const label = device.label.toLowerCase();
-            const isBack = label.includes('back') || label.includes('rear') || label.includes('belakang') || label.includes('environment') || label.includes('0');
-            const isUltraWide = label.includes('ultra') || label.includes('0.5') || label.includes('aux') || label.includes('macro') || label.includes('depth');
-
-            return isBack && !isUltraWide;
-          });
-
-          if (backCameras.length > 0) {
-            const mainCam = backCameras.find(device => {
-              const label = device.label.toLowerCase();
-              return label.includes('main') || label.includes('primary') || label.includes('1x') || label.includes('camera 0');
-            });
-
-            selectedCamId = mainCam ? mainCam.id : backCameras[0].id;
-          } else {
-            const anyBack = devices.find(d => d.label.toLowerCase().includes('back') || d.label.toLowerCase().includes('rear'));
-            selectedCamId = anyBack ? anyBack.id : devices[devices.length - 1].id;
-          }
-
+            if (target === 'siswa') processNisScan(decodedText);
+            else if (target === 'buku') processBukuScan(decodedText);
+          },
+          () => { }
+        );
+      } catch (err1) {
+        console.warn("Fallback to environment camera due to:", err1);
+        try {
           await html5QrCode.start(
-            selectedCamId,
+            { facingMode: "environment" },
             config,
             async (decodedText) => {
               playBeep();
@@ -661,19 +638,19 @@
             },
             () => { }
           );
-        } else {
-          showAlert(alertId, '⚠️ Camera not found!', 'danger');
+        } catch (err2) {
+          console.error("Camera Access Error:", err2);
+          showAlert(alertId, '⚠️ Webcam tidak dapat dibuka. Pastikan izin kamera browser sudah diizinkan (Allow) dan tidak dipakai aplikasi lain.', 'danger');
         }
-      } catch (err) {
-        console.error("Camera Access Error:", err);
-        showAlert(alertId, '⚠️ Camera access denied or blocked. Please allow camera in browser site settings.', 'danger');
       }
     }
 
     async function stopCamera() {
-      if (html5QrCode && html5QrCode.isScanning) {
+      if (html5QrCode) {
         try {
-          await html5QrCode.stop();
+          if (html5QrCode.isScanning) {
+            await html5QrCode.stop();
+          }
           html5QrCode.clear();
         } catch (err) { }
       }
@@ -726,9 +703,11 @@
           }
         } else {
           showAlert('alert-siswa', res.message, 'danger');
+          setTimeout(() => startCamera('siswa'), 2500);
         }
       } catch (err) {
         showAlert('alert-siswa', '❌ Failed to connect to server!', 'danger');
+        setTimeout(() => startCamera('siswa'), 2500);
       }
     }
 
