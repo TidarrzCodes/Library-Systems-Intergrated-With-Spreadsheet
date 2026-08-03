@@ -487,6 +487,10 @@
 
             rawDevices.forEach(dev => {
               const label = dev.label.toLowerCase();
+              // Membuang dan mengabaikan kamera depan / selfie secara mutlak
+              if (label.includes('front') || label.includes('selfie') || label.includes('depan') || label.includes('user')) {
+                return;
+              }
               if (label.includes('ultra') || label.includes('wide') || label.includes('.5') || label.includes('macro') || label.includes('tele')) {
                 ultraWideCams.push(dev);
               } else {
@@ -522,8 +526,9 @@
             () => {}
           );
         } else {
+          // Paksa menggunakan environment dengan exact agar tidak lari ke kamera depan
           await adminHtml5QrCode.start(
-            { facingMode: "environment" }, 
+            { facingMode: { exact: "environment" } }, 
             config, 
             async (text) => {
               await stopAdminCamera();
@@ -564,7 +569,7 @@
             () => {}
           );
         } catch (err2) {
-          showAlert(target === 'siswa' ? 'alert-siswa' : 'alert-buku', '⚠️ Gagal membuka kamera belakang. Pastikan izin kamera browser sudah diizinkan (Allow).', 'danger');
+          showAlert(target === 'siswa' ? 'alert-siswa' : 'alert-buku', '⚠️ Gagal membuka kamera belakang. Pastikan izin kamera browser sudah diizinkan.', 'danger');
         }
       }
     }
