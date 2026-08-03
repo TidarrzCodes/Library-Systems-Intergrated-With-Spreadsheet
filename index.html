@@ -244,26 +244,61 @@
       };
 
       try {
-        // Menggunakan facingMode environment secara langsung untuk menghindari konflik akses stream ganda pada browser HP
-        await html5QrCode.start(
-          { facingMode: "environment" }, 
-          config, 
-          async (text) => {
-            if (isBusy) return;
-            isBusy = true;
-            playBeep();
-            await stopCamera();
+        const devices = await Html5Qrcode.getCameras();
+        if (devices && devices.length > 0) {
+          // Cari kamera belakang yang indeksnya di tengah/bukan ultra wide
+          let targetCameraId = devices[devices.length - 1].id;
+          
+          for (let i = 0; i < devices.length; i++) {
+            const label = devices[i].label.toLowerCase();
+            // Jika ada label kamera belakang utama (main / camera2 0 / back) dan pastikan bukan ultra-wide / .5 / macro
+            if ((label.includes('back') || label.includes('rear') || label.includes('environment')) && 
+                !label.includes('ultra') && !label.includes('wide') && !label.includes('.5') && !label.includes('macro') && !label.includes('tele') && !label.includes('aux')) {
+              targetCameraId = devices[i].id;
+              break;
+            }
+          }
 
-            if (target === 'siswa') await processNisScan(text);
-            else await processBukuScan(text);
-            isBusy = false;
-          }, 
-          () => {}
-        );
+          // Jalankan langsung menggunakan ID kamera utama yang sudah difilter ketat
+          await html5QrCode.start(
+            targetCameraId, 
+            config, 
+            async (text) => {
+              if (isBusy) return;
+              isBusy = true;
+              playBeep();
+              await stopCamera();
+
+              if (target === 'siswa') await processNisScan(text);
+              else await processBukuScan(text);
+              isBusy = false;
+            }, 
+            () => {}
+          );
+        } else {
+          // Fallback strict constraint jika getCameras kosong
+          await html5QrCode.start(
+            { 
+              facingMode: { exact: "environment" } 
+            }, 
+            config, 
+            async (text) => {
+              if (isBusy) return;
+              isBusy = true;
+              playBeep();
+              await stopCamera();
+              if (target === 'siswa') await processNisScan(text);
+              else await processBukuScan(text);
+              isBusy = false;
+            }, 
+            () => {}
+          );
+        }
       } catch (err) {
         try {
+          // Fallback kedua menggunakan environment biasa
           await html5QrCode.start(
-            { facingMode: "user" }, 
+            { facingMode: "environment" }, 
             config, 
             async (text) => {
               if (isBusy) return;
@@ -277,7 +312,7 @@
             () => {}
           );
         } catch (e) {
-          showAlert(alertId, '⚠️ Kamera tidak dapat diakses. Pastikan izin kamera aktif dan gunakan HTTPS/Localhost.', 'danger');
+          showAlert(alertId, '⚠️ Kamera tidak dapat diakses. Gunakan input manual.', 'danger');
         }
       }
     }
