@@ -372,6 +372,8 @@
 
     let adminHtml5QrCode = null;
     let activeTargetField = null;
+    let cameraDevices = [];
+    let currentCameraIndex = 0;
     let globalLaporanData = [];
     let globalUserData = [];
     let globalBukuData = [];
@@ -471,24 +473,69 @@
 
       adminHtml5QrCode = new Html5Qrcode(elementId);
       try {
-        await adminHtml5QrCode.start(
-          { facingMode: "environment" }, 
-          { fps: 20, qrbox: { width: 220, height: 120 }, formatsToSupport: formats }, 
-          async (text) => {
-            await stopAdminCamera();
-            if (target === 'siswa') {
-              document.getElementById('nis').value = text.trim();
-              showAlert('alert-siswa', `✅ QR Terbaca: ${text}`, 'success');
-            } else if (target === 'isbn') {
-              document.getElementById('isbn-buku').value = text.trim();
-              showAlert('alert-buku', `✅ ISBN Terbaca: ${text}`, 'success');
-            } else if (target === 'barcode') {
-              document.getElementById('barcode-buku').value = text.trim();
-              showAlert('alert-buku', `✅ Book Code Terbaca: ${text}`, 'success');
-            }
-          }, 
-          () => {}
-        );
+        if (cameraDevices.length === 0) {
+          const rawDevices = await Html5Qrcode.getCameras();
+          if (rawDevices && rawDevices.length > 0) {
+            let sortedCams = [];
+            let ultraWideCams = [];
+
+            rawDevices.forEach(dev => {
+              const label = dev.label.toLowerCase();
+              if (label.includes('ultra') || label.includes('wide') || label.includes('.5') || label.includes('macro') || label.includes('tele')) {
+                ultraWideCams.push(dev);
+              } else {
+                sortedCams.push(dev);
+              }
+            });
+
+            cameraDevices = [...sortedCams, ...ultraWideCams];
+          }
+        }
+
+        if (cameraDevices && cameraDevices.length > 0) {
+          currentCameraIndex = 0;
+          let selectedCamId = cameraDevices[currentCameraIndex].id;
+
+          await adminHtml5QrCode.start(
+            selectedCamId, 
+            { fps: 20, qrbox: { width: 220, height: 120 }, formatsToSupport: formats }, 
+            async (text) => {
+              await stopAdminCamera();
+              const cleanText = text.trim();
+              if (target === 'siswa') {
+                document.getElementById('nis').value = cleanText;
+                showAlert('alert-siswa', `✅ QR Terbaca: ${cleanText}`, 'success');
+              } else if (target === 'isbn') {
+                document.getElementById('isbn-buku').value = cleanText;
+                showAlert('alert-buku', `✅ ISBN Terbaca: ${cleanText}`, 'success');
+              } else if (target === 'barcode') {
+                document.getElementById('barcode-buku').value = cleanText;
+                showAlert('alert-buku', `✅ Book Code Terbaca: ${cleanText}`, 'success');
+              }
+            }, 
+            () => {}
+          );
+        } else {
+          await adminHtml5QrCode.start(
+            { facingMode: "environment" }, 
+            { fps: 20, qrbox: { width: 220, height: 120 }, formatsToSupport: formats }, 
+            async (text) => {
+              await stopAdminCamera();
+              const cleanText = text.trim();
+              if (target === 'siswa') {
+                document.getElementById('nis').value = cleanText;
+                showAlert('alert-siswa', `✅ QR Terbaca: ${cleanText}`, 'success');
+              } else if (target === 'isbn') {
+                document.getElementById('isbn-buku').value = cleanText;
+                showAlert('alert-buku', `✅ ISBN Terbaca: ${cleanText}`, 'success');
+              } else if (target === 'barcode') {
+                document.getElementById('barcode-buku').value = cleanText;
+                showAlert('alert-buku', `✅ Book Code Terbaca: ${cleanText}`, 'success');
+              }
+            }, 
+            () => {}
+          );
+        }
       } catch (e) {
         showAlert(target === 'siswa' ? 'alert-siswa' : 'alert-buku', '⚠️ Gagal membuka kamera.', 'danger');
       }
