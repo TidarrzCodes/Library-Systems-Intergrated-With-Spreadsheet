@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin|BM400 Cibubur|Digital Library System</title>
   
+  <!-- SCRIPT KEAMANAN: Cek apakah akses berasal dari scan QR admin yang sah -->
   <script>
     if (!sessionStorage.getItem('rnx_admin_auth')) {
       alert('⚠️ Akses ditolak! Anda harus memindai QR Admin yang sah di halaman utama terlebih dahulu.');
@@ -19,6 +20,7 @@
   <style>
     :root {
       --primary: #6366f1;
+      --primary-hover: #4f46e5;
       --primary-light: #1e1b4b;
       --success: #10b981;
       --success-light: #064e3b;
@@ -51,19 +53,61 @@
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
-    body { background: var(--bg-color); color: var(--text-main); min-height: 100vh; padding: 24px 16px; }
+
+    body {
+      background: var(--bg-color);
+      background-image: radial-gradient(var(--border-color) 1px, transparent 1px);
+      background-size: 24px 24px;
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 24px 16px;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
     .container { max-width: 1000px; margin: 0 auto; }
 
     .nav-header {
       display: flex; justify-content: space-between; align-items: center;
       margin-bottom: 20px; background: var(--card-bg); padding: 16px 20px;
-      border-radius: var(--radius); border: 1px solid var(--border-color); gap: 12px;
+      border-radius: var(--radius); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+      border: 1px solid var(--border-color); gap: 12px;
     }
 
-    .card {
-      background: var(--card-bg); padding: 24px; border-radius: 20px;
-      border: 1px solid var(--border-color); margin-bottom: 20px;
+    .nav-header h1 { font-size: 18px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+    .live-clock { font-size: 15px; font-weight: 800; white-space: nowrap; }
+
+    .header-right-controls { display: flex; align-items: center; gap: 10px; }
+
+    .btn-theme-icon, .btn-home {
+      background: var(--bg-color); color: var(--text-main); border: 1px solid var(--border-color);
+      border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s ease;
     }
+    .btn-theme-icon { width: 38px; height: 38px; font-size: 16px; }
+    .btn-home { text-decoration: none; padding: 8px 12px; font-weight: 700; font-size: 12px; gap: 6px; }
+
+    .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 20px; }
+    .stat-card {
+      background: var(--card-bg); padding: 18px 20px; border-radius: var(--radius);
+      border: 1px solid var(--border-color); display: flex; align-items: center; gap: 14px;
+    }
+    .stat-icon {
+      width: 46px; height: 46px; border-radius: 12px; display: flex;
+      align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0;
+    }
+    .stat-icon.borrow { background: var(--primary-light); color: var(--primary); }
+    .stat-icon.return { background: var(--success-light); color: var(--success); }
+    .stat-info h3 { font-size: 24px; font-weight: 800; line-height: 1; }
+    .stat-info p { font-size: 12px; color: var(--text-muted); font-weight: 600; margin-top: 4px; }
+
+    .action-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+    .btn-nav-action {
+      flex: 1 1 auto; padding: 12px 16px; border-radius: var(--radius);
+      border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main);
+      font-weight: 700; font-size: 13px; cursor: pointer; display: flex; align-items: center;
+      justify-content: center; gap: 8px; transition: all 0.2s ease;
+    }
+    .btn-nav-action.active { background: var(--primary); color: white; border-color: var(--primary); }
 
     .sub-action-bar {
       display: flex; gap: 8px; margin-bottom: 18px; background: var(--bg-color);
@@ -73,16 +117,23 @@
       flex: 1; padding: 10px; border: none; background: transparent; font-weight: 700;
       font-size: 12px; color: var(--text-muted); border-radius: 9px; cursor: pointer;
     }
-    .btn-sub-action.active { background: var(--card-bg); color: var(--primary); }
+    .btn-sub-action.active { background: var(--card-bg); color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+
+    .card {
+      background: var(--card-bg); padding: 24px; border-radius: 20px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); border: 1px solid var(--border-color); margin-bottom: 20px;
+    }
+    .card h2 { font-size: 16px; font-weight: 800; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; }
 
     .tab-content, .sub-tab-content { display: none; }
-    .tab-content.active, .sub-tab-content.active { display: block; }
+    .tab-content.active, .sub-tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
     .webcam-container {
       border: 2px solid var(--border-color); border-radius: var(--radius); padding: 6px;
-      background: #000; margin-bottom: 14px; max-width: 400px; margin-left: auto; margin-right: auto; display: none;
+      background: #000; margin-bottom: 18px; max-width: 400px; margin-left: auto; margin-right: auto;
     }
-    .cam-box { width: 100%; height: 240px; border-radius: 10px; overflow: hidden; position: relative; }
+    .cam-box { width: 100%; height: 260px; border-radius: 10px; overflow: hidden; position: relative; }
     .cam-box video { width: 100% !important; height: 100% !important; object-fit: cover !important; }
 
     .form-group { margin-bottom: 16px; }
@@ -91,27 +142,46 @@
       width: 100%; padding: 12px 14px; border: 1px solid var(--border-color);
       border-radius: var(--radius); font-size: 14px; outline: none; background: var(--bg-color); color: var(--text-main);
     }
+    input:focus, select:focus { border-color: var(--primary); }
 
+    .btn-scan {
+      background: var(--warning-light); color: var(--warning); border: 1px solid var(--border-color);
+      padding: 12px; border-radius: var(--radius); font-weight: 700; font-size: 13px; margin-bottom: 18px; width: 100%; cursor: pointer;
+    }
     .btn-scan-sm {
       background: var(--warning-light); color: var(--warning); border: 1px solid var(--border-color);
-      padding: 8px 12px; border-radius: 8px; font-weight: 700; font-size: 11px; cursor: pointer; margin-top: 6px; display: inline-block;
+      padding: 6px 12px; border-radius: 8px; font-weight: 700; font-size: 11px; cursor: pointer; margin-top: 6px; display: inline-block;
     }
 
     .btn {
       width: 100%; padding: 14px; border: none; border-radius: var(--radius);
       color: white; font-weight: 700; cursor: pointer; font-size: 14px;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
     }
+    .btn-siswa { background: linear-gradient(135deg, #10b981, #059669); }
     .btn-buku { background: linear-gradient(135deg, #6366f1, #4f46e5); }
     .btn-secondary { background: #64748b; margin-top: 8px; }
 
+    .btn-action-sm { padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; border: none; cursor: pointer; margin-right: 2px; }
+    .btn-edit { background: #fef08a; color: #854d0e; }
+    .btn-delete { background: #fee2e2; color: #991b1b; }
+    .btn-suspend { background: #ffedd5; color: #9a3412; }
+
     .alert { margin-top: 16px; padding: 12px 14px; border-radius: var(--radius); font-size: 13px; font-weight: 600; display: none; }
-    .alert-success { background: var(--success-light); color: var(--success); }
-    .alert-danger { background: var(--danger-light); color: var(--danger); }
+    .alert-success { background: var(--success-light); color: var(--success); border: 1px solid var(--border-color); }
+    .alert-danger { background: var(--danger-light); color: var(--danger); border: 1px solid var(--border-color); }
+
+    .filter-pills-container { display: flex; background: var(--bg-color); padding: 4px; border: 1px solid var(--border-color); border-radius: 14px; gap: 4px; margin-bottom: 12px; overflow-x: auto; }
+    .filter-pill { background: transparent; border: none; padding: 8px 14px; font-size: 12px; font-weight: 700; color: var(--text-muted); border-radius: 10px; cursor: pointer; white-space: nowrap; }
+    .filter-pill.active { background: var(--card-bg); color: var(--primary); }
 
     .table-container { border: 1px solid var(--border-color); border-radius: var(--radius); overflow-x: auto; background: var(--card-bg); margin-top: 12px; }
     table { width: 100%; border-collapse: collapse; font-size: 12px; text-align: left; }
-    th, td { padding: 10px 8px; border-bottom: 1px solid var(--border-color); }
-    th { background-color: var(--bg-color); color: var(--text-muted); font-size: 10px; text-transform: uppercase; }
+    th { background-color: var(--bg-color); color: var(--text-muted); font-weight: 700; text-transform: uppercase; font-size: 10px; padding: 10px 8px; border-bottom: 1px solid var(--border-color); }
+    td { padding: 10px 8px; border-bottom: 1px solid var(--border-color); font-weight: 500; }
+    .badge-status { padding: 3px 6px; border-radius: 8px; font-size: 9px; font-weight: 700; text-transform: uppercase; display: inline-block; }
+    .badge-pinjam { background: var(--primary-light); color: var(--primary); }
+    .badge-kembali { background: var(--success-light); color: var(--success); }
   </style>
 </head>
 
@@ -119,67 +189,161 @@
   <div class="container">
     <div class="nav-header">
       <h1>⚙️ Admin Control Panel</h1>
-      <div id="live-clock">🕒 Loading...</div>
-      <a href="index(4).html" style="color:var(--text-main); text-decoration:none; font-weight:700;">← Back</a>
+      <div class="live-clock" id="live-clock">⏳ Loading...</div>
+      <div class="header-right-controls">
+        <button class="btn-theme-icon" onclick="toggleTheme()"><span id="theme-icon">☀️</span></button>
+        <a href="index(4).html" class="btn-home">← Back</a>
+      </div>
     </div>
 
-    <div class="card">
-      <div class="sub-action-bar">
-        <button class="btn-sub-action active" id="btn-sub-addbook" onclick="switchSubTab('add')">➕ Tambah Buku</button>
-        <button class="btn-sub-action" id="btn-sub-managebook" onclick="switchSubTab('manage')">📚 Kelola Buku</button>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon borrow">📖</div>
+        <div class="stat-info"><h3 id="stat-pinjam-today">0</h3><p>Total Dipinjam Hari Ini</p></div>
       </div>
+      <div class="stat-card">
+        <div class="stat-icon return">📦</div>
+        <div class="stat-info"><h3 id="stat-kembali-today">0</h3><p>Total Dikembalikan Hari Ini</p></div>
+      </div>
+    </div>
 
-      <!-- TAB TAMBAH BUKU -->
-      <div id="subtab-buku-add" class="sub-tab-content active">
-        <h2 id="buku-form-title" style="margin-bottom:16px;">📚 Tambah Master Buku</h2>
+    <div class="action-bar">
+      <button class="btn-nav-action active" onclick="switchTab('user')">👤 User Management</button>
+      <button class="btn-nav-action" onclick="switchTab('buku')">📚 Book Management</button>
+      <button class="btn-nav-action" onclick="switchTab('laporan')">📊 Transaction Report</button>
+    </div>
 
-        <div class="webcam-container" id="box-cam-buku">
-          <div id="reader-admin-buku" class="cam-box"></div>
-          <button type="button" class="btn btn-secondary" style="padding:6px; font-size:12px; margin-top:6px;" onclick="stopAdminCamera()">Tutup Kamera</button>
+    <!-- TAB 1: USER MANAGEMENT -->
+    <div id="tab-user" class="tab-content active">
+      <div class="card">
+        <div class="sub-action-bar">
+          <button class="btn-sub-action active" id="btn-sub-adduser" onclick="switchSubTab('user', 'add')">➕ Tambah User</button>
+          <button class="btn-sub-action" id="btn-sub-manageuser" onclick="switchSubTab('user', 'manage')">📋 Kelola User</button>
         </div>
 
-        <form onsubmit="submitBuku(event)">
-          <input type="hidden" id="form-mode-buku" value="add">
-          
-          <div class="form-group">
-            <label>ISBN</label>
-            <input type="text" id="isbn-buku" placeholder="Nomor ISBN buku...">
-            <button type="button" class="btn-scan-sm" onclick="startAdminCamera('isbn')">📷 Scan ISBN</button>
-          </div>
+        <div id="subtab-user-add" class="sub-tab-content active">
+          <h2 id="user-form-title">👤 Tambah User / Siswa Baru</h2>
+          <button type="button" class="btn-scan" onclick="startAdminCamera('siswa')">📷 Scan QR Kartu</button>
+          <div class="webcam-container" id="box-cam-siswa" style="display: none;"><div id="reader-admin-siswa" class="cam-box"></div></div>
 
-          <div class="form-group">
-            <label>Book Code / No Induk (Unik per Fisik Buku)</label>
-            <input type="text" id="barcode-buku" required placeholder="Kode unik fisik buku...">
-            <button type="button" class="btn-scan-sm" onclick="startAdminCamera('barcode')">📷 Scan Book Code</button>
-          </div>
-
-          <div class="form-group">
-            <label>Book Title</label>
-            <input type="text" id="judul-buku" required placeholder="Judul buku...">
-          </div>
-
-          <div class="form-group">
-            <label>Author</label>
-            <input type="text" id="pengarang-buku" placeholder="Nama pengarang...">
-          </div>
-
-          <button type="submit" id="btn-submit-buku" class="btn btn-buku">Simpan Master Buku</button>
-          <button type="button" id="btn-cancel-buku" class="btn btn-secondary" style="display: none;" onclick="resetBukuForm()">Batal Edit</button>
-        </form>
-        <div id="alert-buku" class="alert"></div>
-      </div>
-
-      <!-- TAB KELOLA BUKU -->
-      <div id="subtab-buku-manage" class="sub-tab-content">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-          <h3 style="font-size: 15px; font-weight: 800;">📚 Daftar Master Buku</h3>
-          <button onclick="loadBukuList()" style="padding:6px 12px; cursor:pointer;">🔄 Refresh</button>
+          <form onsubmit="submitSiswa(event)">
+            <input type="hidden" id="form-mode-user" value="add">
+            <div class="form-group"><label>NIS / ID User</label><input type="text" id="nis" required placeholder="Masukkan NIS..."></div>
+            <div class="form-group"><label>Nama Lengkap</label><input type="text" id="nama-siswa" required placeholder="Nama lengkap..."></div>
+            <div class="form-group"><label>Kelas</label><input type="text" id="kelas-siswa" placeholder="Contoh: 10 IPA 1"></div>
+            <div class="form-group"><label>Email</label><input type="email" id="email-siswa" placeholder="Email untuk notifikasi..."></div>
+            <div class="form-group">
+              <label>Role</label>
+              <select id="role-user">
+                <option value="siswa">Siswa</option>
+                <option value="admin">Admin</option>
+                <option value="suspended">Suspended</option>
+              </select>
+            </div>
+            <button type="submit" id="btn-submit-siswa" class="btn btn-siswa">Simpan User</button>
+            <button type="button" id="btn-cancel-user" class="btn btn-secondary" style="display: none;" onclick="resetUserForm()">Batal</button>
+          </form>
+          <div id="alert-siswa" class="alert"></div>
         </div>
-        <div class="form-group"><input type="text" id="input-search-buku" placeholder="🔍 Cari code, judul, pengarang..." oninput="filterBukuList()"></div>
+
+        <div id="subtab-user-manage" class="sub-tab-content">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <h3 style="font-size: 15px; font-weight: 800;">📋 Daftar User Terdaftar</h3>
+            <button class="btn-home" onclick="loadUserList()">🔄 Refresh</button>
+          </div>
+          <div class="form-group"><input type="text" id="input-search-user" placeholder="🔍 Cari nama, NIS, kelas..." oninput="filterUserList()"></div>
+          <div class="table-container">
+            <table>
+              <thead><tr><th>NIS</th><th>Nama</th><th>Kelas</th><th>Role</th><th>Aksi</th></tr></thead>
+              <tbody id="tabel-user-body"><tr><td colspan="5" style="text-align: center;">Memuat data...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: BOOK MANAGEMENT -->
+    <div id="tab-buku" class="tab-content">
+      <div class="card">
+        <div class="sub-action-bar">
+          <button class="btn-sub-action active" id="btn-sub-addbook" onclick="switchSubTab('buku', 'add')">➕ Tambah Buku</button>
+          <button class="btn-sub-action" id="btn-sub-managebook" onclick="switchSubTab('buku', 'manage')">📚 Kelola Buku</button>
+        </div>
+
+        <div id="subtab-buku-add" class="sub-tab-content active">
+          <h2 id="buku-form-title">📚 Tambah Master Buku</h2>
+
+          <div class="webcam-container" id="box-cam-buku" style="display: none;">
+            <div id="reader-admin-buku" class="cam-box"></div>
+            <button type="button" class="btn btn-secondary" style="padding:6px; font-size:12px; margin-top:6px;" onclick="stopAdminCamera()">Tutup Kamera</button>
+          </div>
+
+          <form onsubmit="submitBuku(event)">
+            <input type="hidden" id="form-mode-buku" value="add">
+            
+            <div class="form-group">
+              <label>ISBN</label>
+              <input type="text" id="isbn-buku" placeholder="Nomor ISBN buku...">
+              <button type="button" class="btn-scan-sm" onclick="startAdminCamera('isbn')">📷 Scan ISBN</button>
+            </div>
+
+            <div class="form-group">
+              <label>Book Code / No Induk (Unik per Fisik Buku)</label>
+              <input type="text" id="barcode-buku" required placeholder="Kode unik fisik buku...">
+              <button type="button" class="btn-scan-sm" onclick="startAdminCamera('barcode')">📷 Scan Book Code</button>
+            </div>
+
+            <div class="form-group"><label>Book Title</label><input type="text" id="judul-buku" required placeholder="Judul buku..."></div>
+            <div class="form-group"><label>Author</label><input type="text" id="pengarang-buku" placeholder="Nama pengarang..."></div>
+
+            <button type="submit" id="btn-submit-buku" class="btn btn-buku">Simpan Master Buku</button>
+            <button type="button" id="btn-cancel-buku" class="btn btn-secondary" style="display: none;" onclick="resetBukuForm()">Batal</button>
+          </form>
+          <div id="alert-buku" class="alert"></div>
+        </div>
+
+        <div id="subtab-buku-manage" class="sub-tab-content">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <h3 style="font-size: 15px; font-weight: 800;">📚 Daftar Master Buku</h3>
+            <button class="btn-home" onclick="loadBukuList()">🔄 Refresh</button>
+          </div>
+          <div class="form-group"><input type="text" id="input-search-buku" placeholder="🔍 Cari ISBN, code, judul, pengarang..." oninput="filterBukuList()"></div>
+          <div class="table-container">
+            <table>
+              <thead><tr><th>ISBN</th><th>Book Code</th><th>Title</th><th>Author</th><th>Aksi</th></tr></thead>
+              <tbody id="tabel-buku-body"><tr><td colspan="5" style="text-align: center;">Memuat data...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: TRANSACTION REPORT -->
+    <div id="tab-laporan" class="tab-content">
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+          <h2>📊 Laporan Riwayat Transaksi</h2>
+          <button class="btn-home" onclick="loadLaporanTransaksi()">🔄 Refresh</button>
+        </div>
+
+        <div class="filter-pills-container">
+          <button class="filter-pill active" onclick="setFilter('hari_ini', this)">Hari Ini</button>
+          <button class="filter-pill" onclick="setFilter('7_hari', this)">7 Hari Terakhir</button>
+          <button class="filter-pill" onclick="setFilter('1_bulan', this)">1 Bulan</button>
+          <button class="filter-pill" onclick="setFilter('custom', this)">Tanggal Tertentu</button>
+          <button class="filter-pill" onclick="setFilter('semua', this)">Semua</button>
+        </div>
+
+        <div id="custom-date-box" class="form-group" style="display: none;">
+          <input type="date" id="input-custom-date" onchange="filterLaporanData()">
+        </div>
+
+        <div class="form-group"><input type="text" id="input-search-laporan" placeholder="🔍 Cari riwayat transaksi..." oninput="filterLaporanData()"></div>
+
         <div class="table-container">
           <table>
-            <thead><tr><th>ISBN</th><th>Book Code</th><th>Title</th><th>Author</th><th>Aksi</th></tr></thead>
-            <tbody id="tabel-buku-body"><tr><td colspan="5" style="text-align: center;">Memuat data...</td></tr></tbody>
+            <thead><tr><th>Waktu</th><th>NIS</th><th>Nama</th><th>Judul Buku</th><th>Status</th></tr></thead>
+            <tbody id="tabel-laporan-body"><tr><td colspan="5" style="text-align: center;">Memuat laporan...</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -188,32 +352,89 @@
 
   <script>
     const GAS_URL = "https://script.google.com/macros/s/AKfycbwck_dnXAjIv1_oTqlvO-kXf0C1XMBi3IOabGah6RJ3tuzf5c4K8P_6YC9j2sCRQBOq/exec";
+
     let adminHtml5QrCode = null;
     let activeTargetField = null;
+    let globalLaporanData = [];
+    let globalUserData = [];
     let globalBukuData = [];
+    let currentFilterType = 'hari_ini';
 
     window.addEventListener('DOMContentLoaded', () => {
+      document.documentElement.setAttribute('data-theme', 'dark');
       setInterval(() => {
         document.getElementById('live-clock').innerText = `🕒 ${new Date().toLocaleString('id-ID', { hour12: false })}`;
       }, 1000);
+
+      loadDashboardStats();
+      loadUserList();
       loadBukuList();
     });
 
-    function switchSubTab(sub) {
-      stopAdminCamera();
-      document.getElementById('btn-sub-addbook').classList.toggle('active', sub === 'add');
-      document.getElementById('btn-sub-managebook').classList.toggle('active', sub === 'manage');
-      document.getElementById('subtab-buku-add').classList.toggle('active', sub === 'add');
-      document.getElementById('subtab-buku-manage').classList.toggle('active', sub === 'manage');
-      if (sub === 'manage') loadBukuList();
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next = current === 'light' ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', next);
+      document.getElementById('theme-icon').innerText = next === 'light' ? '🌙' : '☀️';
     }
 
-    async function startAdminCamera(targetField) {
-      await stopAdminCamera();
-      activeTargetField = targetField;
-      document.getElementById('box-cam-buku').style.display = 'block';
+    function switchTab(name) {
+      stopAdminCamera();
+      document.querySelectorAll('.action-bar .btn-nav-action').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
 
-      // Mendukung SEMUA tipe format barcode/QR universal
+      if (name === 'user') {
+        document.querySelectorAll('.action-bar .btn-nav-action')[0].classList.add('active');
+        document.getElementById('tab-user').classList.add('active');
+      } else if (name === 'buku') {
+        document.querySelectorAll('.action-bar .btn-nav-action')[1].classList.add('active');
+        document.getElementById('tab-buku').classList.add('active');
+      } else if (name === 'laporan') {
+        document.querySelectorAll('.action-bar .btn-nav-action')[2].classList.add('active');
+        document.getElementById('tab-laporan').classList.add('active');
+        loadLaporanTransaksi();
+      }
+    }
+
+    function switchSubTab(parent, sub) {
+      stopAdminCamera();
+      if (parent === 'user') {
+        document.getElementById('btn-sub-adduser').classList.toggle('active', sub === 'add');
+        document.getElementById('btn-sub-manageuser').classList.toggle('active', sub === 'manage');
+        document.getElementById('subtab-user-add').classList.toggle('active', sub === 'add');
+        document.getElementById('subtab-user-manage').classList.toggle('active', sub === 'manage');
+        if (sub === 'manage') loadUserList();
+      } else if (parent === 'buku') {
+        document.getElementById('btn-sub-addbook').classList.toggle('active', sub === 'add');
+        document.getElementById('btn-sub-managebook').classList.toggle('active', sub === 'manage');
+        document.getElementById('subtab-buku-add').classList.toggle('active', sub === 'add');
+        document.getElementById('subtab-buku-manage').classList.toggle('active', sub === 'manage');
+        if (sub === 'manage') loadBukuList();
+      }
+    }
+
+    async function loadDashboardStats() {
+      try {
+        const res = await fetch(`${GAS_URL}?action=getStatsToday`).then(r => r.json());
+        if (res.success) {
+          document.getElementById('stat-pinjam-today').innerText = res.totalPinjam || 0;
+          document.getElementById('stat-kembali-today').innerText = res.totalKembali || 0;
+        }
+      } catch (e) {}
+    }
+
+    async function startAdminCamera(target) {
+      await stopAdminCamera();
+      activeTargetField = target;
+      
+      const elementId = target === 'siswa' ? 'reader-admin-siswa' : 'reader-admin-buku';
+      if (target === 'siswa') {
+        document.getElementById('box-cam-siswa').style.display = 'block';
+      } else {
+        document.getElementById('box-cam-buku').style.display = 'block';
+      }
+
+      // Mendukung SEMUA tipe format barcode & QR universal
       const formats = [
         Html5QrcodeSupportedFormats.QR_CODE,
         Html5QrcodeSupportedFormats.EAN_13,
@@ -226,17 +447,20 @@
         Html5QrcodeSupportedFormats.RSS_14
       ];
 
-      adminHtml5QrCode = new Html5Qrcode('reader-admin-buku');
+      adminHtml5QrCode = new Html5Qrcode(elementId);
       try {
         await adminHtml5QrCode.start(
           { facingMode: "environment" }, 
-          { fps: 20, qrbox: { width: 250, height: 120 }, formatsToSupport: formats }, 
+          { fps: 20, qrbox: { width: 220, height: 120 }, formatsToSupport: formats }, 
           async (text) => {
             await stopAdminCamera();
-            if (activeTargetField === 'isbn') {
+            if (target === 'siswa') {
+              document.getElementById('nis').value = text.trim();
+              showAlert('alert-siswa', `✅ QR Terbaca: ${text}`, 'success');
+            } else if (target === 'isbn') {
               document.getElementById('isbn-buku').value = text.trim();
               showAlert('alert-buku', `✅ ISBN Terbaca: ${text}`, 'success');
-            } else if (activeTargetField === 'barcode') {
+            } else if (target === 'barcode') {
               document.getElementById('barcode-buku').value = text.trim();
               showAlert('alert-buku', `✅ Book Code Terbaca: ${text}`, 'success');
             }
@@ -244,7 +468,7 @@
           () => {}
         );
       } catch (e) {
-        showAlert('alert-buku', '⚠️ Gagal membuka kamera.', 'danger');
+        showAlert(target === 'siswa' ? 'alert-siswa' : 'alert-buku', '⚠️ Gagal membuka kamera.', 'danger');
       }
     }
 
@@ -256,10 +480,120 @@
         } catch (e) {}
         adminHtml5QrCode = null;
       }
+      document.getElementById('box-cam-siswa').style.display = 'none';
       document.getElementById('box-cam-buku').style.display = 'none';
     }
 
+    async function loadUserList() {
+      const tbody = document.getElementById('tabel-user-body');
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Memuat...</td></tr>';
+      try {
+        const res = await fetch(`${GAS_URL}?action=getAllUsers`).then(r => r.json());
+        if (res.success) {
+          globalUserData = res.data || [];
+          filterUserList();
+        }
+      } catch (e) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Gagal memuat user.</td></tr>';
+      }
+    }
+
+    function filterUserList() {
+      const keyword = document.getElementById('input-search-user').value.toLowerCase();
+      const filtered = globalUserData.filter(u => u.nis.toLowerCase().includes(keyword) || u.nama.toLowerCase().includes(keyword) || u.kelas.toLowerCase().includes(keyword));
+      renderUserTable(filtered);
+    }
+
+    function renderUserTable(data) {
+      const tbody = document.getElementById('tabel-user-body');
+      tbody.innerHTML = data.length ? data.map(u => `
+        <tr>
+          <td><b>${u.nis}</b></td>
+          <td>${u.nama}</td>
+          <td>${u.kelas}</td>
+          <td><span class="badge-status ${u.role === 'admin' ? 'badge-pinjam' : ''}">${u.role}</span></td>
+          <td>
+            <button class="btn-action-sm btn-edit" onclick="editUser('${u.nis}', '${u.nama}', '${u.kelas}', '${u.role}', '${u.email}')">Edit</button>
+            <button class="btn-action-sm btn-suspend" onclick="suspendUser('${u.nis}', '${u.role}')">Status</button>
+            <button class="btn-action-sm btn-delete" onclick="deleteUser('${u.nis}')">Del</button>
+          </td>
+        </tr>
+      `).join('') : '<tr><td colspan="5" style="text-align: center;">Tidak ada data.</td></tr>';
+    }
+
+    async function submitSiswa(e) {
+      e.preventDefault();
+      const mode = document.getElementById('form-mode-user').value;
+      const payload = {
+        action: mode === 'edit' ? 'updateSiswa' : 'addSiswa',
+        nis: document.getElementById('nis').value.trim(),
+        nama: document.getElementById('nama-siswa').value.trim(),
+        kelas: document.getElementById('kelas-siswa').value.trim(),
+        email: document.getElementById('email-siswa').value.trim(),
+        role: document.getElementById('role-user').value
+      };
+
+      try {
+        const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) }).then(r => r.json());
+        if (res.success) {
+          showAlert('alert-siswa', res.message, 'success');
+          resetUserForm();
+          loadUserList();
+        } else {
+          showAlert('alert-siswa', res.message, 'danger');
+        }
+      } catch (err) {
+        showAlert('alert-siswa', 'Gagal menyimpan data.', 'danger');
+      }
+    }
+
+    function editUser(nis, nama, kelas, role, email) {
+      switchSubTab('user', 'add');
+      document.getElementById('form-mode-user').value = 'edit';
+      document.getElementById('user-form-title').innerText = '✏️ Edit User';
+      document.getElementById('nis').value = nis;
+      document.getElementById('nis').readOnly = true;
+      document.getElementById('nama-siswa').value = nama;
+      document.getElementById('kelas-siswa').value = kelas;
+      document.getElementById('email-siswa').value = email;
+      document.getElementById('role-user').value = role;
+      document.getElementById('btn-submit-siswa').innerText = 'Update User';
+      document.getElementById('btn-cancel-user').style.display = 'block';
+    }
+
+    function resetUserForm() {
+      document.getElementById('form-mode-user').value = 'add';
+      document.getElementById('user-form-title').innerText = '👤 Tambah User / Siswa Baru';
+      document.getElementById('nis').value = '';
+      document.getElementById('nis').readOnly = false;
+      document.getElementById('nama-siswa').value = '';
+      document.getElementById('kelas-siswa').value = '';
+      document.getElementById('email-siswa').value = '';
+      document.getElementById('role-user').value = 'siswa';
+      document.getElementById('btn-submit-siswa').innerText = 'Simpan User';
+      document.getElementById('btn-cancel-user').style.display = 'none';
+    }
+
+    async function suspendUser(nis, currentRole) {
+      const newRole = currentRole === 'suspended' ? 'siswa' : 'suspended';
+      if (!confirm(`Ubah status [${nis}] menjadi ${newRole}?`)) return;
+      try {
+        await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'updateUserRole', nis, role: newRole }) });
+        loadUserList();
+      } catch (e) {}
+    }
+
+    async function deleteUser(nis) {
+      if (!confirm(`Hapus user [${nis}]?`)) return;
+      try {
+        await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'deleteSiswa', nis }) });
+        loadUserList();
+      } catch (e) {}
+    }
+
     async function loadBukuList() {
+      const tbody = document.getElementById('tabel-buku-body');
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Memuat...</td></tr>';
       try {
         const res = await fetch(`${GAS_URL}?action=getAllBooks`).then(r => r.json());
         if (res.success) {
@@ -271,7 +605,7 @@
 
     function filterBukuList() {
       const keyword = document.getElementById('input-search-buku').value.toLowerCase();
-      const filtered = globalBukuData.filter(b => b.barcode.toLowerCase().includes(keyword) || b.judul.toLowerCase().includes(keyword) || b.isbn.toLowerCase().includes(keyword));
+      const filtered = globalBukuData.filter(b => b.barcode.toLowerCase().includes(keyword) || b.judul.toLowerCase().includes(keyword) || b.isbn.toLowerCase().includes(keyword) || b.pengarang.toLowerCase().includes(keyword));
       renderBukuTable(filtered);
     }
 
@@ -284,8 +618,8 @@
           <td>${b.judul}</td>
           <td>${b.pengarang}</td>
           <td>
-            <button onclick="editBuku('${b.isbn}', '${b.barcode}', '${b.judul.replace(/'/g, "\\'")}', '${b.pengarang.replace(/'/g, "\\'")}')">Edit</button>
-            <button onclick="deleteBuku('${b.barcode}')">Del</button>
+            <button class="btn-action-sm btn-edit" onclick="editBuku('${b.isbn}', '${b.barcode}', '${b.judul.replace(/'/g, "\\'")}', '${b.pengarang.replace(/'/g, "\\'")}')">Edit</button>
+            <button class="btn-action-sm btn-delete" onclick="deleteBuku('${b.barcode}')">Del</button>
           </td>
         </tr>
       `).join('') : '<tr><td colspan="5" style="text-align: center;">Tidak ada buku.</td></tr>';
@@ -301,7 +635,6 @@
         judul: document.getElementById('judul-buku').value.trim(),
         pengarang: document.getElementById('pengarang-buku').value.trim()
       };
-
       try {
         const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) }).then(r => r.json());
         if (res.success) {
@@ -311,13 +644,13 @@
         } else {
           showAlert('alert-buku', res.message, 'danger');
         }
-      } catch (err) {
+      } catch (e) {
         showAlert('alert-buku', 'Gagal menyimpan buku.', 'danger');
       }
     }
 
     function editBuku(isbn, barcode, judul, pengarang) {
-      switchSubTab('add');
+      switchSubTab('buku', 'add');
       document.getElementById('form-mode-buku').value = 'edit';
       document.getElementById('buku-form-title').innerText = '✏️ Edit Buku';
       document.getElementById('isbn-buku').value = isbn;
@@ -347,6 +680,73 @@
         await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'deleteBuku', barcode }) });
         loadBukuList();
       } catch (e) {}
+    }
+
+    async function loadLaporanTransaksi() {
+      const tbody = document.getElementById('tabel-laporan-body');
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Memuat laporan...</td></tr>';
+      try {
+        const res = await fetch(`${GAS_URL}?action=getLaporanTransaksi`).then(r => r.json());
+        if (res.success) {
+          globalLaporanData = res.data || [];
+          filterLaporanData();
+        }
+      } catch (e) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Gagal memuat laporan.</td></tr>';
+      }
+    }
+
+    function setFilter(type, btn) {
+      currentFilterType = type;
+      document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('custom-date-box').style.display = type === 'custom' ? 'block' : 'none';
+      filterLaporanData();
+    }
+
+    function filterLaporanData() {
+      const search = document.getElementById('input-search-laporan').value.toLowerCase();
+      const customDate = document.getElementById('input-custom-date').value;
+      const now = new Date(); now.setHours(0,0,0,0);
+
+      const filtered = globalLaporanData.filter(item => {
+        let matchDate = true;
+        if (currentFilterType !== 'semua' && item.waktu && item.waktu !== '-') {
+          const parts = item.waktu.split(' ')[0].split('/');
+          if (parts.length === 3) {
+            const itemDate = new Date(parts[2], parts[1] - 1, parts[0]);
+            itemDate.setHours(0,0,0,0);
+            if (currentFilterType === 'hari_ini') matchDate = itemDate.getTime() === now.getTime();
+            else if (currentFilterType === '7_hari') {
+              const limit = new Date(now); limit.setDate(limit.getDate() - 7);
+              matchDate = itemDate >= limit && itemDate <= now;
+            } else if (currentFilterType === '1_bulan') {
+              const limit = new Date(now); limit.setMonth(limit.getMonth() - 1);
+              matchDate = itemDate >= limit && itemDate <= now;
+            } else if (currentFilterType === 'custom' && customDate) {
+              const target = new Date(customDate); target.setHours(0,0,0,0);
+              matchDate = itemDate.getTime() === target.getTime();
+            }
+          }
+        }
+        const matchSearch = String(item.nis).toLowerCase().includes(search) || String(item.nama).toLowerCase().includes(search) || String(item.judul).toLowerCase().includes(search);
+        return matchDate && matchSearch;
+      });
+
+      renderLaporanTable(filtered);
+    }
+
+    function renderLaporanTable(data) {
+      const tbody = document.getElementById('tabel-laporan-body');
+      tbody.innerHTML = data.length ? data.map(item => `
+        <tr>
+          <td>${item.waktu}</td>
+          <td><b>${item.nis}</b></td>
+          <td>${item.nama}</td>
+          <td>${item.judul}</td>
+          <td><span class="badge-status ${item.status.includes('RETURN') ? 'badge-kembali' : 'badge-pinjam'}">${item.status}</span></td>
+        </tr>
+      `).join('') : '<tr><td colspan="5" style="text-align: center;">Tidak ada data transaksi.</td></tr>';
     }
 
     function showAlert(id, msg, type) {
