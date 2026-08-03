@@ -244,9 +244,10 @@
         Html5QrcodeSupportedFormats.EAN_13,
       ];
 
+      // Dioptimalkan: FPS diturunkan ke 15 dan qrbox disesuaikan agar proses frame scan langsung instan tanpa membebani CPU HP
       const config = { 
-        fps: 20, 
-        qrbox: { width: 220, height: 220 },
+        fps: 15, 
+        qrbox: { width: 200, height: 200 },
         formatsToSupport: formatsToSupport
       };
 
@@ -254,7 +255,6 @@
         if (cameraDevices.length === 0) {
           const rawDevices = await Html5Qrcode.getCameras();
           if (rawDevices && rawDevices.length > 0) {
-            // Membalik urutan perangkat agar kamera utama (1x) langsung berada di indeks pertama (0)
             cameraDevices = rawDevices.reverse();
           }
         }
