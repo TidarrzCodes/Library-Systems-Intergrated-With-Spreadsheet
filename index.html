@@ -610,7 +610,6 @@
       html5QrCode = new Html5Qrcode(elementId);
 
       try {
-        // Menggunakan method bawaan Html5Qrcode yang paling aman dan kompatibel dengan berbagai jenis webcam PC/laptop sekolah
         await html5QrCode.start(
           { facingMode: "user" },
           config,
@@ -624,7 +623,6 @@
           () => { }
         );
       } catch (err1) {
-        console.warn("Fallback to environment camera due to:", err1);
         try {
           await html5QrCode.start(
             { facingMode: "environment" },
@@ -639,8 +637,7 @@
             () => { }
           );
         } catch (err2) {
-          console.error("Camera Access Error:", err2);
-          showAlert(alertId, '⚠️ Webcam tidak dapat dibuka. Pastikan izin kamera browser sudah diizinkan (Allow) dan tidak dipakai aplikasi lain.', 'danger');
+          showAlert(alertId, '⚠️ Webcam tidak dapat dibuka. Pastikan izin kamera browser sudah diizinkan (Allow).', 'danger');
         }
       }
     }
@@ -683,6 +680,11 @@
           if (isUserAdmin) {
             hideAlert('alert-siswa');
             document.getElementById('input-nis').value = '';
+            
+            // --- KEAMANAN TAMBAHAN: Simpan Token Akses Admin Sah ke SessionStorage ---
+            // Token ini wajib ada agar admin.html bisa diakses. Jika URL di-type manual tanpa scan QR admin, admin.html akan menolak akses.
+            sessionStorage.setItem('rnx_admin_auth', 'authenticated_' + Date.now());
+            
             window.location.href = 'admin.html';
             return;
           }
