@@ -110,12 +110,12 @@
     .btn-nav-action.active { background: var(--primary); color: white; border-color: var(--primary); }
 
     .sub-action-bar {
-      display: flex; gap: 8px; margin-bottom: 18px; background: var(--bg-color);
-      padding: 4px; border: 1px solid var(--border-color); border-radius: 12px;
+      display: flex; gap: 6px; margin-bottom: 18px; background: var(--bg-color);
+      padding: 4px; border: 1px solid var(--border-color); border-radius: 12px; overflow-x: auto;
     }
     .btn-sub-action {
-      flex: 1; padding: 10px; border: none; background: transparent; font-weight: 700;
-      font-size: 12px; color: var(--text-muted); border-radius: 9px; cursor: pointer;
+      flex: 1; padding: 10px 8px; border: none; background: transparent; font-weight: 700;
+      font-size: 11px; color: var(--text-muted); border-radius: 9px; cursor: pointer; white-space: nowrap;
     }
     .btn-sub-action.active { background: var(--card-bg); color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
 
@@ -268,8 +268,10 @@
         <div class="sub-action-bar">
           <button class="btn-sub-action active" id="btn-sub-addbook" onclick="switchSubTab('buku', 'add')">➕ Tambah Buku</button>
           <button class="btn-sub-action" id="btn-sub-managebook" onclick="switchSubTab('buku', 'manage')">📚 Kelola Buku</button>
+          <button class="btn-sub-action" id="btn-sub-borrowedbook" onclick="switchSubTab('buku', 'borrowed')">📖 Borrowed Book</button>
         </div>
 
+        <!-- SUB TAB: TAMBAH BUKU -->
         <div id="subtab-buku-add" class="sub-tab-content active">
           <h2 id="buku-form-title">📚 Tambah Master Buku</h2>
 
@@ -302,6 +304,7 @@
           <div id="alert-buku" class="alert"></div>
         </div>
 
+        <!-- SUB TAB: KELOLA BUKU -->
         <div id="subtab-buku-manage" class="sub-tab-content">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
             <h3 style="font-size: 15px; font-weight: 800;">📚 Daftar Master Buku</h3>
@@ -312,6 +315,21 @@
             <table>
               <thead><tr><th>ISBN</th><th>Book Code</th><th>Title</th><th>Author</th><th>Aksi</th></tr></thead>
               <tbody id="tabel-buku-body"><tr><td colspan="5" style="text-align: center;">Memuat data...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- SUB TAB: BORROWED BOOK -->
+        <div id="subtab-buku-borrowed" class="sub-tab-content">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <h3 style="font-size: 15px; font-weight: 800;">📖 Buku yang Sedang Dipinjam</h3>
+            <button class="btn-home" onclick="loadBorrowedBooksList()">🔄 Refresh</button>
+          </div>
+          <div class="form-group"><input type="text" id="input-search-borrowed" placeholder="🔍 Cari judul buku, peminjam, kelas..." oninput="filterBorrowedBooksList()"></div>
+          <div class="table-container">
+            <table>
+              <thead><tr><th>Book Title</th><th>Nama Peminjam</th><th>Kelas</th><th>Due Date</th><th>Status</th></tr></thead>
+              <tbody id="tabel-borrowed-body"><tr><td colspan="5" style="text-align: center;">Memuat data...</td></tr></tbody>
             </table>
           </div>
         </div>
@@ -358,6 +376,7 @@
     let globalLaporanData = [];
     let globalUserData = [];
     let globalBukuData = [];
+    let globalBorrowedData = [];
     let currentFilterType = 'hari_ini';
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -407,9 +426,14 @@
       } else if (parent === 'buku') {
         document.getElementById('btn-sub-addbook').classList.toggle('active', sub === 'add');
         document.getElementById('btn-sub-managebook').classList.toggle('active', sub === 'manage');
+        document.getElementById('btn-sub-borrowedbook').classList.toggle('active', sub === 'borrowed');
+        
         document.getElementById('subtab-buku-add').classList.toggle('active', sub === 'add');
         document.getElementById('subtab-buku-manage').classList.toggle('active', sub === 'manage');
+        document.getElementById('subtab-buku-borrowed').classList.toggle('active', sub === 'borrowed');
+
         if (sub === 'manage') loadBukuList();
+        if (sub === 'borrowed') loadBorrowedBooksList();
       }
     }
 
@@ -434,7 +458,6 @@
         document.getElementById('box-cam-buku').style.display = 'block';
       }
 
-      // Mendukung SEMUA tipe format barcode & QR universal
       const formats = [
         Html5QrcodeSupportedFormats.QR_CODE,
         Html5QrcodeSupportedFormats.EAN_13,
@@ -623,6 +646,65 @@
           </td>
         </tr>
       `).join('') : '<tr><td colspan="5" style="text-align: center;">Tidak ada buku.</td></tr>';
+    }
+
+    async function loadBorrowedBooksList() {
+      const tbody = document.getElementById('tabel-borrowed-body');
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Memuat data peminjaman...</td></tr>';
+      try {
+        const res = await fetch(`${GAS_URL}?action=getLaporanTransaksi`).then(r => r.json());
+        if (res.success) {
+          // Ambil transaksi yang statusnya aktif dipinjam (BORROWED / OVERDUE / DIPINJAM / TELAT)
+          globalBorrowedData = (res.data || []).filter(item => {
+            const st = String(item.status || "").toUpperCase();
+            return st === "BORROWED" || st === "OVERDUE" || st === "DIPINJAM" || st === "TELAT";
+          });
+
+          // Kita butuh data kelas siswa juga, ambil dari globalUserData atau fetch jika kosong
+          if (globalUserData.length === 0) {
+            const userRes = await fetch(`${GAS_URL}?action=getAllUsers`).then(r => r.json());
+            if (userRes.success) globalUserData = userRes.data || [];
+          }
+
+          filterBorrowedBooksList();
+        }
+      } catch (e) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Gagal memuat borrowed books.</td></tr>';
+      }
+    }
+
+    function filterBorrowedBooksList() {
+      const keyword = document.getElementById('input-search-borrowed').value.toLowerCase();
+      
+      // Petakan kelas berdasarkan NIS
+      const userMap = {};
+      globalUserData.forEach(u => { userMap[String(u.nis).trim()] = u.kelas; });
+
+      const filtered = globalBorrowedData.filter(item => {
+        const kelas = userMap[String(item.nis).trim()] || '-';
+        return String(item.judul).toLowerCase().includes(keyword) || 
+               String(item.nama).toLowerCase().includes(keyword) || 
+               String(kelas).toLowerCase().includes(keyword);
+      });
+
+      renderBorrowedBooksTable(filtered, userMap);
+    }
+
+    function renderBorrowedBooksTable(data, userMap) {
+      const tbody = document.getElementById('tabel-borrowed-body');
+      tbody.innerHTML = data.length ? data.map(item => {
+        const kelas = userMap[String(item.nis).trim()] || '-';
+        // Note: Laporan memberikan waktu pinjam, untuk Due Date kita bisa tampilkan atau ambil dari data jika ada
+        return `
+          <tr>
+            <td><b>${item.judul}</b></td>
+            <td>${item.nama}</td>
+            <td>${kelas}</td>
+            <td>${item.waktu}</td>
+            <td><span class="badge-status badge-pinjam">${item.status}</span></td>
+          </tr>
+        `;
+      }).join('') : '<tr><td colspan="5" style="text-align: center;">Tidak ada buku yang sedang dipinjam.</td></tr>';
     }
 
     async function submitBuku(e) {
