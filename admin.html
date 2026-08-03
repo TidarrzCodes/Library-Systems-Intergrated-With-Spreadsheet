@@ -6,7 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin|BM400 Cibubur|Digital Library System</title>
   
-  <!-- SCRIPT KEAMANAN: Cek apakah akses berasal dari scan QR admin yang sah -->
   <script>
     if (!sessionStorage.getItem('rnx_admin_auth')) {
       alert('⚠️ Akses ditolak! Anda harus memindai QR Admin yang sah di halaman utama terlebih dahulu.');
@@ -369,7 +368,7 @@
   </div>
 
   <script>
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbwck_dnXAjIv1_oTqlvO-kXf0C1XMBi3IOabGah6RJ3tuzf5c4K8P_6YC9j2sCRQBOq/exec";
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbx-EfJ4Uw3EUQ4OrKDdmZzBh8bQouI2Wo5Gi9J3Vd7gIDkKvm7YSISbNrj-Zl8e6i9M/exec";
 
     let adminHtml5QrCode = null;
     let activeTargetField = null;
@@ -654,13 +653,11 @@
       try {
         const res = await fetch(`${GAS_URL}?action=getLaporanTransaksi`).then(r => r.json());
         if (res.success) {
-          // Ambil transaksi yang statusnya aktif dipinjam (BORROWED / OVERDUE / DIPINJAM / TELAT)
           globalBorrowedData = (res.data || []).filter(item => {
             const st = String(item.status || "").toUpperCase();
             return st === "BORROWED" || st === "OVERDUE" || st === "DIPINJAM" || st === "TELAT";
           });
 
-          // Kita butuh data kelas siswa juga, ambil dari globalUserData atau fetch jika kosong
           if (globalUserData.length === 0) {
             const userRes = await fetch(`${GAS_URL}?action=getAllUsers`).then(r => r.json());
             if (userRes.success) globalUserData = userRes.data || [];
@@ -675,8 +672,6 @@
 
     function filterBorrowedBooksList() {
       const keyword = document.getElementById('input-search-borrowed').value.toLowerCase();
-      
-      // Petakan kelas berdasarkan NIS
       const userMap = {};
       globalUserData.forEach(u => { userMap[String(u.nis).trim()] = u.kelas; });
 
@@ -694,7 +689,6 @@
       const tbody = document.getElementById('tabel-borrowed-body');
       tbody.innerHTML = data.length ? data.map(item => {
         const kelas = userMap[String(item.nis).trim()] || '-';
-        // Note: Laporan memberikan waktu pinjam, untuk Due Date kita bisa tampilkan atau ambil dari data jika ada
         return `
           <tr>
             <td><b>${item.judul}</b></td>
