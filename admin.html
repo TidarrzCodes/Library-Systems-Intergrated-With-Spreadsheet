@@ -482,23 +482,18 @@
         if (cameraDevices.length === 0) {
           const rawDevices = await Html5Qrcode.getCameras();
           if (rawDevices && rawDevices.length > 0) {
-            let sortedCams = [];
-            let ultraWideCams = [];
+            let backCams = [];
 
+            // Hanya ambil kamera belakang (environment/back), buang kamera depan/selfie
             rawDevices.forEach(dev => {
               const label = dev.label.toLowerCase();
-              // Membuang dan mengabaikan kamera depan / selfie secara mutlak
-              if (label.includes('front') || label.includes('selfie') || label.includes('depan') || label.includes('user')) {
-                return;
-              }
-              if (label.includes('ultra') || label.includes('wide') || label.includes('.5') || label.includes('macro') || label.includes('tele')) {
-                ultraWideCams.push(dev);
-              } else {
-                sortedCams.push(dev);
+              if (!label.includes('front') && !label.includes('selfie') && !label.includes('depan') && !label.includes('user')) {
+                backCams.push(dev);
               }
             });
 
-            cameraDevices = [...sortedCams, ...ultraWideCams];
+            // Jika HP punya banyak lensa belakang, biasanya lensa utama (1x) ada di urutan akhir atau dibalik
+            cameraDevices = backCams.length > 0 ? backCams.reverse() : rawDevices;
           }
         }
 
@@ -526,7 +521,6 @@
             () => {}
           );
         } else {
-          // Paksa menggunakan environment dengan exact agar tidak lari ke kamera depan
           await adminHtml5QrCode.start(
             { facingMode: { exact: "environment" } }, 
             config, 
@@ -569,11 +563,10 @@
             () => {}
           );
         } catch (err2) {
-          showAlert(target === 'siswa' ? 'alert-siswa' : 'alert-buku', '⚠️ Gagal membuka kamera belakang. Pastikan izin kamera browser sudah diizinkan.', 'danger');
+          showAlert(target === 'siswa' ? 'alert-siswa' : 'alert-buku', '⚠️ Gagal membuka kamera belakang.', 'danger');
         }
       }
     }
-
     async function stopAdminCamera() {
       if (adminHtml5QrCode) {
         try {
