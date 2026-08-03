@@ -244,10 +244,10 @@
         Html5QrcodeSupportedFormats.EAN_13,
       ];
 
-      // Dioptimalkan: FPS diturunkan ke 15 dan qrbox disesuaikan agar proses frame scan langsung instan tanpa membebani CPU HP
+      // Dioptimalkan: FPS diturunkan ke 10-15 agar proses deteksi frame lebih fokus dan tidak patah-patah
       const config = { 
         fps: 15, 
-        qrbox: { width: 200, height: 200 },
+        qrbox: { width: 220, height: 220 },
         formatsToSupport: formatsToSupport
       };
 
