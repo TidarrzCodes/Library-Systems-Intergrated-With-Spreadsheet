@@ -252,12 +252,16 @@
 
       try {
         if (cameraDevices.length === 0) {
-          cameraDevices = await Html5Qrcode.getCameras();
+          const rawDevices = await Html5Qrcode.getCameras();
+          if (rawDevices && rawDevices.length > 0) {
+            // Membalik urutan perangkat agar kamera utama (1x) langsung berada di indeks pertama (0)
+            cameraDevices = rawDevices.reverse();
+          }
         }
 
         if (cameraDevices && cameraDevices.length > 0) {
-          // Pilih kamera berdasarkan index saat tombol ganti diklik
-          let selectedCamId = cameraDevices[currentCameraIndex % cameraDevices.length].id;
+          currentCameraIndex = 0;
+          let selectedCamId = cameraDevices[currentCameraIndex].id;
 
           await html5QrCode.start(
             selectedCamId, 
@@ -312,10 +316,9 @@
       }
     }
 
-    // Fungsi untuk memindahkan index kamera ke lensa berikutnya secara manual saat tombol ditekan
     async function switchCameraTarget() {
       if (cameraDevices.length > 1) {
-        currentCameraIndex++;
+        currentCameraIndex = (currentCameraIndex + 1) % cameraDevices.length;
         await startCamera(activeTarget);
       } else {
         alert("Hanya terdeteksi 1 lensa kamera pada perangkat ini.");
