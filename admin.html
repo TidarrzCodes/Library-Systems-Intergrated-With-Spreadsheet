@@ -1558,14 +1558,6 @@
     function hideAlert(id) {
       document.getElementById(id).style.display = 'none';
     }
-
-    <script>
-  // Cek apakah token otorisasi admin ada di sessionStorage
-  if (!sessionStorage.getItem('rnx_admin_auth')) {
-    alert('⚠️ Akses ditolak! Anda harus memindai QR Admin yang sah terlebih dahulu.');
-    window.location.replace('index.html'); // Lempar kembali ke halaman utama
-  }
-</script>
   </script>
 </body>
 
