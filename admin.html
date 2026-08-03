@@ -487,9 +487,6 @@
 
             rawDevices.forEach(dev => {
               const label = dev.label.toLowerCase();
-              if (label.includes('front') || label.includes('selfie') || label.includes('depan') || label.includes('user')) {
-                return; // Abaikan kamera depan / selfie
-              }
               if (label.includes('ultra') || label.includes('wide') || label.includes('.5') || label.includes('macro') || label.includes('tele')) {
                 ultraWideCams.push(dev);
               } else {
