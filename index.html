@@ -99,6 +99,7 @@
     .btn:active { transform: scale(0.97); }
     .btn-borrow { background: linear-gradient(135deg, #41c863, #12a14b); box-shadow: 0 10px 15px -3px rgba(18, 161, 75, 0.3); }
     .btn-return { background: linear-gradient(135deg, #0284c7, #0369a1); box-shadow: 0 10px 15px -3px rgba(2, 132, 199, 0.3); }
+    .btn-switch { background: #334155; color: #f8fafc; margin-bottom: 15px; font-size: 13px; padding: 10px; border-radius: 10px; border: 1px solid var(--border-color); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600; width: 100%; }
     .btn-back { background: var(--bg-color); color: var(--text-muted); margin-top: 20px; border: 1px solid var(--border-color); }
 
     .step { display: none; }
@@ -111,7 +112,7 @@
 
     .webcam-container {
       border: 2px solid var(--border-color); border-radius: var(--radius);
-      padding: 6px; background: #000; margin-bottom: 20px; position: relative; overflow: hidden;
+      padding: 6px; background: #000; margin-bottom: 12px; position: relative; overflow: hidden;
     }
     
     .cam-box { width: 100%; height: 260px; border-radius: 8px; overflow: hidden; position: relative; background: #000; }
@@ -167,6 +168,7 @@
     <div id="step-siswa" class="step">
       <div class="header"><h1 id="mode-title">Scan QR Kartu Siswa</h1><p>Arahkan QR Code ke kamera</p></div>
       <div class="webcam-container"><div id="reader-siswa" class="cam-box"></div></div>
+      <button type="button" class="btn-switch" onclick="switchCameraTarget()"><i class="fa-solid fa-camera-rotate"></i> Ganti Lensa Kamera (Switch 1x / Ultra-Wide)</button>
       <div class="form-group">
         <label>Atau Ketik NIS Manual</label>
         <input type="text" id="input-nis" placeholder="Ketik NIS lalu tekan Enter..." onkeypress="handleNisManual(event)">
@@ -179,6 +181,7 @@
     <div id="step-buku" class="step">
       <div class="badge-siswa" id="info-siswa">👤 Student: -</div>
       <div class="webcam-container"><div id="reader-buku" class="cam-box"></div></div>
+      <button type="button" class="btn-switch" onclick="switchCameraTarget()"><i class="fa-solid fa-camera-rotate"></i> Ganti Lensa Kamera (Switch 1x / Ultra-Wide)</button>
       <div class="form-group">
         <label>Atau Ketik Barcode / No Induk Buku Manual</label>
         <input type="text" id="input-barcode" placeholder="Ketik No Induk/Barcode lalu tekan Enter..." onkeypress="handleBukuManual(event)">
@@ -204,6 +207,9 @@
     let currentSiswa = { nis: '', nama: '', role: '' };
     let html5QrCode = null;
     let isBusy = false;
+    let cameraDevices = [];
+    let currentCameraIndex = 0;
+    let activeTarget = 'siswa';
 
     window.addEventListener('DOMContentLoaded', () => {
       document.documentElement.setAttribute('data-theme', 'dark');
@@ -226,6 +232,7 @@
     }
 
     async function startCamera(target) {
+      activeTarget = target;
       await stopCamera();
       const elementId = target === 'siswa' ? 'reader-siswa' : 'reader-buku';
       const alertId = target === 'siswa' ? 'alert-siswa' : 'alert-buku';
@@ -244,31 +251,16 @@
       };
 
       try {
-        const devices = await Html5Qrcode.getCameras();
-        if (devices && devices.length > 0) {
-          // Ambil perangkat pertama atau cari yang secara eksplisit BUKAN ultra-wide
-          let targetCameraId = devices[0].id;
+        if (cameraDevices.length === 0) {
+          cameraDevices = await Html5Qrcode.getCameras();
+        }
 
-          // Jika ada lebih dari satu kamera, cari yang berlabel belakang tapi hindari kata ultra/wide/.5/macro
-          for (let i = 0; i < devices.length; i++) {
-            const label = devices[i].label.toLowerCase();
-            const isBack = label.includes('back') || label.includes('rear') || label.includes('environment');
-            const isUltraWide = label.includes('ultra') || label.includes('wide') || label.includes('.5') || label.includes('macro') || label.includes('tele') || label.includes('aux') || label.includes('optic');
-
-            if (isBack && !isUltraWide) {
-              targetCameraId = devices[i].id;
-              break;
-            }
-          }
-
-          // Jika label tidak terbaca oleh browser, pilih kamera pertama dari list (biasanya lensa utama 1x di Android/iOS, bukan yang terakhir)
-          if (targetCameraId === devices[0].id && devices.length >= 2) {
-            // Cek apakah perangkat memiliki banyak lensa, ambil indeks pertama kamera belakang standar
-            targetCameraId = devices[0].id; 
-          }
+        if (cameraDevices && cameraDevices.length > 0) {
+          // Pilih kamera berdasarkan index saat tombol ganti diklik
+          let selectedCamId = cameraDevices[currentCameraIndex % cameraDevices.length].id;
 
           await html5QrCode.start(
-            targetCameraId, 
+            selectedCamId, 
             config, 
             async (text) => {
               if (isBusy) return;
@@ -317,6 +309,16 @@
         } catch (e) {
           showAlert(alertId, '⚠️ Kamera tidak dapat diakses. Gunakan input manual.', 'danger');
         }
+      }
+    }
+
+    // Fungsi untuk memindahkan index kamera ke lensa berikutnya secara manual saat tombol ditekan
+    async function switchCameraTarget() {
+      if (cameraDevices.length > 1) {
+        currentCameraIndex++;
+        await startCamera(activeTarget);
+      } else {
+        alert("Hanya terdeteksi 1 lensa kamera pada perangkat ini.");
       }
     }
 
