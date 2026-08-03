@@ -226,61 +226,86 @@
     }
 
     async function startCamera(target) {
-  await stopCamera();
-  const elementId = target === 'siswa' ? 'reader-siswa' : 'reader-buku';
-  const alertId = target === 'siswa' ? 'alert-siswa' : 'alert-buku';
-  
-  html5QrCode = new Html5Qrcode(elementId);
-  
-  const formatsToSupport = [
-    Html5QrcodeSupportedFormats.QR_CODE,
-    Html5QrcodeSupportedFormats.EAN_13,
-  ];
+      await stopCamera();
+      const elementId = target === 'siswa' ? 'reader-siswa' : 'reader-buku';
+      const alertId = target === 'siswa' ? 'alert-siswa' : 'alert-buku';
+      
+      html5QrCode = new Html5Qrcode(elementId);
+      
+      const formatsToSupport = [
+        Html5QrcodeSupportedFormats.QR_CODE,
+        Html5QrcodeSupportedFormats.EAN_13,
+      ];
 
-  // Konfigurasi dioptimalkan agar ringan, fokus, dan tidak lemot di HP
-  const config = { 
-    fps: 30, 
-    qrbox: { width: 220, height: 220 },
-    formatsToSupport: formatsToSupport,
-    videoConstraints: {
-      width: { ideal: 1280 },
-      height: { ideal: 720 },
-      facingMode: "environment"
+      const config = { 
+        fps: 15, // Diturunkan agar CPU HP tidak panas & pemrosesan frame langsung instan
+        qrbox: { width: 220, height: 220 },
+        formatsToSupport: formatsToSupport
+      };
+
+      try {
+        const devices = await Html5Qrcode.getCameras();
+        if (devices && devices.length > 0) {
+          // Pilih kamera belakang utama, saring kata kunci ultra-wide/macro/tele
+          let selectedCamId = devices[devices.length - 1].id;
+          
+          for (let i = 0; i < devices.length; i++) {
+            const label = devices[i].label.toLowerCase();
+            if ((label.includes('back') || label.includes('rear') || label.includes('environment')) && 
+                !label.includes('ultra') && !label.includes('wide') && !label.includes('.5') && !label.includes('macro') && !label.includes('tele')) {
+              selectedCamId = devices[i].id;
+              break;
+            }
+          }
+
+          await html5QrCode.start(
+            selectedCamId, 
+            config, 
+            async (text) => {
+              if (isBusy) return;
+              isBusy = true;
+              playBeep();
+              await stopCamera();
+
+              if (target === 'siswa') await processNisScan(text);
+              else await processBukuScan(text);
+              isBusy = false;
+            }, 
+            () => {}
+          );
+        } else {
+          // Fallback universal
+          await html5QrCode.start(
+            { facingMode: "environment" }, 
+            config, 
+            async (text) => {
+              if (isBusy) return;
+              isBusy = true;
+              playBeep();
+              await stopCamera();
+              if (target === 'siswa') await processNisScan(text);
+              else await processBukuScan(text);
+              isBusy = false;
+            }, 
+            () => {}
+          );
+        }
+      } catch (err) {
+        try {
+          await html5QrCode.start({ facingMode: "user" }, config, async (text) => {
+            if (isBusy) return;
+            isBusy = true;
+            playBeep();
+            await stopCamera();
+            if (target === 'siswa') await processNisScan(text);
+            else await processBukuScan(text);
+            isBusy = false;
+          }, () => {});
+        } catch (e) {
+          showAlert(alertId, '⚠️ Kamera tidak dapat diakses. Gunakan input manual.', 'danger');
+        }
+      }
     }
-  };
-
-  try {
-    await html5QrCode.start(
-      { facingMode: "environment" }, 
-      config, 
-      async (text) => {
-        if (isBusy) return;
-        isBusy = true;
-        playBeep();
-        await stopCamera();
-
-        if (target === 'siswa') await processNisScan(text);
-        else await processBukuScan(text);
-        isBusy = false;
-      }, 
-      () => {}
-    );
-  } catch (err) {
-    try {
-      await html5QrCode.start({ facingMode: "user" }, config, async (text) => {
-        if (isBusy) return;
-        isBusy = true;
-        playBeep();
-        await stopCamera();
-        if (target === 'siswa') await processNisScan(text);
-        else await processBukuScan(text);
-        isBusy = false;
-      }, () => {});
-    } catch (e) {
-      showAlert(alertId, '⚠️ Kamera tidak dapat diakses. Gunakan input manual.', 'danger');
-    }
-  }
-}
 
     async function stopCamera() {
       if (html5QrCode) {
