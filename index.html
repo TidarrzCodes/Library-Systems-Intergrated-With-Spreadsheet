@@ -198,7 +198,7 @@
   </div>
 
   <script>
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbwck_dnXAjIv1_oTqlvO-kXf0C1XMBi3IOabGah6RJ3tuzf5c4K8P_6YC9j2sCRQBOq/exec"; 
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbx-EfJ4Uw3EUQ4OrKDdmZzBh8bQouI2Wo5Gi9J3Vd7gIDkKvm7YSISbNrj-Zl8e6i9M/exec"; 
 
     let currentMode = '';
     let currentSiswa = { nis: '', nama: '', role: '' };
@@ -250,50 +250,21 @@
       };
 
       try {
-        const devices = await Html5Qrcode.getCameras();
-        if (devices && devices.length > 0) {
-          let selectedCamId = devices[devices.length - 1].id;
-          
-          for (let i = 0; i < devices.length; i++) {
-            const label = devices[i].label.toLowerCase();
-            if ((label.includes('back') || label.includes('rear') || label.includes('environment')) && 
-                !label.includes('ultra') && !label.includes('wide') && !label.includes('.5') && !label.includes('macro')) {
-              selectedCamId = devices[i].id;
-              break;
-            }
-          }
+        await html5QrCode.start(
+          { facingMode: "environment" }, 
+          config, 
+          async (text) => {
+            if (isBusy) return;
+            isBusy = true;
+            playBeep();
+            await stopCamera();
 
-          await html5QrCode.start(
-            selectedCamId, 
-            config, 
-            async (text) => {
-              if (isBusy) return;
-              isBusy = true;
-              playBeep();
-              await stopCamera();
-
-              if (target === 'siswa') await processNisScan(text);
-              else await processBukuScan(text);
-              isBusy = false;
-            }, 
-            () => {}
-          );
-        } else {
-          await html5QrCode.start(
-            { facingMode: "environment" }, 
-            config, 
-            async (text) => {
-              if (isBusy) return;
-              isBusy = true;
-              playBeep();
-              await stopCamera();
-              if (target === 'siswa') await processNisScan(text);
-              else await processBukuScan(text);
-              isBusy = false;
-            }, 
-            () => {}
-          );
-        }
+            if (target === 'siswa') await processNisScan(text);
+            else await processBukuScan(text);
+            isBusy = false;
+          }, 
+          () => {}
+        );
       } catch (err) {
         try {
           await html5QrCode.start({ facingMode: "user" }, config, async (text) => {
@@ -346,7 +317,7 @@
     async function processNisScan(nis) {
       if (!nis || isBusy) return;
       isBusy = true;
-      showAlert('alert-siswa', '🔍 Memeriksa NIS / ID QR...', 'success');
+      showAlert('alert-siswa', '🔍 Memeriksa NIS...', 'success');
 
       try {
         const res = await fetch(`${GAS_URL}?action=getSiswa&nis=${encodeURIComponent(nis)}`).then(r => r.json());
@@ -390,7 +361,7 @@
     async function processBukuScan(barcode) {
       if (!barcode || isBusy) return;
       isBusy = true;
-      showAlert('alert-buku', '⏳ Memproses transaksi buku...', 'success');
+      showAlert('alert-buku', '⏳ Memproses transaksi...', 'success');
       
       const action = currentMode === 'borrow' ? 'pinjamBuku' : 'kembaliBuku';
       
