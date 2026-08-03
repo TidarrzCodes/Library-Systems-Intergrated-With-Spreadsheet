@@ -228,27 +228,73 @@
     async function startCamera(target) {
       await stopCamera();
       const elementId = target === 'siswa' ? 'reader-siswa' : 'reader-buku';
+      const alertId = target === 'siswa' ? 'alert-siswa' : 'alert-buku';
       
       html5QrCode = new Html5Qrcode(elementId);
-      const config = { fps: 20, qrbox: { width: 220, height: 220 } };
+      
+      const formatsToSupport = [
+        Html5QrcodeSupportedFormats.QR_CODE,
+        Html5QrcodeSupportedFormats.EAN_13,
+        Html5QrcodeSupportedFormats.EAN_8,
+        Html5QrcodeSupportedFormats.CODE_128,
+        Html5QrcodeSupportedFormats.CODE_39,
+        Html5QrcodeSupportedFormats.UPC_A,
+        Html5QrcodeSupportedFormats.UPC_E,
+        Html5QrcodeSupportedFormats.ITF
+      ];
+
+      const config = { 
+        fps: 20, 
+        qrbox: { width: 220, height: 220 },
+        formatsToSupport: formatsToSupport
+      };
 
       try {
-        await html5QrCode.start(
-          { facingMode: "environment" }, 
-          config, 
-          async (text) => {
-            if (isBusy) return;
-            isBusy = true;
-            playBeep();
-            await stopCamera();
+        const devices = await Html5Qrcode.getCameras();
+        if (devices && devices.length > 0) {
+          let selectedCamId = devices[devices.length - 1].id;
+          
+          for (let i = 0; i < devices.length; i++) {
+            const label = devices[i].label.toLowerCase();
+            if ((label.includes('back') || label.includes('rear') || label.includes('environment')) && 
+                !label.includes('ultra') && !label.includes('wide') && !label.includes('.5') && !label.includes('macro')) {
+              selectedCamId = devices[i].id;
+              break;
+            }
+          }
 
-            if (target === 'siswa') await processNisScan(text);
-            else await processBukuScan(text);
-            isBusy = false;
-          }, 
-          () => {}
-        );
-      } catch (e) {
+          await html5QrCode.start(
+            selectedCamId, 
+            config, 
+            async (text) => {
+              if (isBusy) return;
+              isBusy = true;
+              playBeep();
+              await stopCamera();
+
+              if (target === 'siswa') await processNisScan(text);
+              else await processBukuScan(text);
+              isBusy = false;
+            }, 
+            () => {}
+          );
+        } else {
+          await html5QrCode.start(
+            { facingMode: "environment" }, 
+            config, 
+            async (text) => {
+              if (isBusy) return;
+              isBusy = true;
+              playBeep();
+              await stopCamera();
+              if (target === 'siswa') await processNisScan(text);
+              else await processBukuScan(text);
+              isBusy = false;
+            }, 
+            () => {}
+          );
+        }
+      } catch (err) {
         try {
           await html5QrCode.start({ facingMode: "user" }, config, async (text) => {
             if (isBusy) return;
@@ -259,8 +305,8 @@
             else await processBukuScan(text);
             isBusy = false;
           }, () => {});
-        } catch (err) {
-          showAlert(target === 'siswa' ? 'alert-siswa' : 'alert-buku', '⚠️ Kamera tidak dapat diakses. Gunakan input manual.', 'danger');
+        } catch (e) {
+          showAlert(alertId, '⚠️ Kamera tidak dapat diakses. Gunakan input manual.', 'danger');
         }
       }
     }
@@ -300,7 +346,7 @@
     async function processNisScan(nis) {
       if (!nis || isBusy) return;
       isBusy = true;
-      showAlert('alert-siswa', '🔍 Memeriksa NIS...', 'success');
+      showAlert('alert-siswa', '🔍 Memeriksa NIS / ID QR...', 'success');
 
       try {
         const res = await fetch(`${GAS_URL}?action=getSiswa&nis=${encodeURIComponent(nis)}`).then(r => r.json());
@@ -344,7 +390,7 @@
     async function processBukuScan(barcode) {
       if (!barcode || isBusy) return;
       isBusy = true;
-      showAlert('alert-buku', '⏳ Memproses transaksi...', 'success');
+      showAlert('alert-buku', '⏳ Memproses transaksi buku...', 'success');
       
       const action = currentMode === 'borrow' ? 'pinjamBuku' : 'kembaliBuku';
       
