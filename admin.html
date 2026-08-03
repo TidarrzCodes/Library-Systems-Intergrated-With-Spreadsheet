@@ -223,7 +223,11 @@
         <div id="subtab-user-add" class="sub-tab-content active">
           <h2 id="user-form-title">👤 Tambah User / Siswa Baru</h2>
           <button type="button" class="btn-scan" onclick="startAdminCamera('siswa')">📷 Scan QR Kartu</button>
-          <div class="webcam-container" id="box-cam-siswa" style="display: none;"><div id="reader-admin-siswa" class="cam-box"></div></div>
+          
+          <div class="webcam-container" id="box-cam-siswa" style="display: none;">
+            <div id="reader-admin-siswa" class="cam-box"></div>
+            <button type="button" class="btn btn-secondary" style="padding:6px; font-size:12px; margin-top:6px;" onclick="stopAdminCamera()">Tutup Kamera</button>
+          </div>
 
           <form onsubmit="submitSiswa(event)">
             <input type="hidden" id="form-mode-user" value="add">
@@ -448,31 +452,52 @@
       } catch (e) {}
     }
 
-    async function startCamera(target) {
-      activeTarget = target;
-      await stopCamera();
+    async function startAdminCamera(target) {
+      await stopAdminCamera();
+      activeTargetField = target;
+      
+      const elementId = target === 'siswa' ? 'reader-admin-siswa' : 'reader-admin-buku';
+      if (target === 'siswa') {
+        document.getElementById('box-cam-siswa').style.display = 'block';
+      } else {
+        document.getElementById('box-cam-buku').style.display = 'block';
+      }
 
-      const alertId = target === 'siswa' ? 'alert-siswa' : 'alert-buku';
-      const elementId = target === 'siswa' ? 'reader-siswa' : 'reader-buku';
+      const formats = [
+        Html5QrcodeSupportedFormats.QR_CODE,
+        Html5QrcodeSupportedFormats.EAN_13,
+        Html5QrcodeSupportedFormats.EAN_8,
+        Html5QrcodeSupportedFormats.CODE_128,
+        Html5QrcodeSupportedFormats.CODE_39,
+        Html5QrcodeSupportedFormats.UPC_A,
+        Html5QrcodeSupportedFormats.UPC_E,
+        Html5QrcodeSupportedFormats.ITF,
+        Html5QrcodeSupportedFormats.RSS_14
+      ];
 
-      const config = {
-        fps: 20,
-        formatsToSupport: [
-          Html5QrcodeSupportedFormats.QR_CODE,
-          Html5QrcodeSupportedFormats.EAN_13,
-          Html5QrcodeSupportedFormats.EAN_8,
-          Html5QrcodeSupportedFormats.CODE_128,
-          Html5QrcodeSupportedFormats.CODE_39
-        ]
-      };
-
-      html5QrCode = new Html5Qrcode(elementId);
+      adminHtml5QrCode = new Html5Qrcode(elementId);
+      const config = { fps: 20, qrbox: { width: 220, height: 120 }, formatsToSupport: formats };
 
       try {
         if (cameraDevices.length === 0) {
           const rawDevices = await Html5Qrcode.getCameras();
           if (rawDevices && rawDevices.length > 0) {
-            cameraDevices = rawDevices.reverse();
+            let sortedCams = [];
+            let ultraWideCams = [];
+
+            rawDevices.forEach(dev => {
+              const label = dev.label.toLowerCase();
+              if (label.includes('front') || label.includes('selfie') || label.includes('depan') || label.includes('user')) {
+                return; // Abaikan kamera depan / selfie
+              }
+              if (label.includes('ultra') || label.includes('wide') || label.includes('.5') || label.includes('macro') || label.includes('tele')) {
+                ultraWideCams.push(dev);
+              } else {
+                sortedCams.push(dev);
+              }
+            });
+
+            cameraDevices = [...sortedCams, ...ultraWideCams];
           }
         }
 
@@ -480,48 +505,69 @@
           currentCameraIndex = 0;
           let selectedCamId = cameraDevices[currentCameraIndex].id;
 
-          await html5QrCode.start(
-            selectedCamId,
-            config,
-            async (decodedText) => {
-              playBeep();
-              await stopCamera();
-
-              if (target === 'siswa') processNisScan(decodedText);
-              else if (target === 'buku') processBukuScan(decodedText);
-            },
+          await adminHtml5QrCode.start(
+            selectedCamId, 
+            config, 
+            async (text) => {
+              await stopAdminCamera();
+              const cleanText = text.trim();
+              if (target === 'siswa') {
+                document.getElementById('nis').value = cleanText;
+                showAlert('alert-siswa', `✅ QR Terbaca: ${cleanText}`, 'success');
+              } else if (target === 'isbn') {
+                document.getElementById('isbn-buku').value = cleanText;
+                showAlert('alert-buku', `✅ ISBN Terbaca: ${cleanText}`, 'success');
+              } else if (target === 'barcode') {
+                document.getElementById('barcode-buku').value = cleanText;
+                showAlert('alert-buku', `✅ Book Code Terbaca: ${cleanText}`, 'success');
+              }
+            }, 
             () => {}
           );
         } else {
-          await html5QrCode.start(
-            { facingMode: "environment" },
-            config,
-            async (decodedText) => {
-              playBeep();
-              await stopCamera();
-
-              if (target === 'siswa') processNisScan(decodedText);
-              else if (target === 'buku') processBukuScan(decodedText);
-            },
+          await adminHtml5QrCode.start(
+            { facingMode: "environment" }, 
+            config, 
+            async (text) => {
+              await stopAdminCamera();
+              const cleanText = text.trim();
+              if (target === 'siswa') {
+                document.getElementById('nis').value = cleanText;
+                showAlert('alert-siswa', `✅ QR Terbaca: ${cleanText}`, 'success');
+              } else if (target === 'isbn') {
+                document.getElementById('isbn-buku').value = cleanText;
+                showAlert('alert-buku', `✅ ISBN Terbaca: ${cleanText}`, 'success');
+              } else if (target === 'barcode') {
+                document.getElementById('barcode-buku').value = cleanText;
+                showAlert('alert-buku', `✅ Book Code Terbaca: ${cleanText}`, 'success');
+              }
+            }, 
             () => {}
           );
         }
-      } catch (err1) {
+      } catch (e) {
         try {
-          await html5QrCode.start(
-            { facingMode: "user" },
+          await adminHtml5QrCode.start(
+            { facingMode: "environment" },
             config,
-            async (decodedText) => {
-              playBeep();
-              await stopCamera();
-
-              if (target === 'siswa') processNisScan(decodedText);
-              else if (target === 'buku') processBukuScan(decodedText);
+            async (text) => {
+              await stopAdminCamera();
+              const cleanText = text.trim();
+              if (target === 'siswa') {
+                document.getElementById('nis').value = cleanText;
+                showAlert('alert-siswa', `✅ QR Terbaca: ${cleanText}`, 'success');
+              } else if (target === 'isbn') {
+                document.getElementById('isbn-buku').value = cleanText;
+                showAlert('alert-buku', `✅ ISBN Terbaca: ${cleanText}`, 'success');
+              } else if (target === 'barcode') {
+                document.getElementById('barcode-buku').value = cleanText;
+                showAlert('alert-buku', `✅ Book Code Terbaca: ${cleanText}`, 'success');
+              }
             },
             () => {}
           );
         } catch (err2) {
-          showAlert(alertId, '⚠️ Webcam tidak dapat dibuka. Pastikan izin kamera browser sudah diizinkan (Allow).', 'danger');
+          showAlert(target === 'siswa' ? 'alert-siswa' : 'alert-buku', '⚠️ Gagal membuka kamera belakang. Pastikan izin kamera browser sudah diizinkan (Allow).', 'danger');
         }
       }
     }
