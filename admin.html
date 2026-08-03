@@ -181,6 +181,9 @@
     .badge-status { padding: 2px 5px; border-radius: 6px; font-size: 9px; font-weight: 700; text-transform: uppercase; display: inline-block; }
     .badge-pinjam { background: var(--primary-light); color: var(--primary); }
     .badge-kembali { background: var(--success-light); color: var(--success); }
+    .badge-reminder-sent { background: var(--success-light); color: var(--success); }
+    .badge-reminder-pending { background: var(--warning-light); color: var(--warning); }
+    .badge-reminder-failed { background: var(--danger-light); color: var(--danger); }
 
     @media (max-width: 480px) {
       body { padding: 8px 6px; }
@@ -349,31 +352,57 @@
     <!-- TAB 3: TRANSACTION REPORT -->
     <div id="tab-laporan" class="tab-content">
       <div class="card">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-          <h2>📊 Riwayat Transaksi</h2>
-          <button class="btn-home" onclick="loadLaporanTransaksi()">🔄 Refresh</button>
+        <div class="sub-action-bar" style="margin-bottom: 14px;">
+          <button class="btn-sub-action active" id="btn-sub-riwayat" onclick="switchSubTab('laporan', 'riwayat')">📊 Riwayat</button>
+          <button class="btn-sub-action" id="btn-sub-email" onclick="switchSubTab('laporan', 'email')">📧 Status Email</button>
         </div>
 
-        <div class="filter-pills-container">
-          <button class="filter-pill active" onclick="setFilter('hari_ini', this)">Hari Ini</button>
-          <button class="filter-pill" onclick="setFilter('7_hari', this)">7 Hari</button>
-          <button class="filter-pill" onclick="setFilter('1_bulan', this)">1 Bulan</button>
-          <button class="filter-pill" onclick="setFilter('custom', this)">Tanggal</button>
-          <button class="filter-pill" onclick="setFilter('semua', this)">Semua</button>
+        <!-- SUB-TAB RIWAYAT -->
+        <div id="subtab-laporan-riwayat" class="sub-tab-content active">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <h2 style="margin-bottom:0; border:none; padding:0;">📊 Riwayat Transaksi</h2>
+            <button class="btn-home" onclick="loadLaporanTransaksi()">🔄 Refresh</button>
+          </div>
+
+          <div class="filter-pills-container">
+            <button class="filter-pill active" onclick="setFilter('hari_ini', this)">Hari Ini</button>
+            <button class="filter-pill" onclick="setFilter('7_hari', this)">7 Hari</button>
+            <button class="filter-pill" onclick="setFilter('1_bulan', this)">1 Bulan</button>
+            <button class="filter-pill" onclick="setFilter('custom', this)">Tanggal</button>
+            <button class="filter-pill" onclick="setFilter('semua', this)">Semua</button>
+          </div>
+
+          <div id="custom-date-box" class="form-group" style="display: none;">
+            <input type="date" id="input-custom-date" onchange="filterLaporanData()">
+          </div>
+
+          <div class="form-group"><input type="text" id="input-search-laporan" placeholder="🔍 Cari riwayat transaksi..." oninput="filterLaporanData()"></div>
+
+          <div class="table-container">
+            <table>
+              <thead><tr><th>Waktu</th><th>NIS</th><th>Nama</th><th>Judul Buku</th><th>Status</th></tr></thead>
+              <tbody id="tabel-laporan-body"><tr><td colspan="5" style="text-align: center;">Memuat laporan...</td></tr></tbody>
+            </table>
+          </div>
         </div>
 
-        <div id="custom-date-box" class="form-group" style="display: none;">
-          <input type="date" id="input-custom-date" onchange="filterLaporanData()">
+        <!-- SUB-TAB EMAIL REMINDER STATUS -->
+        <div id="subtab-laporan-email" class="sub-tab-content">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <h2 style="margin-bottom:0; border:none; padding:0;">📧 Status E-Reminder Email</h2>
+            <button class="btn-home" onclick="loadEmailStatusList()">🔄 Refresh</button>
+          </div>
+
+          <div class="form-group"><input type="text" id="input-search-email" placeholder="🔍 Cari judul buku, peminjam..." oninput="filterEmailStatusList()"></div>
+
+          <div class="table-container">
+            <table>
+              <thead><tr><th>Book Title</th><th>Nama Peminjam</th><th>Kelas</th><th>E-Reminder Status</th></tr></thead>
+              <tbody id="tabel-email-body"><tr><td colspan="4" style="text-align: center;">Memuat data email...</td></tr></tbody>
+            </table>
+          </div>
         </div>
 
-        <div class="form-group"><input type="text" id="input-search-laporan" placeholder="🔍 Cari riwayat transaksi..." oninput="filterLaporanData()"></div>
-
-        <div class="table-container">
-          <table>
-            <thead><tr><th>Waktu</th><th>NIS</th><th>Nama</th><th>Judul Buku</th><th>Status</th></tr></thead>
-            <tbody id="tabel-laporan-body"><tr><td colspan="5" style="text-align: center;">Memuat laporan...</td></tr></tbody>
-          </table>
-        </div>
       </div>
     </div>
   </div>
@@ -386,6 +415,7 @@
     let cameraDevices = [];
     let currentCameraIndex = 0;
     let globalLaporanData = [];
+    let globalEmailData = [];
     let globalUserData = [];
     let globalBukuData = [];
     let globalBorrowedData = [];
@@ -424,6 +454,7 @@
         document.querySelectorAll('.action-bar .btn-nav-action')[2].classList.add('active');
         document.getElementById('tab-laporan').classList.add('active');
         loadLaporanTransaksi();
+        loadEmailStatusList();
       }
     }
 
@@ -446,6 +477,12 @@
 
         if (sub === 'manage') loadBukuList();
         if (sub === 'borrowed') loadBorrowedBooksList();
+      } else if (parent === 'laporan') {
+        document.getElementById('btn-sub-riwayat').classList.toggle('active', sub === 'riwayat');
+        document.getElementById('btn-sub-email').classList.toggle('active', sub === 'email');
+        document.getElementById('subtab-laporan-riwayat').classList.toggle('active', sub === 'riwayat');
+        document.getElementById('subtab-laporan-email').classList.toggle('active', sub === 'email');
+        if (sub === 'email') loadEmailStatusList();
       }
     }
 
@@ -847,6 +884,60 @@
       } catch (e) {
         tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Gagal memuat laporan.</td></tr>';
       }
+    }
+
+    async function loadEmailStatusList() {
+      const tbody = document.getElementById('tabel-email-body');
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Memuat data email...</td></tr>';
+      try {
+        const res = await fetch(`${GAS_URL}?action=getLaporanTransaksi`).then(r => r.json());
+        if (res.success) {
+          globalEmailData = res.data || [];
+          if (globalUserData.length === 0) {
+            const userRes = await fetch(`${GAS_URL}?action=getAllUsers`).then(r => r.json());
+            if (userRes.success) globalUserData = userRes.data || [];
+          }
+          filterEmailStatusList();
+        }
+      } catch (e) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Gagal memuat status email.</td></tr>';
+      }
+    }
+
+    function filterEmailStatusList() {
+      const keyword = document.getElementById('input-search-email').value.toLowerCase();
+      const userMap = {};
+      globalUserData.forEach(u => { userMap[String(u.nis).trim()] = u.kelas; });
+
+      const filtered = globalEmailData.filter(item => {
+        const kelas = userMap[String(item.nis).trim()] || '-';
+        return String(item.judul).toLowerCase().includes(keyword) || 
+               String(item.nama).toLowerCase().includes(keyword) || 
+               String(kelas).toLowerCase().includes(keyword);
+      });
+
+      renderEmailStatusTable(filtered, userMap);
+    }
+
+    function renderEmailStatusTable(data, userMap) {
+      const tbody = document.getElementById('tabel-email-body');
+      tbody.innerHTML = data.length ? data.map(item => {
+        const kelas = userMap[String(item.nis).trim()] || '-';
+        const reminderStatus = item.reminderStatus || item.eReminderStatus || 'PENDING';
+        let badgeClass = 'badge-reminder-pending';
+        const stUpper = String(reminderStatus).toUpperCase();
+        if (stUpper === 'SENT' || stUpper === 'RETURNED') badgeClass = 'badge-reminder-sent';
+        else if (stUpper === 'FAILED') badgeClass = 'badge-reminder-failed';
+
+        return `
+          <tr>
+            <td><b>${item.judul}</b></td>
+            <td>${item.nama}</td>
+            <td>${kelas}</td>
+            <td><span class="badge-status ${badgeClass}">${reminderStatus}</span></td>
+          </tr>
+        `;
+      }).join('') : '<tr><td colspan="4" style="text-align: center;">Tidak ada data e-reminder.</td></tr>';
     }
 
     function setFilter(type, btn) {
