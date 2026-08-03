@@ -226,61 +226,67 @@
     }
 
     async function startCamera(target) {
-      await stopCamera();
-      const elementId = target === 'siswa' ? 'reader-siswa' : 'reader-buku';
-      const alertId = target === 'siswa' ? 'alert-siswa' : 'alert-buku';
-      
-      html5QrCode = new Html5Qrcode(elementId);
-      
-      const formatsToSupport = [
-        Html5QrcodeSupportedFormats.QR_CODE,
-        Html5QrcodeSupportedFormats.EAN_13,
-        Html5QrcodeSupportedFormats.EAN_8,
-        Html5QrcodeSupportedFormats.CODE_128,
-        Html5QrcodeSupportedFormats.CODE_39,
-        Html5QrcodeSupportedFormats.UPC_A,
-        Html5QrcodeSupportedFormats.UPC_E,
-        Html5QrcodeSupportedFormats.ITF
-      ];
+  await stopCamera();
+  const elementId = target === 'siswa' ? 'reader-siswa' : 'reader-buku';
+  const alertId = target === 'siswa' ? 'alert-siswa' : 'alert-buku';
+  
+  html5QrCode = new Html5Qrcode(elementId);
+  
+  const formatsToSupport = [
+    Html5QrcodeSupportedFormats.QR_CODE,
+    Html5QrcodeSupportedFormats.EAN_13,
+    Html5QrcodeSupportedFormats.EAN_8,
+    Html5QrcodeSupportedFormats.CODE_128,
+    Html5QrcodeSupportedFormats.CODE_39,
+    Html5QrcodeSupportedFormats.UPC_A,
+    Html5QrcodeSupportedFormats.UPC_E,
+    Html5QrcodeSupportedFormats.ITF
+  ];
 
-      const config = { 
-        fps: 20, 
-        qrbox: { width: 220, height: 220 },
-        formatsToSupport: formatsToSupport
-      };
-
-      try {
-        await html5QrCode.start(
-          { facingMode: "environment" }, 
-          config, 
-          async (text) => {
-            if (isBusy) return;
-            isBusy = true;
-            playBeep();
-            await stopCamera();
-
-            if (target === 'siswa') await processNisScan(text);
-            else await processBukuScan(text);
-            isBusy = false;
-          }, 
-          () => {}
-        );
-      } catch (err) {
-        try {
-          await html5QrCode.start({ facingMode: "user" }, config, async (text) => {
-            if (isBusy) return;
-            isBusy = true;
-            playBeep();
-            await stopCamera();
-            if (target === 'siswa') await processNisScan(text);
-            else await processBukuScan(text);
-            isBusy = false;
-          }, () => {});
-        } catch (e) {
-          showAlert(alertId, '⚠️ Kamera tidak dapat diakses. Gunakan input manual.', 'danger');
-        }
-      }
+  // Konfigurasi dioptimalkan agar ringan, fokus, dan tidak lemot di HP
+  const config = { 
+    fps: 30, 
+    qrbox: { width: 220, height: 220 },
+    formatsToSupport: formatsToSupport,
+    videoConstraints: {
+      width: { ideal: 1280 },
+      height: { ideal: 720 },
+      facingMode: "environment"
     }
+  };
+
+  try {
+    await html5QrCode.start(
+      { facingMode: "environment" }, 
+      config, 
+      async (text) => {
+        if (isBusy) return;
+        isBusy = true;
+        playBeep();
+        await stopCamera();
+
+        if (target === 'siswa') await processNisScan(text);
+        else await processBukuScan(text);
+        isBusy = false;
+      }, 
+      () => {}
+    );
+  } catch (err) {
+    try {
+      await html5QrCode.start({ facingMode: "user" }, config, async (text) => {
+        if (isBusy) return;
+        isBusy = true;
+        playBeep();
+        await stopCamera();
+        if (target === 'siswa') await processNisScan(text);
+        else await processBukuScan(text);
+        isBusy = false;
+      }, () => {});
+    } catch (e) {
+      showAlert(alertId, '⚠️ Kamera tidak dapat diakses. Gunakan input manual.', 'danger');
+    }
+  }
+}
 
     async function stopCamera() {
       if (html5QrCode) {
