@@ -5,7 +5,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Scan|BM400 Cibubur|Digital Library System</title>
-  <script src="https://unpkg.com/html5-qrcode"></script>
+  <!-- Pustaka html5-qrcode versi stabil -->
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -15,9 +16,6 @@
       --bm-green-dark: #12a14b;
       --bm-green-light: #d8f3e0;
       --primary: #4f46e5;
-      --primary-hover: #4338ca;
-      --primary-light: #eef2ff;
-      --info: #0284c7;
       --success: #10b981;
       --success-light: #ecfdf5;
       --danger: #ef4444;
@@ -39,8 +37,11 @@
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+    
     body {
       background: var(--bg-color);
+      background-image: radial-gradient(var(--border-color) 1px, transparent 1px);
+      background-size: 24px 24px;
       color: var(--text-main);
       min-height: 100vh;
       display: flex;
@@ -50,6 +51,7 @@
       padding: 20px;
       transition: background 0.3s ease, color 0.3s ease;
     }
+
     .card {
       background: var(--card-bg);
       width: 100%;
@@ -58,7 +60,9 @@
       border-radius: 24px;
       box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
       border: 1px solid var(--border-color);
+      position: relative;
     }
+
     .card-top-bar {
       display: flex;
       justify-content: space-between;
@@ -67,52 +71,77 @@
       padding-bottom: 12px;
       border-bottom: 1px solid var(--border-color);
     }
+
     .live-clock { font-size: 15px; font-weight: 800; display: flex; align-items: center; gap: 6px; }
+
     .btn-theme-icon {
       background: var(--bg-color); color: var(--text-main); border: 1px solid var(--border-color);
       width: 38px; height: 38px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s ease;
     }
+
     .brand-badge {
       display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px;
       background: var(--bm-green-light); color: var(--bm-green-dark);
       border-radius: 20px; font-size: 12px; font-weight: 700; text-transform: uppercase; margin-bottom: 12px;
     }
+
     .header { text-align: center; margin-bottom: 28px; }
-    .header h1 { font-size: 22px; font-weight: 800; }
+    .header h1 { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
     .header p { font-size: 14px; color: var(--text-muted); margin-top: 8px; }
+
     .btn-group { display: flex; flex-direction: column; gap: 14px; }
     .btn {
       width: 100%; padding: 16px 20px; border: none; border-radius: var(--radius);
       font-size: 15px; font-weight: 700; cursor: pointer; color: white;
       display: flex; align-items: center; justify-content: center; gap: 10px;
+      transition: transform 0.2s ease, opacity 0.2s ease;
     }
-    .btn-borrow { background: linear-gradient(135deg, #41c863, #12a14b); }
-    .btn-return { background: linear-gradient(135deg, #0284c7, #0369a1); }
+    .btn:active { transform: scale(0.97); }
+    .btn-borrow { background: linear-gradient(135deg, #41c863, #12a14b); box-shadow: 0 10px 15px -3px rgba(18, 161, 75, 0.3); }
+    .btn-return { background: linear-gradient(135deg, #0284c7, #0369a1); box-shadow: 0 10px 15px -3px rgba(2, 132, 199, 0.3); }
     .btn-back { background: var(--bg-color); color: var(--text-muted); margin-top: 20px; border: 1px solid var(--border-color); }
+
     .step { display: none; }
-    .step.active { display: block; }
+    .step.active { display: block; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
     .webcam-container {
       border: 2px solid var(--border-color); border-radius: var(--radius);
       padding: 6px; background: #000; margin-bottom: 20px; position: relative; overflow: hidden;
     }
-    .cam-box { width: 100%; height: 280px; border-radius: 10px; overflow: hidden; position: relative; background: #000; }
-    .cam-box video { width: 100% !important; height: 100% !important; object-fit: cover !important; }
+    
+    .cam-box { width: 100%; height: 260px; border-radius: 8px; overflow: hidden; position: relative; background: #000; }
+    
+    /* Perbaikan agar video tidak merusak layout */
+    .cam-box video { width: 100% !important; height: 100% !important; object-fit: cover !important; border-radius: 8px; }
+
     .badge-siswa {
       background: var(--bm-green-light); color: var(--bm-green-dark); border: 1px solid #a7f3d0;
       padding: 14px 18px; border-radius: var(--radius); font-weight: 700; font-size: 14px; margin-bottom: 20px;
     }
+
     .form-group { margin-bottom: 16px; }
-    label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+    label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 8px; color: var(--text-main); }
+    
     input[type="text"] {
       width: 100%; padding: 14px 16px; border: 1px solid var(--border-color);
       border-radius: var(--radius); font-size: 14px; background: var(--bg-color); color: var(--text-main); outline: none;
+      transition: border-color 0.2s ease;
     }
+    input[type="text"]:focus { border-color: var(--bm-green-dark); box-shadow: 0 0 0 4px rgba(18, 161, 75, 0.15); }
+
     .alert { padding: 14px 16px; border-radius: var(--radius); margin-top: 16px; font-size: 13px; font-weight: 600; display: none; }
     .alert-success { background: var(--success-light); color: #047857; border: 1px solid #a7f3d0; }
     .alert-danger { background: var(--danger-light); color: #b91c1c; border: 1px solid #fca5a5; }
+
     .table-container { margin-top: 12px; border: 1px solid var(--border-color); border-radius: var(--radius); overflow: hidden; background: var(--card-bg); }
     table { width: 100%; border-collapse: collapse; font-size: 13px; }
-    th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--border-color); }
+    th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--border-color); color: var(--text-main); }
     th { background: var(--bg-color); color: var(--text-muted); font-size: 11px; text-transform: uppercase; }
   </style>
 </head>
@@ -124,7 +153,7 @@
       <button class="btn-theme-icon" onclick="toggleTheme()"><span id="theme-icon">☀️</span></button>
     </div>
 
-    <!-- STEP 1: OPTIONS -->
+    <!-- STEP 1: MENU -->
     <div id="step-options" class="step active">
       <div class="header">
         <div class="brand-badge">📚 BM400 Digital Library</div>
@@ -149,7 +178,7 @@
       <button class="btn btn-back" onclick="resetToHome()">← Kembali</button>
     </div>
 
-    <!-- STEP 3: SCAN BUKU / EKSEMPLAR -->
+    <!-- STEP 3: SCAN BUKU -->
     <div id="step-buku" class="step">
       <div class="badge-siswa" id="info-siswa">👤 Student: -</div>
       <div class="webcam-container"><div id="reader-buku" class="cam-box"></div></div>
@@ -172,10 +201,14 @@
   </div>
 
   <script>
+    // MASUKKAN URL WEB APP GOOGLE APPS SCRIPT ANDA DI SINI
     const GAS_URL = "https://script.google.com/macros/s/AKfycbzpNUgsqdCiiKcfshHcni9rNvFLE-_i0gCmYiFcz-gdRcZFugoDdYBGsf0K6CXh1Fs0/exec"; 
+
     let currentMode = '';
     let currentSiswa = { nis: '', nama: '', role: '' };
     let html5QrCode = null;
+    let isProcessing = flag => isBusy = flag;
+    let isBusy = false;
 
     window.addEventListener('DOMContentLoaded', () => {
       document.documentElement.setAttribute('data-theme', 'dark');
@@ -197,93 +230,176 @@
       startCamera('siswa');
     }
 
+    // Fungsi Mengaktifkan Kamera dengan Optimasi Performa
     async function startCamera(target) {
       await stopCamera();
       const elementId = target === 'siswa' ? 'reader-siswa' : 'reader-buku';
+      
       html5QrCode = new Html5Qrcode(elementId);
+      const config = { fps: 15, qrbox: { width: 220, height: 220 } };
+
       try {
-        await html5QrCode.start({ facingMode: "user" }, { fps: 10, qrbox: 200 }, async (text) => {
-          await stopCamera();
-          if (target === 'siswa') processNisScan(text);
-          else processBukuScan(text);
-        }, () => {});
+        // Prioritaskan kamera belakang (environment) jika di HP, atau kamera depan jika desktop
+        await html5QrCode.start(
+          { facingMode: "environment" }, 
+          config, 
+          async (text) => {
+            if (isBusy) return; // Mencegah scan ganda berturut-turut yang bikin lag
+            isBusy = true;
+            playBeep();
+            await stopCamera();
+
+            if (target === 'siswa') await processNisScan(text);
+            else await processBukuScan(text);
+            isBusy = false;
+          }, 
+          () => {}
+        );
       } catch (e) {
-        showAlert(target === 'siswa' ? 'alert-siswa' : 'alert-buku', '⚠️ Kamera tidak dapat diakses.', 'danger');
+        // Fallback ke kamera default jika environment gagal
+        try {
+          await html5QrCode.start({ facingMode: "user" }, config, async (text) => {
+            if (isBusy) return;
+            isBusy = true;
+            playBeep();
+            await stopCamera();
+            if (target === 'siswa') await processNisScan(text);
+            else await processBukuScan(text);
+            isBusy = false;
+          }, () => {});
+        } catch (err) {
+          showAlert(target === 'siswa' ? 'alert-siswa' : 'alert-buku', '⚠️ Kamera tidak dapat diakses. Gunakan input manual.', 'danger');
+        }
       }
     }
 
     async function stopCamera() {
-      if (html5QrCode && html5QrCode.isScanning) {
-        await html5QrCode.stop();
-        html5QrCode.clear();
+      if (html5QrCode) {
+        try {
+          if (html5QrCode.isScanning) {
+            await html5QrCode.stop();
+          }
+          html5QrCode.clear();
+        } catch (err) {
+          console.error("Gagal menghentikan kamera:", err);
+        }
+        html5QrCode = null;
       }
+    }
+
+    function playBeep() {
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.1);
+      } catch (e) {}
     }
 
     function handleNisManual(e) {
-      if (e.key === 'Enter') { processNisScan(e.target.value.trim()); }
+      if (e.key === 'Enter') { 
+        e.preventDefault();
+        processNisScan(e.target.value.trim()); 
+      }
     }
 
     async function processNisScan(nis) {
-      if (!nis) return;
+      if (!nis || isBusy) return;
+      isBusy = true;
       showAlert('alert-siswa', '🔍 Memeriksa NIS...', 'success');
-      const res = await fetch(`${GAS_URL}?action=getSiswa&nis=${encodeURIComponent(nis)}`).then(r => r.json());
-      if (res.success) {
-        currentSiswa = { nis, nama: res.nama, role: res.role };
-        if (res.role === 'admin') {
-          sessionStorage.setItem('rnx_admin_auth', 'authenticated_' + Date.now());
-          window.location.href = 'admin.html';
-          return;
-        }
-        document.getElementById('info-siswa').innerText = `👤 Student: ${res.nama} (${nis})`;
-        showStep('step-buku');
-        if (currentMode === 'return') {
-          document.getElementById('container-tabel-pinjaman').style.display = 'block';
-          loadBukuDipinjam(nis);
+
+      try {
+        const res = await fetch(`${GAS_URL}?action=getSiswa&nis=${encodeURIComponent(nis)}`).then(r => r.json());
+        if (res.success) {
+          currentSiswa = { nis, nama: res.nama, role: res.role };
+          
+          if (res.role === 'admin') {
+            sessionStorage.setItem('rnx_admin_auth', 'authenticated_' + Date.now());
+            window.location.href = 'admin.html';
+            return;
+          }
+
+          document.getElementById('info-siswa').innerText = `👤 Student: ${res.nama} (${nis})`;
+          showStep('step-buku');
+
+          if (currentMode === 'return') {
+            document.getElementById('container-tabel-pinjaman').style.display = 'block';
+            await loadBukuDipinjam(nis);
+          } else {
+            document.getElementById('container-tabel-pinjaman').style.display = 'none';
+            startCamera('buku');
+          }
         } else {
-          document.getElementById('container-tabel-pinjaman').style.display = 'none';
-          startCamera('buku');
+          showAlert('alert-siswa', res.message, 'danger');
+          setTimeout(() => startCamera('siswa'), 2000);
         }
-      } else {
-        showAlert('alert-siswa', res.message, 'danger');
+      } catch (err) {
+        showAlert('alert-siswa', '❌ Gagal terhubung ke server.', 'danger');
         setTimeout(() => startCamera('siswa'), 2000);
       }
+      isBusy = false;
     }
 
     function handleBukuManual(e) {
-      if (e.key === 'Enter') { processBukuScan(e.target.value.trim()); }
+      if (e.key === 'Enter') { 
+        e.preventDefault();
+        processBukuScan(e.target.value.trim()); 
+      }
     }
 
     async function processBukuScan(barcode) {
-      if (!barcode) return;
+      if (!barcode || isBusy) return;
+      isBusy = true;
       showAlert('alert-buku', '⏳ Memproses transaksi...', 'success');
+      
       const action = currentMode === 'borrow' ? 'pinjamBuku' : 'kembaliBuku';
-      const res = await fetch(GAS_URL, {
-        method: 'POST',
-        body: JSON.stringify({ action, nis: currentSiswa.nis, barcode })
-      }).then(r => r.json());
+      
+      try {
+        const res = await fetch(GAS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action, nis: currentSiswa.nis, barcode })
+        }).then(r => r.json());
 
-      if (res.success) {
-        showAlert('alert-buku', res.message, 'success');
-        document.getElementById('input-barcode').value = '';
-        if (currentMode === 'return') loadBukuDipinjam(currentSiswa.nis);
-        else setTimeout(() => startCamera('buku'), 1500);
-      } else {
-        showAlert('alert-buku', res.message, 'danger');
+        if (res.success) {
+          showAlert('alert-buku', res.message, 'success');
+          document.getElementById('input-barcode').value = '';
+          if (currentMode === 'return') {
+            await loadBukuDipinjam(currentSiswa.nis);
+          } else {
+            setTimeout(() => startCamera('buku'), 1500);
+          }
+        } else {
+          showAlert('alert-buku', res.message, 'danger');
+          setTimeout(() => startCamera('buku'), 2000);
+        }
+      } catch (err) {
+        showAlert('alert-buku', '❌ Gagal memproses transaksi.', 'danger');
         setTimeout(() => startCamera('buku'), 2000);
       }
+      isBusy = false;
     }
 
     async function loadBukuDipinjam(nis) {
       const tbody = document.getElementById('tabel-pinjaman-body');
-      tbody.innerHTML = '<tr><td colspan="2">Memuat...</td></tr>';
-      const res = await fetch(`${GAS_URL}?action=getBukuDipinjamSiswa&nis=${encodeURIComponent(nis)}`).then(r => r.json());
-      tbody.innerHTML = '';
-      if (res.success && res.data.length > 0) {
-        res.data.forEach(item => {
-          tbody.innerHTML += `<tr><td><b>${item.barcode}</b></td><td>${item.tglPinjam}</td></tr>`;
-        });
-      } else {
-        tbody.innerHTML = '<tr><td colspan="2">Tidak ada buku aktif.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="2">Memuat data...</td></tr>';
+      
+      try {
+        const res = await fetch(`${GAS_URL}?action=getBukuDipinjamSiswa&nis=${encodeURIComponent(nis)}`).then(r => r.json());
+        tbody.innerHTML = '';
+        if (res.success && res.data.length > 0) {
+          res.data.forEach(item => {
+            tbody.innerHTML += `<tr><td><b>${item.barcode}</b></td><td>${item.tglPinjam}</td></tr>`;
+          });
+        } else {
+          tbody.innerHTML = '<tr><td colspan="2">Tidak ada buku aktif.</td></tr>';
+        }
+      } catch (e) {
+        tbody.innerHTML = '<tr><td colspan="2">Gagal memuat daftar buku.</td></tr>';
       }
       startCamera('buku');
     }
@@ -293,18 +409,22 @@
       document.getElementById(id).classList.add('active');
     }
 
-    function resetToHome() {
-      stopCamera();
+    async function resetToHome() {
+      await stopCamera();
       currentMode = '';
       currentSiswa = { nis: '', nama: '', role: '' };
+      document.getElementById('input-nis').value = '';
+      document.getElementById('input-barcode').value = '';
       showStep('step-options');
     }
 
     function showAlert(id, msg, type) {
       const el = document.getElementById(id);
-      el.innerText = msg;
-      el.className = `alert alert-${type}`;
-      el.style.display = 'block';
+      if (el) {
+        el.innerText = msg;
+        el.className = `alert alert-${type}`;
+        el.style.display = 'block';
+      }
     }
   </script>
 </body>
