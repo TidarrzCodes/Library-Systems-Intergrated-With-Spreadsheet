@@ -5,6 +5,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin|BM400 Cibubur|Digital Library System</title>
+  
+  <!-- SCRIPT KEAMANAN: Cek apakah akses berasal dari scan QR admin yang sah -->
+  <script>
+    if (!sessionStorage.getItem('rnx_admin_auth')) {
+      alert('⚠️ Akses ditolak! Anda harus memindai QR Admin yang sah di halaman utama terlebih dahulu.');
+      window.location.replace('index.html');
+    }
+  </script>
+
   <script src="https://unpkg.com/html5-qrcode"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
     rel="stylesheet">
@@ -71,7 +80,6 @@
       margin: 0 auto;
     }
 
-    /* Header Bar */
     .nav-header {
       display: flex;
       justify-content: space-between;
@@ -95,7 +103,6 @@
       gap: 8px;
     }
 
-    /* Live Clock in Center */
     .live-clock {
       font-size: 16px;
       font-weight: 800;
@@ -108,7 +115,6 @@
       letter-spacing: 0.5px;
     }
 
-    /* Right side controls */
     .header-right-controls {
       display: flex;
       align-items: center;
@@ -157,7 +163,6 @@
       transform: translateY(-1px);
     }
 
-    /* Stats Section */
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -212,7 +217,6 @@
       margin-top: 4px;
     }
 
-    /* Quick Nav Controls */
     .action-bar {
       display: flex;
       gap: 10px;
@@ -251,7 +255,6 @@
       box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3);
     }
 
-    /* Sub Navigation Pills inside Parent Tab */
     .sub-action-bar {
       display: flex;
       gap: 8px;
@@ -281,7 +284,6 @@
       box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
 
-    /* Main Container & Form Layout */
     .card {
       background: var(--card-bg);
       padding: 24px;
@@ -318,7 +320,6 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* Webcam Container */
     .webcam-container {
       border: 2px solid var(--border-color);
       border-radius: var(--radius);
@@ -495,7 +496,6 @@
     .alert-success { background: var(--success-light); color: var(--success); border: 1px solid var(--border-color); }
     .alert-danger { background: var(--danger-light); color: var(--danger); border: 1px solid var(--border-color); }
 
-    /* UI/UX Modern Filter Pills */
     .report-header-flex {
       display: flex;
       justify-content: space-between;
@@ -569,7 +569,6 @@
       color: var(--text-main);
     }
 
-    /* Table Styles */
     .table-container {
       border: 1px solid var(--border-color);
       border-radius: var(--radius);
@@ -639,7 +638,6 @@
 <body>
 
   <div class="container">
-    <!-- Nav Header (Admin Control Panel + Live Clock Center + Theme Logo + Back Button) -->
     <div class="nav-header">
       <h1>⚙️ Admin Control Panel</h1>
       
@@ -660,7 +658,6 @@
       </div>
     </div>
 
-    <!-- Real-time Stats -->
     <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-icon borrow">📖</div>
@@ -678,23 +675,20 @@
       </div>
     </div>
 
-    <!-- Main Parent Navigation Tabs -->
     <div class="action-bar">
       <button class="btn-nav-action active" onclick="switchTab('user')">👤 User Management</button>
       <button class="btn-nav-action" onclick="switchTab('buku')">📚 Book Management</button>
       <button class="btn-nav-action" onclick="switchTab('laporan')">📊 Transaction Report</button>
     </div>
 
-    <!-- PARENT TAB 1: USER MANAGEMENT -->
+    <!-- TAB 1: USER MANAGEMENT -->
     <div id="tab-user" class="tab-content active">
       <div class="card">
-        <!-- Sub Navigation for User -->
         <div class="sub-action-bar">
           <button class="btn-sub-action active" id="btn-sub-adduser" onclick="switchSubTab('user', 'add')">➕ Add User</button>
           <button class="btn-sub-action" id="btn-sub-manageuser" onclick="switchSubTab('user', 'manage')">📋 Manage Users</button>
         </div>
 
-        <!-- SUB TAB 1.1: ADD / EDIT USER -->
         <div id="subtab-user-add" class="sub-tab-content active">
           <h2 id="user-form-title">👤 Add New User / Student</h2>
 
@@ -746,7 +740,6 @@
           <div id="alert-siswa" class="alert"></div>
         </div>
 
-        <!-- SUB TAB 1.2: MANAGE USERS & SEARCH -->
         <div id="subtab-user-manage" class="sub-tab-content">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 10px; flex-wrap: wrap;">
             <h3 style="font-size: 15px; font-weight: 800; color: var(--text-main);">📋 Registered Users List</h3>
@@ -775,16 +768,14 @@
       </div>
     </div>
 
-    <!-- PARENT TAB 2: BOOK MANAGEMENT -->
+    <!-- TAB 2: BOOK MANAGEMENT -->
     <div id="tab-buku" class="tab-content">
       <div class="card">
-        <!-- Sub Navigation for Books -->
         <div class="sub-action-bar">
           <button class="btn-sub-action active" id="btn-sub-addbook" onclick="switchSubTab('buku', 'add')">➕ Add Book</button>
           <button class="btn-sub-action" id="btn-sub-managebook" onclick="switchSubTab('buku', 'manage')">📚 Manage Books</button>
         </div>
 
-        <!-- SUB TAB 2.1: ADD / EDIT BOOK -->
         <div id="subtab-buku-add" class="sub-tab-content active">
           <h2 id="buku-form-title">📚 Add Master Book</h2>
 
@@ -824,7 +815,6 @@
           <div id="alert-buku" class="alert"></div>
         </div>
 
-        <!-- SUB TAB 2.2: MANAGE BOOKS & SEARCH -->
         <div id="subtab-buku-manage" class="sub-tab-content">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 10px; flex-wrap: wrap;">
             <h3 style="font-size: 15px; font-weight: 800; color: var(--text-main);">📚 Master Books List</h3>
@@ -852,7 +842,7 @@
       </div>
     </div>
 
-    <!-- PARENT TAB 3: TRANSACTION REPORT -->
+    <!-- TAB 3: TRANSACTION REPORT -->
     <div id="tab-laporan" class="tab-content">
       <div class="card">
         <div class="report-header-flex">
@@ -860,7 +850,6 @@
           <button class="btn-home" onclick="loadLaporanTransaksi()">🔄 Refresh</button>
         </div>
 
-        <!-- Modern UI Filter Pills -->
         <div class="filter-pills-container">
           <button class="filter-pill active" onclick="setFilter('hari_ini', this)">Hari Ini</button>
           <button class="filter-pill" onclick="setFilter('7_hari', this)">7 Hari Terakhir</button>
@@ -869,13 +858,11 @@
           <button class="filter-pill" onclick="setFilter('semua', this)">Semua</button>
         </div>
 
-        <!-- Hidden Custom Date Input Area -->
         <div id="custom-date-box" class="custom-date-wrapper">
           <label for="input-custom-date">Pilih Tanggal:</label>
           <input type="date" id="input-custom-date" onchange="filterLaporanData()">
         </div>
 
-        <!-- Search Bar for Transaction Report -->
         <div class="search-box">
           <input type="text" id="input-search-laporan" placeholder="🔍 Search transaction records..." oninput="filterLaporanData()">
         </div>
@@ -912,11 +899,9 @@
     let currentFilterType = 'hari_ini';
 
     window.addEventListener('DOMContentLoaded', () => {
-      // Set Default Dark Mode
       document.documentElement.setAttribute('data-theme', 'dark');
       document.getElementById('theme-icon').innerText = '☀️';
 
-      // Start Live Clock
       updateLiveClock();
       setInterval(updateLiveClock, 1000);
 
@@ -925,7 +910,6 @@
       loadBukuList();
     });
 
-    // --- LIVE CLOCK FUNCTION ---
     function updateLiveClock() {
       const now = new Date();
       const options = { 
@@ -942,7 +926,6 @@
       document.getElementById('live-clock').innerHTML = `🕒 ${timeString}`;
     }
 
-    // --- THEME TOGGLE FUNCTION (ICON ONLY) ---
     function toggleTheme() {
       const currentTheme = document.documentElement.getAttribute('data-theme');
       const newTheme = currentTheme === 'light' ? 'dark' : 'light';
@@ -1124,7 +1107,6 @@
       document.getElementById('box-cam-buku').style.display = 'none';
     }
 
-    // --- USER MANAGEMENT FUNCTIONS ---
     async function loadUserList() {
       const tbody = document.getElementById('tabel-user-body');
       tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Loading users...</td></tr>';
@@ -1289,7 +1271,6 @@
       }
     }
 
-    // --- MASTER BOOKS MANAGEMENT FUNCTIONS ---
     async function loadBukuList() {
       const tbody = document.getElementById('tabel-buku-body');
       tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Loading books...</td></tr>';
@@ -1423,7 +1404,6 @@
       }
     }
 
-    // --- TRANSACTION REPORT FUNCTIONS ---
     async function loadLaporanTransaksi() {
       const tbody = document.getElementById('tabel-laporan-body');
       tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted);">Loading transaction history...</td></tr>';
