@@ -530,7 +530,7 @@
         <div class="scanner-laser"></div>
         <div id="reader-buku" class="cam-box"></div>
       </div>
-      <button type="button" class="btn-switch" onclick="switchCameraTarget()"><i class="fa-solid fa-camera-rotate"></i> Ganti Lensa Kamera (Switch 1x / Ultra-Wide)</button>
+      <button type="button" class="btn-switch" onclick="switchCameraTarget()"><i class="fa-solid fa-camera-rotate"></i> Switch Camera Lens (1x / Ultra-Wide)</button>
 
       <div class="divider"><span>Or</span></div>
 
@@ -593,7 +593,7 @@
         second: '2-digit', 
         hour12: false 
       };
-      const timeString = now.toLocaleString('id-ID', options);
+      const timeString = now.toLocaleString('en-US', options);
       document.getElementById('live-clock').innerHTML = `🕒 ${timeString}`;
     }
 
@@ -710,7 +710,7 @@
             () => {}
           );
         } catch (err2) {
-          showAlert(alertId, '⚠️ Webcam tidak dapat dibuka. Pastikan izin kamera browser sudah diizinkan (Allow).', 'danger');
+          showAlert(alertId, '⚠️ Webcam cannot be opened. Make sure camera permission is allowed in your browser settings.', 'danger');
         }
       }
     }
@@ -720,7 +720,7 @@
         currentCameraIndex = (currentCameraIndex + 1) % cameraDevices.length;
         await startCamera(activeTarget);
       } else {
-        alert("Hanya terdeteksi 1 lensa kamera aktif pada perangkat ini.");
+        alert("Only 1 active camera lens is detected on this device.");
       }
     }
 
@@ -828,7 +828,7 @@
             setTimeout(() => startCamera('buku'), 1200);
           }
         } else {
-          showAlert('alert-buku', res.message || 'Gagal memproses transaksi buku.', 'danger');
+          showAlert('alert-buku', res.message || 'Failed to process book transaction.', 'danger');
           document.getElementById('input-barcode').value = '';
           setTimeout(() => startCamera('buku'), 2500);
         }
