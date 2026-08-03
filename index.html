@@ -255,7 +255,6 @@
         opacity: 0;
         transform: translateY(12px);
       }
-
       to {
         opacity: 1;
         transform: translateY(0);
@@ -623,29 +622,37 @@
       const alertId = target === 'siswa' ? 'alert-siswa' : 'alert-buku';
       const elementId = target === 'siswa' ? 'reader-siswa' : 'reader-buku';
 
-      const config = {
-        fps: 20,
-        formatsToSupport: [
-          Html5QrcodeSupportedFormats.QR_CODE,
-          Html5QrcodeSupportedFormats.EAN_13,
-          Html5QrcodeSupportedFormats.EAN_8,
-          Html5QrcodeSupportedFormats.CODE_128,
-          Html5QrcodeSupportedFormats.CODE_39
-        ]
-      };
+      const formats = [
+        Html5QrcodeSupportedFormats.QR_CODE,
+        Html5QrcodeSupportedFormats.EAN_13,
+        Html5QrcodeSupportedFormats.EAN_8,
+        Html5QrcodeSupportedFormats.CODE_128,
+        Html5QrcodeSupportedFormats.CODE_39,
+        Html5QrcodeSupportedFormats.UPC_A,
+        Html5QrcodeSupportedFormats.UPC_E,
+        Html5QrcodeSupportedFormats.ITF,
+        Html5QrcodeSupportedFormats.RSS_14
+      ];
 
+      const config = { fps: 20, qrbox: { width: 220, height: 120 }, formatsToSupport: formats };
       html5QrCode = new Html5Qrcode(elementId);
 
       try {
         if (cameraDevices.length === 0) {
           const rawDevices = await Html5Qrcode.getCameras();
           if (rawDevices && rawDevices.length > 0) {
-            cameraDevices = rawDevices.reverse();
+            let backCams = [];
+            rawDevices.forEach(dev => {
+              const label = dev.label.toLowerCase();
+              if (!label.includes('front') && !label.includes('selfie') && !label.includes('depan') && !label.includes('user')) {
+                backCams.push(dev);
+              }
+            });
+            cameraDevices = backCams.length > 0 ? backCams.reverse() : rawDevices;
           }
         }
 
         if (cameraDevices && cameraDevices.length > 0) {
-          currentCameraIndex = 0;
           let selectedCamId = cameraDevices[currentCameraIndex].id;
 
           await html5QrCode.start(
@@ -654,7 +661,6 @@
             async (decodedText) => {
               playBeep();
               await stopCamera();
-
               if (target === 'siswa') processNisScan(decodedText);
               else if (target === 'buku') processBukuScan(decodedText);
             },
@@ -662,12 +668,11 @@
           );
         } else {
           await html5QrCode.start(
-            { facingMode: "environment" },
+            { facingMode: { exact: "environment" } },
             config,
             async (decodedText) => {
               playBeep();
               await stopCamera();
-
               if (target === 'siswa') processNisScan(decodedText);
               else if (target === 'buku') processBukuScan(decodedText);
             },
@@ -677,12 +682,11 @@
       } catch (err1) {
         try {
           await html5QrCode.start(
-            { facingMode: "user" },
+            { facingMode: "environment" },
             config,
             async (decodedText) => {
               playBeep();
               await stopCamera();
-
               if (target === 'siswa') processNisScan(decodedText);
               else if (target === 'buku') processBukuScan(decodedText);
             },
@@ -699,7 +703,7 @@
         currentCameraIndex = (currentCameraIndex + 1) % cameraDevices.length;
         await startCamera(activeTarget);
       } else {
-        alert("Hanya terdeteksi 1 lensa kamera pada perangkat ini.");
+        alert("Hanya terdeteksi 1 lensa kamera aktif pada perangkat ini.");
       }
     }
 
@@ -741,9 +745,7 @@
           if (isUserAdmin) {
             hideAlert('alert-siswa');
             document.getElementById('input-nis').value = '';
-            
             sessionStorage.setItem('rnx_admin_auth', 'authenticated_' + Date.now());
-            
             window.location.href = 'admin.html';
             return;
           }
@@ -809,9 +811,8 @@
             setTimeout(() => startCamera('buku'), 1200);
           }
         } else {
-          showAlert('alert-buku', res.message, 'danger');
+          showAlert('alert-buku', res.message || 'Gagal memproses transaksi buku.', 'danger');
           document.getElementById('input-barcode').value = '';
-
           setTimeout(() => startCamera('buku'), 2500);
         }
       } catch (err) {
@@ -829,9 +830,11 @@
         const res = await response.json();
 
         tbody.innerHTML = '';
-        if (res.success && res.data.length > 0) {
+        if (res.success && res.data && res.data.length > 0) {
           res.data.forEach(item => {
-            tbody.innerHTML += `<tr><td><b>${item.barcode}</b></td><td>${item.tglPinjam}</td></tr>`;
+            const bCode = item.barcode || item.bookCode || '-';
+            const tgl = item.tglPinjam || item.waktu || '-';
+            tbody.innerHTML += `<tr><td><b>${bCode}</b></td><td>${tgl}</td></tr>`;
           });
         } else {
           tbody.innerHTML = '<tr><td colspan="2" style="text-align:center; color: var(--text-muted);">No active loans found.</td></tr>';
