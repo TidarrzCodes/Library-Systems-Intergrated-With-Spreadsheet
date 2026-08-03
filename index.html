@@ -244,71 +244,26 @@
       };
 
       try {
-        // Minta izin kamera awal terlebih dahulu agar label perangkat terbaca lengkap
-        await navigator.mediaDevices.getUserMedia({ video: true });
-        const devices = await Html5Qrcode.getCameras();
+        // Menggunakan facingMode environment secara langsung untuk menghindari konflik akses stream ganda pada browser HP
+        await html5QrCode.start(
+          { facingMode: "environment" }, 
+          config, 
+          async (text) => {
+            if (isBusy) return;
+            isBusy = true;
+            playBeep();
+            await stopCamera();
 
-        if (devices && devices.length > 0) {
-          let selectedCamId = devices[0].id;
-
-          // Filter ketat: cari kamera belakang yang TIDAK mengandung kata-kata lensa sekunder/ultra-wide/macro
-          for (let i = 0; i < devices.length; i++) {
-            const label = devices[i].label.toLowerCase();
-            const isBack = label.includes('back') || label.includes('rear') || label.includes('environment') || label.includes('utama') || label.includes('primary') || label.includes('back camera');
-            const isUnwanted = label.includes('ultra') || label.includes('wide') || label.includes('.5') || label.includes('macro') || label.includes('tele') || label.includes('front') || label.includes('depan');
-
-            if (isBack && !isUnwanted) {
-              selectedCamId = devices[i].id;
-              break;
-            }
-          }
-
-          // Jika filter spesifik tidak temukan keyword, pilih kamera belakang standar (biasanya indeks terakhir atau tengah pada HP multi-kamera)
-          if (devices.length > 1 && selectedCamId === devices[0].id) {
-            for (let i = devices.length - 1; i >= 0; i--) {
-              const label = devices[i].label.toLowerCase();
-              if (!label.includes('front') && !label.includes('depan') && !label.includes('ultra') && !label.includes('wide')) {
-                selectedCamId = devices[i].id;
-                break;
-              }
-            }
-          }
-
-          await html5QrCode.start(
-            selectedCamId, 
-            config, 
-            async (text) => {
-              if (isBusy) return;
-              isBusy = true;
-              playBeep();
-              await stopCamera();
-
-              if (target === 'siswa') await processNisScan(text);
-              else await processBukuScan(text);
-              isBusy = false;
-            }, 
-            () => {}
-          );
-        } else {
-          await html5QrCode.start(
-            { facingMode: "environment" }, 
-            config, 
-            async (text) => {
-              if (isBusy) return;
-              isBusy = true;
-              playBeep();
-              await stopCamera();
-              if (target === 'siswa') await processNisScan(text);
-              else await processBukuScan(text);
-              isBusy = false;
-            }, 
-            () => {}
-          );
-        }
+            if (target === 'siswa') await processNisScan(text);
+            else await processBukuScan(text);
+            isBusy = false;
+          }, 
+          () => {}
+        );
       } catch (err) {
         try {
           await html5QrCode.start(
-            { facingMode: "environment" }, 
+            { facingMode: "user" }, 
             config, 
             async (text) => {
               if (isBusy) return;
@@ -322,7 +277,7 @@
             () => {}
           );
         } catch (e) {
-          showAlert(alertId, '⚠️ Kamera tidak dapat diakses. Gunakan input manual.', 'danger');
+          showAlert(alertId, '⚠️ Kamera tidak dapat diakses. Pastikan izin kamera aktif dan gunakan HTTPS/Localhost.', 'danger');
         }
       }
     }
