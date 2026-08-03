@@ -5,7 +5,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Scan|BM400 Cibubur|Digital Library System</title>
-  <!-- Pustaka html5-qrcode versi stabil -->
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -116,8 +115,6 @@
     }
     
     .cam-box { width: 100%; height: 260px; border-radius: 8px; overflow: hidden; position: relative; background: #000; }
-    
-    /* Perbaikan agar video tidak merusak layout */
     .cam-box video { width: 100% !important; height: 100% !important; object-fit: cover !important; border-radius: 8px; }
 
     .badge-siswa {
@@ -201,13 +198,11 @@
   </div>
 
   <script>
-    // MASUKKAN URL WEB APP GOOGLE APPS SCRIPT ANDA DI SINI
     const GAS_URL = "https://script.google.com/macros/s/AKfycbzpNUgsqdCiiKcfshHcni9rNvFLE-_i0gCmYiFcz-gdRcZFugoDdYBGsf0K6CXh1Fs0/exec"; 
 
     let currentMode = '';
     let currentSiswa = { nis: '', nama: '', role: '' };
     let html5QrCode = null;
-    let isProcessing = flag => isBusy = flag;
     let isBusy = false;
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -230,21 +225,19 @@
       startCamera('siswa');
     }
 
-    // Fungsi Mengaktifkan Kamera dengan Optimasi Performa
     async function startCamera(target) {
       await stopCamera();
       const elementId = target === 'siswa' ? 'reader-siswa' : 'reader-buku';
       
       html5QrCode = new Html5Qrcode(elementId);
-      const config = { fps: 15, qrbox: { width: 220, height: 220 } };
+      const config = { fps: 20, qrbox: { width: 220, height: 220 } };
 
       try {
-        // Prioritaskan kamera belakang (environment) jika di HP, atau kamera depan jika desktop
         await html5QrCode.start(
           { facingMode: "environment" }, 
           config, 
           async (text) => {
-            if (isBusy) return; // Mencegah scan ganda berturut-turut yang bikin lag
+            if (isBusy) return;
             isBusy = true;
             playBeep();
             await stopCamera();
@@ -256,7 +249,6 @@
           () => {}
         );
       } catch (e) {
-        // Fallback ke kamera default jika environment gagal
         try {
           await html5QrCode.start({ facingMode: "user" }, config, async (text) => {
             if (isBusy) return;
@@ -280,9 +272,7 @@
             await html5QrCode.stop();
           }
           html5QrCode.clear();
-        } catch (err) {
-          console.error("Gagal menghentikan kamera:", err);
-        }
+        } catch (err) {}
         html5QrCode = null;
       }
     }
