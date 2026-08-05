@@ -4,13 +4,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Scan | BM400 Cibubur | Digital Library System</title>
+  <title>Attendance | BM400 Cibubur | Digital Library System</title>
   <script src="https://unpkg.com/html5-qrcode"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
-    rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- Favicon / Logo di Tab Browser -->
-<link rel="icon" type="image/png" href="./logo.png">
 
   <style>
     :root {
@@ -20,8 +17,6 @@
       --primary: #4f46e5;
       --primary-hover: #4338ca;
       --primary-light: #eef2ff;
-      --info: #0284c7;
-      --info-light: #f0f9ff;
       --success: #10b981;
       --success-light: #ecfdf5;
       --danger: #ef4444;
@@ -41,8 +36,6 @@
       --primary: #4f46e5;
       --primary-hover: #4338ca;
       --primary-light: #eef2ff;
-      --info: #0284c7;
-      --info-light: #f0f9ff;
       --success: #10b981;
       --success-light: #ecfdf5;
       --danger: #ef4444;
@@ -54,12 +47,7 @@
       --border-color: #e2e8f0;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Plus Jakarta Sans', sans-serif;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
 
     body {
       background: var(--bg-color);
@@ -71,60 +59,99 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 20px;
+      padding: 16px;
       transition: background 0.3s ease, color 0.3s ease;
     }
 
     .card {
       background: var(--card-bg);
       width: 100%;
-      max-width: 550px;
-      padding: 32px 24px;
+      max-width: 900px;
+      padding: 24px;
       border-radius: 24px;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
       border: 1px solid var(--border-color);
-      position: relative;
-      transition: background 0.3s ease, border-color 0.3s ease;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    @media(max-width: 768px) {
+      .card { 
+        grid-template-columns: 1fr; 
+        padding: 16px;
+        gap: 16px;
+      }
+    }
+
+    .card-left {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      border-right: 1px solid var(--border-color);
+      padding-right: 20px;
+      text-align: center;
+    }
+    @media(max-width: 768px) {
+      .card-left { 
+        border-right: none; 
+        padding-right: 0; 
+        border-bottom: 1px solid var(--border-color); 
+        padding-bottom: 16px; 
+      }
     }
 
     .card-top-bar {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
+      grid-column: 1 / -1;
       padding-bottom: 12px;
       border-bottom: 1px solid var(--border-color);
     }
 
     .live-clock {
-      font-size: 15px;
+      font-size: 13px;
       font-weight: 800;
       color: var(--text-main);
       display: flex;
       align-items: center;
       gap: 6px;
-      letter-spacing: 0.5px;
     }
 
     .btn-theme-icon {
       background: var(--bg-color);
       color: var(--text-main);
       border: 1px solid var(--border-color);
-      width: 38px;
-      height: 38px;
       border-radius: 10px;
-      font-size: 16px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       transition: all 0.2s ease;
-      flex-shrink: 0;
+      width: 36px; 
+      height: 36px; 
+      font-size: 15px;
     }
 
-    .btn-theme-icon:hover {
-      opacity: 0.85;
-      transform: translateY(-1px);
+    .brand-header-center {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .logo-img {
+      width: 85px;
+      height: 85px;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 2px solid #a7f3d0;
+      box-shadow: 0 4px 10px rgba(18, 161, 75, 0.15);
+      background: #ffffff;
     }
 
     .brand-badge {
@@ -135,166 +162,90 @@
       background: var(--bm-green-light);
       color: var(--bm-green-dark);
       border-radius: 20px;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 700;
-      letter-spacing: 0.5px;
       text-transform: uppercase;
-      margin-bottom: 12px;
-    }
-
-    .header {
-      text-align: center;
-      margin-bottom: 28px;
+      width: fit-content;
     }
 
     .header h1 {
-      font-size: 22px;
+      font-size: 20px;
       font-weight: 800;
       color: var(--text-main);
-      letter-spacing: -0.5px;
       line-height: 1.2;
     }
 
     .header p {
-      font-size: 14px;
+      font-size: 12px;
       color: var(--text-muted);
-      margin-top: 8px;
+      margin-top: 6px;
+      line-height: 1.4;
+      margin-bottom: 16px;
+    }
+
+    /* Style untuk Kotak Library Regulations */
+    .regulations-box {
+      text-align: left;
+      background: var(--bg-color);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 14px;
+      margin-top: 10px;
+    }
+
+    .regulations-box h3 {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--bm-green-primary);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .regulations-box ul {
+      margin-left: 16px;
+      font-size: 11.5px;
+      color: var(--text-muted);
       line-height: 1.5;
     }
 
-    .btn-group {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
+    .regulations-box li {
+      margin-bottom: 4px;
     }
 
-    .btn {
-      width: 100%;
-      padding: 16px 20px;
-      border: none;
-      border-radius: var(--radius);
-      font-size: 15px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      color: white;
-    }
-
-    .btn:active {
-      transform: scale(0.97);
-    }
-
-    .btn-borrow {
-      background: linear-gradient(135deg, #41c863, #12a14b);
-      box-shadow: 0 10px 15px -3px rgba(18, 161, 75, 0.3);
-    }
-
-    .btn-borrow:hover {
-      background: linear-gradient(135deg, #32b553, #0e853d);
-      box-shadow: 0 12px 20px -3px rgba(18, 161, 75, 0.4);
-      transform: translateY(-2px);
-    }
-
-    .btn-return {
-      background: linear-gradient(135deg, #0284c7, #0369a1);
-      box-shadow: 0 10px 15px -3px rgba(2, 132, 199, 0.3);
-    }
-
-    .btn-return:hover {
-      background: linear-gradient(135deg, #0369a1, #075985);
-      box-shadow: 0 12px 20px -3px rgba(2, 132, 199, 0.4);
-      transform: translateY(-2px);
-    }
-
-    .btn-switch {
-      background: #334155;
-      color: #f8fafc;
-      margin-bottom: 15px;
-      font-size: 13px;
-      padding: 10px;
-      border-radius: 10px;
-      border: 1px solid var(--border-color);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      font-weight: 600;
-      width: 100%;
-    }
-
-    .btn-switch:hover {
-      background: #475569;
-    }
-
-    .btn-back {
-      background: var(--bg-color);
-      color: var(--text-muted);
-      margin-top: 20px;
-      border: 1px solid var(--border-color);
-    }
-
-    .btn-back:hover {
-      background: var(--card-bg);
-      color: var(--text-main);
-    }
-
-    .step {
-      display: none;
-    }
-
-    .step.active {
-      display: block;
-      animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    @keyframes slideUp {
-      from {
-        opacity: 0;
-        transform: translateY(12px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+    .footer-left-content {
+      margin-top: auto;
+      padding-top: 16px;
     }
 
     .webcam-container {
       border: 2px solid var(--border-color);
       border-radius: var(--radius);
-      padding: 6px;
-      background: #000000;
+      padding: 4px;
+      background: #000;
       margin-bottom: 12px;
       position: relative;
       overflow: hidden;
-      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
     .cam-box {
       width: 100%;
-      height: 260px;
-      border-radius: 10px;
+      height: 200px;
+      border-radius: 8px;
       overflow: hidden;
       position: relative;
-      background: #000;
     }
 
     .cam-box video {
       width: 100% !important;
       height: 100% !important;
       object-fit: cover !important;
-      border-radius: 8px;
     }
 
     .scanner-laser {
       position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
+      top: 0; left: 0; right: 0;
       height: 3px;
       background: linear-gradient(90deg, transparent, #ef4444, transparent);
       box-shadow: 0 0 15px #ef4444;
@@ -309,309 +260,156 @@
       100% { top: 5%; }
     }
 
-    .badge-siswa {
-      background: var(--bm-green-light);
-      color: var(--bm-green-dark);
-      border: 1px solid #a7f3d0;
-      padding: 14px 18px;
-      border-radius: var(--radius);
-      font-weight: 700;
-      font-size: 14px;
-      margin-bottom: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .divider {
-      display: flex;
-      align-items: center;
-      text-align: center;
-      margin: 20px 0;
-      color: var(--text-muted);
-      font-size: 12px;
-      font-weight: 600;
-      text-transform: uppercase;
-    }
-
-    .divider::before,
-    .divider::after {
-      content: '';
-      flex: 1;
-      border-bottom: 1px solid var(--border-color);
-    }
-
-    .divider span {
-      padding: 0 10px;
-    }
-
-    .form-group {
-      margin-bottom: 16px;
-    }
-
-    label {
-      display: block;
-      font-size: 13px;
-      font-weight: 700;
-      margin-bottom: 8px;
-      color: var(--text-main);
-    }
-
-    input[type="text"] {
+    .form-group { margin-bottom: 12px; text-align: left; }
+    label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 6px; }
+    
+    input[type="text"], select {
       width: 100%;
-      padding: 14px 16px;
+      padding: 12px 14px;
       border: 1px solid var(--border-color);
       border-radius: var(--radius);
       font-size: 14px;
       outline: none;
       background: var(--bg-color);
-      transition: all 0.2s ease;
       color: var(--text-main);
     }
+    input:focus, select:focus { border-color: var(--bm-green-dark); }
 
-    input[type="text"]:focus {
-      border-color: var(--bm-green-dark);
-      background: var(--card-bg);
-      box-shadow: 0 0 0 4px rgba(18, 161, 75, 0.15);
+    .btn {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: var(--radius);
+      color: white;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
     }
+    .btn-switch { background: #334155; margin-bottom: 10px; font-size: 11px; padding: 10px; }
 
     .alert {
-      padding: 14px 16px;
+      padding: 10px 12px;
       border-radius: var(--radius);
-      margin-top: 16px;
-      font-size: 13px;
+      margin-top: 10px;
+      font-size: 12px;
       font-weight: 600;
       display: none;
-      line-height: 1.4;
-    }
-
-    .alert-success {
-      background: var(--success-light);
-      color: #047857;
-      border: 1px solid #a7f3d0;
-    }
-
-    .alert-danger {
-      background: var(--danger-light);
-      color: #b91c1c;
-      border: 1px solid #fca5a5;
-    }
-
-    .table-container {
-      margin-top: 12px;
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius);
-      overflow-x: auto;
-      background: var(--card-bg);
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
-      white-space: nowrap;
-    }
-
-    th {
-      background-color: var(--bg-color);
-      color: var(--text-muted);
-      font-weight: 700;
-      text-transform: uppercase;
-      font-size: 11px;
-      letter-spacing: 0.5px;
-      border-bottom: 1px solid var(--border-color);
-    }
-
-    th,
-    td {
-      padding: 12px 16px;
       text-align: left;
     }
-
-    td {
-      border-bottom: 1px solid var(--border-color);
-      color: var(--text-main);
-      font-weight: 500;
-    }
-
-    tr:last-child td {
-      border-bottom: none;
-    }
+    .alert-success { background: var(--success-light); color: var(--success); border: 1px solid #a7f3d0; }
+    .alert-danger { background: var(--danger-light); color: var(--danger); border: 1px solid #fca5a5; }
 
     .footer-credit {
       text-align: center;
-      margin-top: 24px;
-      font-size: 12px;
+      margin-top: 12px;
+      font-size: 11px;
       color: var(--text-muted);
       font-weight: 600;
-      letter-spacing: 0.3px;
+      grid-column: 1 / -1;
+      border-top: 1px solid var(--border-color);
+      padding-top: 12px;
     }
-
-    .footer-credit span {
-      color: #00f3ff;
-      text-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
-      font-weight: 800;
-    }
-
-    @media (max-width: 640px) {
-      input[type="text"] {
-        font-size: 16px;
-      }
-    }
+    .footer-credit span { color: #00f3ff; font-weight: 800; }
   </style>
 </head>
 
 <body>
 
   <div class="card">
+    <!-- Top Bar -->
     <div class="card-top-bar">
-      <div class="live-clock" id="live-clock">
-        ⏳ Loading...
+      <div class="live-clock" id="live-clock">⏳ Loading...</div>
+      <div style="display: flex; gap: 8px;">
+        <button class="btn-theme-icon" onclick="toggleTheme()"><span id="theme-icon">☀️</span></button>
       </div>
-      <button class="btn-theme-icon" id="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Theme">
-        <span id="theme-icon">☀️</span>
-      </button>
     </div>
 
-    <!-- STEP 1: OPTIONS MENU -->
-    <div id="step-options" class="step active">
+    <!-- Left Side: Logo, Title, & Regulations -->
+    <div class="card-left">
       <div class="header">
-        <div class="brand-badge">📚 BM400 Digital Library</div>
-        <h1>Self-Service Circulation</h1>
-        <p>Select transaction mode to start scanning</p>
-      </div>
-      <div class="btn-group">
-        <button class="btn btn-borrow" onclick="selectMode('borrow')">
-          <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253">
-            </path>
-          </svg>
-          Borrow Book
-        </button>
-        <button class="btn btn-return" onclick="selectMode('return')">
-          <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
-          </svg>
-          Return Book
-        </button>
-      </div>
-      <div class="footer-credit">
-        Copyright & Developed By Raditya NM (<span>RNX</span>)
-      </div>
-    </div>
+        <div class="brand-header-center">
+          <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ_-cHyJ2LBFW-iRld3_b2SVV-PFgJ7a5vDyNEbEZo0BQ&s=10" alt="Logo BM400" class="logo-img">
+          <div class="brand-badge">📚 BM400 Digital Library</div>
+        </div>
+        <h1>Welcome to Library Attendance</h1>
+        <p>Please scan your QR ID & set attendance purpose to record your visit.</p>
 
-    <!-- STEP 2: SCAN IDENTITY (QR CODE) -->
-    <div id="step-siswa" class="step">
-      <div class="header">
-        <h1 id="mode-title">Scan Your QR</h1>
-        <p>Point Your QR Card at the camera area</p>
-      </div>
-
-      <div class="webcam-container">
-        <div class="scanner-laser"></div>
-        <div id="reader-siswa" class="cam-box"></div>
-      </div>
-
-      <div class="divider"><span>Or</span></div>
-
-      <div class="form-group">
-        <label for="input-nis">Enter Your QR ID Manually</label>
-        <input type="text" id="input-nis" placeholder="Type Your QR ID then press Enter..."
-          onkeypress="handleNisManual(event)">
-      </div>
-      <div id="alert-siswa" class="alert"></div>
-      <button class="btn btn-back" onclick="resetToHome()">← Cancel / Go Back</button>
-    </div>
-
-    <!-- STEP 3: SCAN BOOK BARCODE -->
-    <div id="step-buku" class="step">
-      <div class="badge-siswa" id="info-siswa">👤 Student: -</div>
-
-      <div class="webcam-container">
-        <div class="scanner-laser"></div>
-        <div id="reader-buku" class="cam-box"></div>
-      </div>
-      <button type="button" class="btn-switch" onclick="switchCameraTarget()"><i class="fa-solid fa-camera-rotate"></i> Switch Camera Lens (1x / Ultra-Wide)</button>
-
-      <div class="divider"><span>Or</span></div>
-
-      <div class="form-group">
-        <label for="input-barcode">Enter Book Barcode Manually</label>
-        <input type="text" id="input-barcode" placeholder="Type Book Barcode then press Enter..."
-          onkeypress="handleBukuManual(event)">
-      </div>
-
-      <div id="alert-buku" class="alert"></div>
-
-      <div id="container-tabel-pinjaman" style="display: none;">
-        <p
-          style="font-size: 12px; font-weight: 700; margin-top: 20px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">
-          Currently Borrowed Books:</p>
-        <div class="table-container">
-          <table>
-            <thead>
-              <tr>
-                <th>Book Title</th>
-                <th>Book Code</th>
-                <th>Borrowed Date</th>
-              </tr>
-            </thead>
-            <tbody id="tabel-pinjaman-body"></tbody>
-          </table>
+        <!-- Library Regulations Section -->
+        <div class="regulations-box">
+          <h3><i class="fa-solid fa-circle-info"></i> Library Regulations</h3>
+          <ul>
+            <li>Scan your QR ID or enter NIS upon entry.</li>
+            <li>Maintain quietness and a conducive study environment.</li>
+            <li>Handle books and library equipment with care.</li>
+            <li>Food and beverages are strictly prohibited inside.</li>
+            <li>Return borrowed items before or on the due date.</li>
+          </ul>
         </div>
       </div>
 
-      <button class="btn btn-back" onclick="resetToHome()">✓ Finish & Exit</button>
+      <div class="footer-left-content">
+        <p style="font-size: 11px; color: var(--text-muted); font-weight: 600;">* Developed by RNX *</p>
+      </div>
+    </div>
+
+    <!-- Right Side: Scanner & Form -->
+    <div class="card-right">
+      <div class="form-group">
+        <label>Select Attendance Need / Purpose</label>
+        <select id="attendance-need">
+          <option value="Reading">Reading</option>
+          <option value="Study">Study</option>
+          <option value="Borrow Book">Borrow Book</option>
+          <option value="Return Book">Return Book</option>
+          <option value="Group Discussion">Group Discussion</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <div class="webcam-container">
+        <div class="scanner-laser"></div>
+        <div id="reader-attendance" class="cam-box"></div>
+      </div>
+      <button type="button" class="btn btn-switch" onclick="switchCameraTarget()"><i class="fa-solid fa-camera-rotate"></i> Switch Camera Lens</button>
+
+      <div class="form-group">
+        <label>Or Enter QR ID / NIS Manually</label>
+        <input type="text" id="input-attendance-nis" placeholder="Type NIS then press Enter..." onkeypress="handleAttendanceManual(event)">
+      </div>
+
+      <div id="alert-attendance" class="alert"></div>
+    </div>
+
+    <div class="footer-credit">
+      Copyright & Developed By Raditya NM (<span>RNX</span>)
     </div>
   </div>
 
   <script>
     const GAS_URL = "https://script.google.com/macros/s/AKfycbyJoel9cymtOuIUSPK73NtP2qSy3xukR9NyheWx_tCybGV-irJGbt8mABVexY9VfVKd/exec";
 
-    let currentMode = '';
-    let currentSiswa = { nis: '', nama: '', role: '' };
     let html5QrCode = null;
     let cameraDevices = [];
     let currentCameraIndex = 0;
-    let activeTarget = 'siswa';
 
     window.addEventListener('DOMContentLoaded', () => {
       document.documentElement.setAttribute('data-theme', 'dark');
-      document.getElementById('theme-icon').innerText = '☀️';
+      setInterval(() => {
+        document.getElementById('live-clock').innerText = `🕒 ${new Date().toLocaleString('en-US', { hour12: false })}`;
+      }, 1000);
 
-      updateLiveClock();
-      setInterval(updateLiveClock, 1000);
+      startAttendanceCamera();
     });
 
-    function updateLiveClock() {
-      const now = new Date();
-      const options = { 
-        weekday: 'short', 
-        year: 'numeric', 
-        month: 'short', 
-        day: 'numeric', 
-        hour: '2-digit', 
-        minute: '2-digit', 
-        second: '2-digit', 
-        hour12: false 
-      };
-      const timeString = now.toLocaleString('en-US', options);
-      document.getElementById('live-clock').innerHTML = `🕒 ${timeString}`;
-    }
-
     function toggleTheme() {
-      const currentTheme = document.documentElement.getAttribute('data-theme');
-      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-      document.documentElement.setAttribute('data-theme', newTheme);
-
-      const iconEl = document.getElementById('theme-icon');
-      if (newTheme === 'light') {
-        iconEl.innerText = '🌙';
-      } else {
-        iconEl.innerText = '☀️';
-      }
+      const current = document.documentElement.getAttribute('data-theme');
+      const next = current === 'light' ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', next);
+      document.getElementById('theme-icon').innerText = next === 'light' ? '🌙' : '☀️';
     }
 
     function playBeep() {
@@ -629,34 +427,22 @@
       } catch (e) { }
     }
 
-    function selectMode(mode) {
-      currentMode = mode;
-      document.getElementById('mode-title').innerText = mode === 'borrow' ? '📖 Scan QR (Borrow)' : '📦 Scan QR (Return)';
-      showStep('step-siswa');
-      startCamera('siswa');
-    }
-
-    async function startCamera(target) {
-      activeTarget = target;
-      await stopCamera();
-
-      const alertId = target === 'siswa' ? 'alert-siswa' : 'alert-buku';
-      const elementId = target === 'siswa' ? 'reader-siswa' : 'reader-buku';
+    async function startAttendanceCamera() {
+      if (html5QrCode) {
+        try { 
+          if (html5QrCode.isScanning) await html5QrCode.stop(); 
+          html5QrCode.clear(); 
+        } catch(e){}
+      }
 
       const formats = [
         Html5QrcodeSupportedFormats.QR_CODE,
-        Html5QrcodeSupportedFormats.EAN_13,
-        Html5QrcodeSupportedFormats.EAN_8,
         Html5QrcodeSupportedFormats.CODE_128,
-        Html5QrcodeSupportedFormats.CODE_39,
-        Html5QrcodeSupportedFormats.UPC_A,
-        Html5QrcodeSupportedFormats.UPC_E,
-        Html5QrcodeSupportedFormats.ITF,
-        Html5QrcodeSupportedFormats.RSS_14
+        Html5QrcodeSupportedFormats.CODE_39
       ];
 
-      const config = { fps: 20, qrbox: { width: 220, height: 120 }, formatsToSupport: formats };
-      html5QrCode = new Html5Qrcode(elementId);
+      html5QrCode = new Html5Qrcode('reader-attendance');
+      const config = { fps: 20, qrbox: { width: 200, height: 120 }, formatsToSupport: formats };
 
       try {
         if (cameraDevices.length === 0) {
@@ -669,52 +455,33 @@
                 backCams.push(dev);
               }
             });
-            cameraDevices = backCams.length > 0 ? backCams.reverse() : rawDevices;
+            cameraDevices = backCams.length > 0 ? backCams : rawDevices;
           }
         }
 
         if (cameraDevices && cameraDevices.length > 0) {
           let selectedCamId = cameraDevices[currentCameraIndex].id;
-
-          await html5QrCode.start(
-            selectedCamId,
-            config,
-            async (decodedText) => {
-              playBeep();
-              await stopCamera();
-              if (target === 'siswa') processNisScan(decodedText);
-              else if (target === 'buku') processBukuScan(decodedText);
-            },
-            () => {}
-          );
+          await html5QrCode.start(selectedCamId, config, async (text) => {
+            playBeep();
+            await stopCamera();
+            processAttendance(text.trim());
+          }, () => {});
         } else {
-          await html5QrCode.start(
-            { facingMode: { exact: "environment" } },
-            config,
-            async (decodedText) => {
-              playBeep();
-              await stopCamera();
-              if (target === 'siswa') processNisScan(decodedText);
-              else if (target === 'buku') processBukuScan(decodedText);
-            },
-            () => {}
-          );
+          await html5QrCode.start({ facingMode: "environment" }, config, async (text) => {
+            playBeep();
+            await stopCamera();
+            processAttendance(text.trim());
+          }, () => {});
         }
       } catch (err1) {
         try {
-          await html5QrCode.start(
-            { facingMode: "environment" },
-            config,
-            async (decodedText) => {
-              playBeep();
-              await stopCamera();
-              if (target === 'siswa') processNisScan(decodedText);
-              else if (target === 'buku') processBukuScan(decodedText);
-            },
-            () => {}
-          );
+          await html5QrCode.start({ facingMode: "environment" }, config, async (text) => {
+            playBeep();
+            await stopCamera();
+            processAttendance(text.trim());
+          }, () => {});
         } catch (err2) {
-          showAlert(alertId, '⚠️ Webcam cannot be opened. Make sure camera permission is allowed in your browser settings.', 'danger');
+          showAlert('alert-attendance', '⚠️ Camera could not be opened. Please grant browser camera permissions or use manual input.', 'danger');
         }
       }
     }
@@ -722,96 +489,38 @@
     async function switchCameraTarget() {
       if (cameraDevices.length > 1) {
         currentCameraIndex = (currentCameraIndex + 1) % cameraDevices.length;
-        await startCamera(activeTarget);
+        await startAttendanceCamera();
       } else {
-        alert("Only 1 active camera lens is detected on this device.");
+        alert("Only 1 active camera lens detected or permission restricted.");
       }
     }
 
     async function stopCamera() {
       if (html5QrCode) {
-        try {
-          if (html5QrCode.isScanning) {
-            await html5QrCode.stop();
-          }
-          html5QrCode.clear();
-        } catch (err) { }
+        try { 
+          if (html5QrCode.isScanning) await html5QrCode.stop(); 
+          html5QrCode.clear(); 
+        } catch(e){}
       }
     }
 
-    function handleNisManual(e) {
+    function handleAttendanceManual(e) {
       if (e.key === 'Enter') {
         e.preventDefault();
         playBeep();
-        processNisScan(e.target.value.trim());
+        processAttendance(e.target.value.trim());
       }
     }
 
-    async function processNisScan(nis) {
+    async function processAttendance(nis) {
       if (!nis) return;
-      showAlert('alert-siswa', '🔍 Checking Student ID...', 'success');
+      const need = document.getElementById('attendance-need').value;
+      showAlert('alert-attendance', '⏳ Recording attendance...', 'success');
 
-      try {
-        const response = await fetch(`${GAS_URL}?action=getSiswa&nis=${encodeURIComponent(nis)}`);
-        const res = await response.json();
-
-        if (res.success) {
-          const userRole = String(res.role || '').trim().toLowerCase();
-          const userName = String(res.nama || '').trim().toLowerCase();
-
-          currentSiswa = { nis: String(nis).trim(), nama: res.nama, role: userRole };
-
-          const isUserAdmin = userRole === 'admin' || userName.includes('admin');
-
-          if (isUserAdmin) {
-            hideAlert('alert-siswa');
-            document.getElementById('input-nis').value = '';
-            sessionStorage.setItem('rnx_admin_auth', 'authenticated_' + Date.now());
-            window.location.href = 'admin.html';
-            return;
-          }
-
-          document.getElementById('info-siswa').innerText = `👤 Student: ${res.nama} (${nis})`;
-
-          hideAlert('alert-siswa');
-          document.getElementById('input-nis').value = '';
-
-          showStep('step-buku');
-
-          if (currentMode === 'return') {
-            document.getElementById('container-tabel-pinjaman').style.display = 'block';
-            await loadBukuDipinjam(nis);
-          } else {
-            document.getElementById('container-tabel-pinjaman').style.display = 'none';
-            startCamera('buku');
-          }
-        } else {
-          showAlert('alert-siswa', res.message, 'danger');
-          setTimeout(() => startCamera('siswa'), 2500);
-        }
-      } catch (err) {
-        showAlert('alert-siswa', '❌ Failed to connect to server!', 'danger');
-        setTimeout(() => startCamera('siswa'), 2500);
-      }
-    }
-
-    function handleBukuManual(e) {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        playBeep();
-        processBukuScan(e.target.value.trim());
-      }
-    }
-
-    async function processBukuScan(barcode) {
-      if (!barcode) return;
-      showAlert('alert-buku', '⏳ Verifying book availability...', 'success');
-
-      const action = currentMode === 'borrow' ? 'pinjamBuku' : 'kembaliBuku';
       const payload = {
-        action: action,
-        nis: String(currentSiswa.nis).trim(),
-        barcode: String(barcode).trim()
+        action: 'addAttendance',
+        nis: nis,
+        need: need
       };
 
       try {
@@ -823,66 +532,21 @@
         const res = await response.json();
 
         if (res.success) {
-          showAlert('alert-buku', res.message, 'success');
-          document.getElementById('input-barcode').value = '';
-
-          if (currentMode === 'return') {
-            await loadBukuDipinjam(currentSiswa.nis);
-          } else {
-            setTimeout(() => startCamera('buku'), 1200);
-          }
+          showAlert('alert-attendance', res.message, 'success');
+          document.getElementById('input-attendance-nis').value = '';
+          setTimeout(() => {
+            hideAlert('alert-attendance');
+            startAttendanceCamera();
+          }, 3000);
         } else {
-          showAlert('alert-buku', res.message || 'Failed to process book transaction.', 'danger');
-          document.getElementById('input-barcode').value = '';
-          setTimeout(() => startCamera('buku'), 2500);
+          showAlert('alert-attendance', res.message, 'danger');
+          document.getElementById('input-attendance-nis').value = '';
+          setTimeout(() => startAttendanceCamera(), 3000);
         }
       } catch (err) {
-        showAlert('alert-buku', '❌ Failed to process transaction!', 'danger');
-        setTimeout(() => startCamera('buku'), 2000);
+        showAlert('alert-attendance', '❌ Connection error to server!', 'danger');
+        setTimeout(() => startAttendanceCamera(), 3000);
       }
-    }
-
-    async function loadBukuDipinjam(nis) {
-      const tbody = document.getElementById('tabel-pinjaman-body');
-      tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color: var(--text-muted);">Loading...</td></tr>';
-
-      try {
-        const response = await fetch(`${GAS_URL}?action=getBukuDipinjamSiswa&nis=${encodeURIComponent(nis)}`);
-        const res = await response.json();
-
-        tbody.innerHTML = '';
-        if (res.success && res.data && res.data.length > 0) {
-          res.data.forEach(item => {
-            const bTitle = item.judul || item.bookTitle || item.title || '-';
-            const bCode = item.barcode || item.bookCode || '-';
-            const tgl = item.tglPinjam || item.waktu || '-';
-            tbody.innerHTML += `<tr><td><b>${bTitle}</b></td><td>${bCode}</td><td>${tgl}</td></tr>`;
-          });
-        } else {
-          tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color: var(--text-muted);">No active loans found.</td></tr>';
-        }
-
-        setTimeout(() => startCamera('buku'), 800);
-      } catch (err) {
-        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color: var(--danger);">Failed to load data.</td></tr>';
-        setTimeout(() => startCamera('buku'), 800);
-      }
-    }
-
-    function showStep(stepId) {
-      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-      document.getElementById(stepId).classList.add('active');
-    }
-
-    async function resetToHome() {
-      await stopCamera();
-      currentMode = '';
-      currentSiswa = { nis: '', nama: '', role: '' };
-      document.getElementById('input-nis').value = '';
-      document.getElementById('input-barcode').value = '';
-      hideAlert('alert-siswa');
-      hideAlert('alert-buku');
-      showStep('step-options');
     }
 
     function showAlert(id, msg, type) {
