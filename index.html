@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Scan|BM400 Cibubur|Digital Library System</title>
+  <title>Scan | BM400 Cibubur | Digital Library System</title>
   <script src="https://unpkg.com/html5-qrcode"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
     rel="stylesheet">
@@ -78,7 +78,7 @@
     .card {
       background: var(--card-bg);
       width: 100%;
-      max-width: 500px;
+      max-width: 550px;
       padding: 32px 24px;
       border-radius: 24px;
       box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
@@ -401,7 +401,7 @@
       margin-top: 12px;
       border: 1px solid var(--border-color);
       border-radius: var(--radius);
-      overflow: hidden;
+      overflow-x: auto;
       background: var(--card-bg);
     }
 
@@ -409,6 +409,7 @@
       width: 100%;
       border-collapse: collapse;
       font-size: 13px;
+      white-space: nowrap;
     }
 
     th {
@@ -552,7 +553,8 @@
           <table>
             <thead>
               <tr>
-                <th>Barcode</th>
+                <th>Book Title</th>
+                <th>Book Code</th>
                 <th>Borrowed Date</th>
               </tr>
             </thead>
@@ -842,7 +844,7 @@
 
     async function loadBukuDipinjam(nis) {
       const tbody = document.getElementById('tabel-pinjaman-body');
-      tbody.innerHTML = '<tr><td colspan="2" style="text-align:center; color: var(--text-muted);">Loading...</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color: var(--text-muted);">Loading...</td></tr>';
 
       try {
         const response = await fetch(`${GAS_URL}?action=getBukuDipinjamSiswa&nis=${encodeURIComponent(nis)}`);
@@ -851,17 +853,18 @@
         tbody.innerHTML = '';
         if (res.success && res.data && res.data.length > 0) {
           res.data.forEach(item => {
+            const bTitle = item.judul || item.bookTitle || item.title || '-';
             const bCode = item.barcode || item.bookCode || '-';
             const tgl = item.tglPinjam || item.waktu || '-';
-            tbody.innerHTML += `<tr><td><b>${bCode}</b></td><td>${tgl}</td></tr>`;
+            tbody.innerHTML += `<tr><td><b>${bTitle}</b></td><td>${bCode}</td><td>${tgl}</td></tr>`;
           });
         } else {
-          tbody.innerHTML = '<tr><td colspan="2" style="text-align:center; color: var(--text-muted);">No active loans found.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color: var(--text-muted);">No active loans found.</td></tr>';
         }
 
         setTimeout(() => startCamera('buku'), 800);
       } catch (err) {
-        tbody.innerHTML = '<tr><td colspan="2" style="text-align:center; color: var(--danger);">Failed to load data.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color: var(--danger);">Failed to load data.</td></tr>';
         setTimeout(() => startCamera('buku'), 800);
       }
     }
