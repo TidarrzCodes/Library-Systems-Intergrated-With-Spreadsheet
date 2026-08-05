@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Attendance | BM400 Cibubur | Digital Library System</title>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    :root {
+      --bm-green-primary: #41c863;
+      --bm-green-dark: #12a14b;
+      --bm-green-light: #d8f3e0;
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --primary-light: #eef2ff;
+      --success: #10b981;
+      --success-light: #ecfdf5;
+      --danger: #ef4444;
+      --danger-light: #fef2f2;
+      --bg-color: #0f172a;
+      --card-bg: #1e293b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border-color: #334155;
+      --radius: 16px;
+    }
+
+    [data-theme="light"] {
+      --bm-green-primary: #41c863;
+      --bm-green-dark: #12a14b;
+      --bm-green-light: #d8f3e0;
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --primary-light: #eef2ff;
+      --success: #10b981;
+      --success-light: #ecfdf5;
+      --danger: #ef4444;
+      --danger-light: #fef2f2;
+      --bg-color: #f1f5f9;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+
+    body {
+      background: var(--bg-color);
+      background-image: radial-gradient(var(--border-color) 1px, transparent 1px);
+      background-size: 24px 24px;
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    .card {
+      background: var(--card-bg);
+      width: 100%;
+      max-width: 850px;
+      padding: 32px;
+      border-radius: 24px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+      border: 1px solid var(--border-color);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    @media(max-width: 768px) {
+      .card { grid-template-columns: 1fr; }
+    }
+
+    .card-left {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      border-right: 1px solid var(--border-color);
+      padding-right: 24px;
+    }
+    @media(max-width: 768px) {
+      .card-left { border-right: none; padding-right: 0; border-bottom: 1px solid var(--border-color); padding-bottom: 20px; }
+    }
+
+    .card-top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      grid-column: 1 / -1;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .live-clock {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-theme-icon, .btn-home {
+      background: var(--bg-color);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 12px;
+    }
+    .btn-theme-icon { width: 36px; height: 36px; font-size: 15px; }
+    .btn-home { padding: 8px 12px; gap: 6px; }
+
+    /* Logo Bulat / Lingkaran */
+    .logo-container {
+      margin-bottom: 16px;
+    }
+    .logo-placeholder {
+      width: 56px;
+      height: 56px;
+      background: var(--bm-green-light);
+      color: var(--bm-green-dark);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: 800;
+      border: 2px solid #a7f3d0;
+      box-shadow: 0 4px 10px rgba(18, 161, 75, 0.15);
+    }
+
+    .brand-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: var(--bm-green-light);
+      color: var(--bm-green-dark);
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      width: fit-content;
+    }
+
+    .header h1 {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text-main);
+      line-height: 1.2;
+    }
+
+    .header p {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 8px;
+      line-height: 1.5;
+    }
+
+    /* Konten mentok di dasar bawah kolom kiri */
+    .footer-left-content {
+      margin-top: auto;
+      padding-top: 20px;
+    }
+
+    .webcam-container {
+      border: 2px solid var(--border-color);
+      border-radius: var(--radius);
+      padding: 4px;
+      background: #000;
+      margin-bottom: 12px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cam-box {
+      width: 100%;
+      height: 220px;
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .cam-box video {
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover !important;
+    }
+
+    .scanner-laser {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, #ef4444, transparent);
+      box-shadow: 0 0 15px #ef4444;
+      animation: scan 2s infinite ease-in-out;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    @keyframes scan {
+      0% { top: 5%; }
+      50% { top: 90%; }
+      100% { top: 5%; }
+    }
+
+    .form-group { margin-bottom: 14px; }
+    label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 6px; }
+    input[type="text"], select {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      font-size: 13px;
+      outline: none;
+      background: var(--bg-color);
+      color: var(--text-main);
+    }
+    input:focus, select:focus { border-color: var(--bm-green-dark); }
+
+    .btn {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: var(--radius);
+      color: white;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .btn-switch { background: #334155; margin-bottom: 10px; font-size: 11px; padding: 8px; }
+
+    .alert {
+      padding: 10px 12px;
+      border-radius: var(--radius);
+      margin-top: 10px;
+      font-size: 12px;
+      font-weight: 600;
+      display: none;
+    }
+    .alert-success { background: var(--success-light); color: var(--success); border: 1px solid #a7f3d0; }
+    .alert-danger { background: var(--danger-light); color: var(--danger); border: 1px solid #fca5a5; }
+
+    .footer-credit {
+      text-align: center;
+      margin-top: 16px;
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+      grid-column: 1 / -1;
+      border-top: 1px solid var(--border-color);
+      padding-top: 12px;
+    }
+    .footer-credit span { color: #00f3ff; font-weight: 800; }
+  </style>
+</head>
+
+<body>
+
+  <div class="card">
+    <!-- Top Bar -->
+    <div class="card-top-bar">
+      <div class="live-clock" id="live-clock">⏳ Loading...</div>
+      <div style="display: flex; gap: 8px;">
+        <a href="index.html" class="btn-home"><i class="fa-solid fa-arrow-left"></i> Home</a>
+        <button class="btn-theme-icon" onclick="toggleTheme()"><span id="theme-icon">☀️</span></button>
+      </div>
+    </div>
+
+    <!-- Left Side: Logo Lingkaran & Welcome Content -->
+    <div class="card-left">
+      <div class="header">
+        <div class="logo-container">
+          <div class="logo-placeholder">BM</div>
+        </div>
+        <div class="brand-badge">📚 BM400 Digital Library</div>
+        <h1>Welcome to Library Attendance</h1>
+        <p>Please scan your QR ID & set attendance purpose to record your visit.</p>
+      </div>
+
+      <div class="footer-left-content">
+        <p style="font-size: 12px; color: var(--text-muted); font-weight: 600;">* Developed by RNX *</p>
+      </div>
+    </div>
+
+    <!-- Right Side: Scanner & Form -->
+    <div class="card-right">
+      <div class="form-group">
+        <label>Select Attendance Need / Purpose</label>
+        <select id="attendance-need">
+          <option value="Reading / Study">Reading / Study</option>
+          <option value="Borrow / Return Book">Borrow / Return Book</option>
+          <option value="Use Computer / Internet">Use Computer / Internet</option>
+          <option value="Group Discussion">Group Discussion</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <div class="webcam-container">
+        <div class="scanner-laser"></div>
+        <div id="reader-attendance" class="cam-box"></div>
+      </div>
+      <button type="button" class="btn btn-switch" onclick="switchCameraTarget()"><i class="fa-solid fa-camera-rotate"></i> Switch Camera Lens</button>
+
+      <div class="form-group">
+        <label>Or Enter QR ID / NIS Manually</label>
+        <input type="text" id="input-attendance-nis" placeholder="Type NIS then press Enter..." onkeypress="handleAttendanceManual(event)">
+      </div>
+
+      <div id="alert-attendance" class="alert"></div>
+    </div>
+
+    <div class="footer-credit">
+      Copyright & Developed By <span>RNX</span>
+    </div>
+  </div>
+
+  <script>
+    const GAS_URL = "https://script.google.com/macros/s/AKfycby_QsUVTuB0kHxdnRjMBQ9f7OiU9nhBKTbHA1ewngQIMhXFmD570V2Ii3T_8mC2wl3L/exec";
+
+    let html5QrCode = null;
+    let cameraDevices = [];
+    let currentCameraIndex = 0;
+
+    window.addEventListener('DOMContentLoaded', () => {
+      document.documentElement.setAttribute('data-theme', 'dark');
+      setInterval(() => {
+        document.getElementById('live-clock').innerText = `🕒 ${new Date().toLocaleString('en-US', { hour12: false })}`;
+      }, 1000);
+
+      startAttendanceCamera();
+    });
+
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next = current === 'light' ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', next);
+      document.getElementById('theme-icon').innerText = next === 'light' ? '🌙' : '☀️';
+    }
+
+    function playBeep() {
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.15);
+      } catch (e) { }
+    }
+
+    async function startAttendanceCamera() {
+      if (html5QrCode) {
+        try { 
+          if (html5QrCode.isScanning) await html5QrCode.stop(); 
+          html5QrCode.clear(); 
+        } catch(e){}
+      }
+
+      const formats = [
+        Html5QrcodeSupportedFormats.QR_CODE,
+        Html5QrcodeSupportedFormats.CODE_128,
+        Html5QrcodeSupportedFormats.CODE_39
+      ];
+
+      html5QrCode = new Html5Qrcode('reader-attendance');
+      const config = { fps: 20, qrbox: { width: 200, height: 120 }, formatsToSupport: formats };
+
+      try {
+        if (cameraDevices.length === 0) {
+          const rawDevices = await Html5Qrcode.getCameras();
+          if (rawDevices && rawDevices.length > 0) {
+            let backCams = [];
+            rawDevices.forEach(dev => {
+              const label = dev.label.toLowerCase();
+              if (!label.includes('front') && !label.includes('selfie') && !label.includes('depan') && !label.includes('user')) {
+                backCams.push(dev);
+              }
+            });
+            cameraDevices = backCams.length > 0 ? backCams : rawDevices;
+          }
+        }
+
+        if (cameraDevices && cameraDevices.length > 0) {
+          let selectedCamId = cameraDevices[currentCameraIndex].id;
+          await html5QrCode.start(selectedCamId, config, async (text) => {
+            playBeep();
+            await stopCamera();
+            processAttendance(text.trim());
+          }, () => {});
+        } else {
+          await html5QrCode.start({ facingMode: "environment" }, config, async (text) => {
+            playBeep();
+            await stopCamera();
+            processAttendance(text.trim());
+          }, () => {});
+        }
+      } catch (err1) {
+        try {
+          await html5QrCode.start({ facingMode: "environment" }, config, async (text) => {
+            playBeep();
+            await stopCamera();
+            processAttendance(text.trim());
+          }, () => {});
+        } catch (err2) {
+          showAlert('alert-attendance', '⚠️ Camera could not be opened. Please grant browser camera permissions or use manual input.', 'danger');
+        }
+      }
+    }
+
+    async function switchCameraTarget() {
+      if (cameraDevices.length > 1) {
+        currentCameraIndex = (currentCameraIndex + 1) % cameraDevices.length;
+        await startAttendanceCamera();
+      } else {
+        alert("Only 1 active camera lens detected or permission restricted.");
+      }
+    }
+
+    async function stopCamera() {
+      if (html5QrCode) {
+        try { 
+          if (html5QrCode.isScanning) await html5QrCode.stop(); 
+          html5QrCode.clear(); 
+        } catch(e){}
+      }
+    }
+
+    function handleAttendanceManual(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        playBeep();
+        processAttendance(e.target.value.trim());
+      }
+    }
+
+    async function processAttendance(nis) {
+      if (!nis) return;
+      const need = document.getElementById('attendance-need').value;
+      showAlert('alert-attendance', '⏳ Recording attendance...', 'success');
+
+      const payload = {
+        action: 'addAttendance',
+        nis: nis,
+        need: need
+      };
+
+      try {
+        const response = await fetch(GAS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
+        const res = await response.json();
+
+        if (res.success) {
+          showAlert('alert-attendance', res.message, 'success');
+          document.getElementById('input-attendance-nis').value = '';
+          setTimeout(() => {
+            hideAlert('alert-attendance');
+            startAttendanceCamera();
+          }, 3000);
+        } else {
+          showAlert('alert-attendance', res.message, 'danger');
+          document.getElementById('input-attendance-nis').value = '';
+          setTimeout(() => startAttendanceCamera(), 3000);
+        }
+      } catch (err) {
+        showAlert('alert-attendance', '❌ Connection error to server!', 'danger');
+        setTimeout(() => startAttendanceCamera(), 3000);
+      }
+    }
+
+    function showAlert(id, msg, type) {
+      const el = document.getElementById(id);
+      el.innerText = msg;
+      el.className = `alert alert-${type}`;
+      el.style.display = 'block';
+    }
+
+    function hideAlert(id) {
+      document.getElementById(id).style.display = 'none';
+    }
+  </script>
+</body>
+
+</html>
