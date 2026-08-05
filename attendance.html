@@ -90,6 +90,7 @@
       justify-content: space-between;
       border-right: 1px solid var(--border-color);
       padding-right: 20px;
+      text-align: center; /* Membuat teks di kolom kiri rata tengah */
     }
     @media(max-width: 768px) {
       .card-left { 
@@ -134,23 +135,24 @@
       font-size: 15px;
     }
 
-    /* Header Brand Layout (Logo berdampingan dengan badge) */
-    .brand-header-row {
+    /* Header Brand Layout (Logo dan badge ditengahkan) */
+    .brand-header-center {
       display: flex;
+      flex-direction: column;
       align-items: center;
-      gap: 14px;
-      margin-bottom: 14px;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 16px;
     }
 
     .logo-img {
-      width: 75px;
-      height: 75px;
+      width: 85px;
+      height: 85px;
       object-fit: cover;
       border-radius: 50%;
       border: 2px solid #a7f3d0;
       box-shadow: 0 4px 10px rgba(18, 161, 75, 0.15);
       background: #ffffff;
-      flex-shrink: 0;
     }
 
     .brand-badge {
@@ -227,7 +229,7 @@
       100% { top: 5%; }
     }
 
-    .form-group { margin-bottom: 12px; }
+    .form-group { margin-bottom: 12px; text-align: left; }
     label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 6px; }
     
     input[type="text"], select {
@@ -265,6 +267,7 @@
       font-size: 12px;
       font-weight: 600;
       display: none;
+      text-align: left;
     }
     .alert-success { background: var(--success-light); color: var(--success); border: 1px solid #a7f3d0; }
     .alert-danger { background: var(--danger-light); color: var(--danger); border: 1px solid #fca5a5; }
@@ -294,10 +297,10 @@
       </div>
     </div>
 
-    <!-- Left Side: Logo & Badge Berdampingan + Welcome Content -->
+    <!-- Left Side: Logo & Badge di Tengah -->
     <div class="card-left">
       <div class="header">
-        <div class="brand-header-row">
+        <div class="brand-header-center">
           <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ_-cHyJ2LBFW-iRld3_b2SVV-PFgJ7a5vDyNEbEZo0BQ&s=10" alt="Logo BM400" class="logo-img">
           <div class="brand-badge">📚 BM400 Digital Library</div>
         </div>
