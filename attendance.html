@@ -90,7 +90,7 @@
       justify-content: space-between;
       border-right: 1px solid var(--border-color);
       padding-right: 20px;
-      text-align: center; /* Membuat teks di kolom kiri rata tengah */
+      text-align: center;
     }
     @media(max-width: 768px) {
       .card-left { 
@@ -135,14 +135,13 @@
       font-size: 15px;
     }
 
-    /* Header Brand Layout (Logo dan badge ditengahkan) */
     .brand-header-center {
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       gap: 12px;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
     }
 
     .logo-img {
@@ -181,6 +180,38 @@
       color: var(--text-muted);
       margin-top: 6px;
       line-height: 1.4;
+      margin-bottom: 16px;
+    }
+
+    /* Style untuk Kotak Library Regulations */
+    .regulations-box {
+      text-align: left;
+      background: var(--bg-color);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 14px;
+      margin-top: 10px;
+    }
+
+    .regulations-box h3 {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--bm-green-primary);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .regulations-box ul {
+      margin-left: 16px;
+      font-size: 11.5px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .regulations-box li {
+      margin-bottom: 4px;
     }
 
     .footer-left-content {
@@ -297,7 +328,7 @@
       </div>
     </div>
 
-    <!-- Left Side: Logo & Badge di Tengah -->
+    <!-- Left Side: Logo, Title, & Regulations -->
     <div class="card-left">
       <div class="header">
         <div class="brand-header-center">
@@ -306,6 +337,18 @@
         </div>
         <h1>Welcome to Library Attendance</h1>
         <p>Please scan your QR ID & set attendance purpose to record your visit.</p>
+
+        <!-- Library Regulations Section -->
+        <div class="regulations-box">
+          <h3><i class="fa-solid fa-circle-info"></i> Library Regulations</h3>
+          <ul>
+            <li>Scan your QR ID or enter NIS upon entry.</li>
+            <li>Maintain quietness and a conducive study environment.</li>
+            <li>Handle books and library equipment with care.</li>
+            <li>Food and beverages are strictly prohibited inside.</li>
+            <li>Return borrowed items before or on the due date.</li>
+          </ul>
+        </div>
       </div>
 
       <div class="footer-left-content">
