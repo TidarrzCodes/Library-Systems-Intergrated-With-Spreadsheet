@@ -16,7 +16,7 @@
   <script src="https://unpkg.com/html5-qrcode"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <!-- Favicon / Logo di Tab Browser -->
-<link rel="icon" type="image/png" href="./logo.png">
+  <link rel="icon" type="image/png" href="./logo.png">
 
   <style>
     :root {
@@ -101,12 +101,12 @@
     .stat-info h3 { font-size: 20px; font-weight: 800; line-height: 1; }
     .stat-info p { font-size: 11px; color: var(--text-muted); font-weight: 600; margin-top: 3px; }
 
-    .action-bar { display: flex; gap: 8px; margin-bottom: 16px; width: 100%; }
+    .action-bar { display: flex; gap: 8px; margin-bottom: 16px; width: 100%; overflow-x: auto; }
     .btn-nav-action {
       flex: 1; padding: 10px 8px; border-radius: var(--radius);
       border: 1px solid var(--border-color); background: var(--card-bg); color: var(--text-main);
       font-weight: 700; font-size: 11px; cursor: pointer; display: flex; align-items: center;
-      justify-content: center; gap: 4px; transition: all 0.2s ease; text-align: center;
+      justify-content: center; gap: 4px; transition: all 0.2s ease; text-align: center; white-space: nowrap;
     }
     .btn-nav-action.active { background: var(--primary); color: white; border-color: var(--primary); }
 
@@ -222,6 +222,7 @@
       <button class="btn-nav-action active" onclick="switchTab('user')">👤 User</button>
       <button class="btn-nav-action" onclick="switchTab('buku')">📚 Book</button>
       <button class="btn-nav-action" onclick="switchTab('laporan')">📊 Report</button>
+      <button class="btn-nav-action" onclick="switchTab('attendance')">📋 Attendance</button>
     </div>
 
     <!-- TAB 1: USER MANAGEMENT -->
@@ -407,6 +408,38 @@
 
       </div>
     </div>
+
+    <!-- TAB 4: ATTENDANCE MANAGEMENT -->
+    <div id="tab-attendance" class="tab-content">
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <h2 style="margin-bottom:0; border:none; padding:0;">📋 Library Attendance Records</h2>
+          <button class="btn-home" onclick="loadAttendanceList()">🔄 Refresh</button>
+        </div>
+
+        <div class="filter-pills-container">
+          <button class="filter-pill active" onclick="setAttendanceFilter('hari_ini', this)">Today</button>
+          <button class="filter-pill" onclick="setAttendanceFilter('7_hari', this)">7 Days</button>
+          <button class="filter-pill" onclick="setAttendanceFilter('1_bulan', this)">1 Month</button>
+          <button class="filter-pill" onclick="setAttendanceFilter('custom', this)">Date</button>
+          <button class="filter-pill" onclick="setAttendanceFilter('semua', this)">All</button>
+        </div>
+
+        <div id="custom-attendance-date-box" class="form-group" style="display: none;">
+          <input type="date" id="input-custom-attendance-date" onchange="filterAttendanceData()">
+        </div>
+
+        <div class="form-group"><input type="text" id="input-search-attendance" placeholder="🔍 Search by name, NIS, class, or purpose..." oninput="filterAttendanceData()"></div>
+
+        <div class="table-container">
+          <table>
+            <thead><tr><th>No</th><th>Date & Time</th><th>NIS</th><th>Name</th><th>Class</th><th>Purpose / Need</th></tr></thead>
+            <tbody id="tabel-attendance-body"><tr><td colspan="6" style="text-align: center;">Loading attendance data...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <script>
@@ -421,7 +454,9 @@
     let globalUserData = [];
     let globalBukuData = [];
     let globalBorrowedData = [];
+    let globalAttendanceData = [];
     let currentFilterType = 'hari_ini';
+    let currentAttendanceFilterType = 'hari_ini';
 
     window.addEventListener('DOMContentLoaded', () => {
       document.documentElement.setAttribute('data-theme', 'dark');
@@ -446,17 +481,22 @@
       document.querySelectorAll('.action-bar .btn-nav-action').forEach(b => b.classList.remove('active'));
       document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
 
+      const navButtons = document.querySelectorAll('.action-bar .btn-nav-action');
       if (name === 'user') {
-        document.querySelectorAll('.action-bar .btn-nav-action')[0].classList.add('active');
+        navButtons[0].classList.add('active');
         document.getElementById('tab-user').classList.add('active');
       } else if (name === 'buku') {
-        document.querySelectorAll('.action-bar .btn-nav-action')[1].classList.add('active');
+        navButtons[1].classList.add('active');
         document.getElementById('tab-buku').classList.add('active');
       } else if (name === 'laporan') {
-        document.querySelectorAll('.action-bar .btn-nav-action')[2].classList.add('active');
+        navButtons[2].classList.add('active');
         document.getElementById('tab-laporan').classList.add('active');
         loadLaporanTransaksi();
         loadEmailStatusList();
+      } else if (name === 'attendance') {
+        navButtons[3].classList.add('active');
+        document.getElementById('tab-attendance').classList.add('active');
+        loadAttendanceList();
       }
     }
 
@@ -944,7 +984,7 @@
 
     function setFilter(type, btn) {
       currentFilterType = type;
-      document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('#tab-laporan .filter-pill').forEach(p => p.classList.remove('active'));
       btn.classList.add('active');
       document.getElementById('custom-date-box').style.display = type === 'custom' ? 'block' : 'none';
       filterLaporanData();
@@ -995,13 +1035,87 @@
       `).join('') : '<tr><td colspan="5" style="text-align: center;">No transaction data.</td></tr>';
     }
 
+    // --- ATTENDANCE TAB FUNCTIONS ---
+    async function loadAttendanceList() {
+      const tbody = document.getElementById('tabel-attendance-body');
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Loading attendance data...</td></tr>';
+      try {
+        const res = await fetch(`${GAS_URL}?action=getAttendanceList`).then(r => r.json());
+        if (res.success) {
+          globalAttendanceData = res.data || [];
+          filterAttendanceData();
+        } else {
+          // Fallback jika action belum ada di GAS, ambil lewat getAllUsers atau buat struktur kosong
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No attendance data found or endpoint missing.</td></tr>';
+        }
+      } catch (e) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Failed to load attendance records.</td></tr>';
+      }
+    }
+
+    function setAttendanceFilter(type, btn) {
+      currentAttendanceFilterType = type;
+      document.querySelectorAll('#tab-attendance .filter-pill').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('custom-attendance-date-box').style.display = type === 'custom' ? 'block' : 'none';
+      filterAttendanceData();
+    }
+
+    function filterAttendanceData() {
+      const search = document.getElementById('input-search-attendance').value.toLowerCase();
+      const customDate = document.getElementById('input-custom-attendance-date').value;
+      const now = new Date(); now.setHours(0,0,0,0);
+
+      const filtered = globalAttendanceData.filter(item => {
+        let matchDate = true;
+        const dateStr = item.date || item.waktu || '';
+        if (currentAttendanceFilterType !== 'semua' && dateStr && dateStr !== '-') {
+          const parts = dateStr.split(' ')[0].split('/');
+          if (parts.length === 3) {
+            const itemDate = new Date(parts[2], parts[1] - 1, parts[0]);
+            itemDate.setHours(0,0,0,0);
+            if (currentAttendanceFilterType === 'hari_ini') matchDate = itemDate.getTime() === now.getTime();
+            else if (currentAttendanceFilterType === '7_hari') {
+              const limit = new Date(now); limit.setDate(limit.getDate() - 7);
+              matchDate = itemDate >= limit && itemDate <= now;
+            } else if (currentAttendanceFilterType === '1_bulan') {
+              const limit = new Date(now); limit.setMonth(limit.getMonth() - 1);
+              matchDate = itemDate >= limit && itemDate <= now;
+            } else if (currentAttendanceFilterType === 'custom' && customDate) {
+              const target = new Date(customDate); target.setHours(0,0,0,0);
+              matchDate = itemDate.getTime() === target.getTime();
+            }
+          }
+        }
+        const matchSearch = String(item.nis || item.userId || '').toLowerCase().includes(search) || 
+                            String(item.name || item.nama || '').toLowerCase().includes(search) || 
+                            String(item.class || item.kelas || '').toLowerCase().includes(search) ||
+                            String(item.need || '').toLowerCase().includes(search);
+        return matchDate && matchSearch;
+      });
+
+      renderAttendanceTable(filtered);
+    }
+
+    function renderAttendanceTable(data) {
+      const tbody = document.getElementById('tabel-attendance-body');
+      tbody.innerHTML = data.length ? data.map((item, idx) => `
+        <tr>
+          <td>${idx + 1}</td>
+          <td>${item.date || item.waktu || '-'}</td>
+          <td><b>${item.nis || item.userId || '-'}</b></td>
+          <td>${item.name || item.nama || '-'}</td>
+          <td>${item.class || item.kelas || '-'}</td>
+          <td><span class="badge-status badge-pinjam">${item.need || 'Reading'}</span></td>
+        </tr>
+      `).join('') : '<tr><td colspan="6" style="text-align: center;">No attendance records found.</td></tr>';
+    }
+
     function showAlert(id, msg, type) {
       const el = document.getElementById(id);
-      if (el) {
-        el.innerText = msg;
-        el.className = `alert alert-${type}`;
-        el.style.display = 'block';
-      }
+      el.innerText = msg;
+      el.className = `alert alert-${type}`;
+      el.style.display = 'block';
     }
   </script>
 </body>
