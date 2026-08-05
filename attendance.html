@@ -134,20 +134,23 @@
       font-size: 15px;
     }
 
-    /* Logo Styling yang Responsif dan Aman untuk HP */
-    .logo-container {
+    /* Header Brand Layout (Logo berdampingan dengan badge) */
+    .brand-header-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
       margin-bottom: 14px;
     }
 
     .logo-img {
-      width: 85px;
-      height: 85px;
-      max-width: 100%;
+      width: 75px;
+      height: 75px;
       object-fit: cover;
       border-radius: 50%;
       border: 2px solid #a7f3d0;
       box-shadow: 0 4px 10px rgba(18, 161, 75, 0.15);
       background: #ffffff;
+      flex-shrink: 0;
     }
 
     .brand-badge {
@@ -161,7 +164,6 @@
       font-size: 11px;
       font-weight: 700;
       text-transform: uppercase;
-      margin-bottom: 10px;
       width: fit-content;
     }
 
@@ -233,7 +235,7 @@
       padding: 12px 14px;
       border: 1px solid var(--border-color);
       border-radius: var(--radius);
-      font-size: 14px; /* Ditingkatkan sedikit agar nyaman di HP & tidak auto-zoom */
+      font-size: 14px;
       outline: none;
       background: var(--bg-color);
       color: var(--text-main);
@@ -292,16 +294,13 @@
       </div>
     </div>
 
-    <!-- Left Side: Logo Lingkaran & Welcome Content -->
+    <!-- Left Side: Logo & Badge Berdampingan + Welcome Content -->
     <div class="card-left">
       <div class="header">
-        <div class="logo-container">
-  <div class="logo-placeholder">
-    <!-- Ganti bagian src di bawah ini dengan path file lokal Anda (contoh: ./logo.png) atau link gambar online -->
-    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ_-cHyJ2LBFW-iRld3_b2SVV-PFgJ7a5vDyNEbEZo0BQ&s=10" alt="Logo BM400" class="logo-img">
-  </div>
-</div>
-        <div class="brand-badge">📚 BM400 Digital Library</div>
+        <div class="brand-header-row">
+          <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ_-cHyJ2LBFW-iRld3_b2SVV-PFgJ7a5vDyNEbEZo0BQ&s=10" alt="Logo BM400" class="logo-img">
+          <div class="brand-badge">📚 BM400 Digital Library</div>
+        </div>
         <h1>Welcome to Library Attendance</h1>
         <p>Please scan your QR ID & set attendance purpose to record your visit.</p>
       </div>
