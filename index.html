@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Scan | BM400 Cibubur | Digital Library System</title>
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2@1.8.4/dist/quagga.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -623,32 +624,17 @@
 
     let currentMode = '';
     let currentSiswa = { nis: '', nama: '', role: '' };
-    let html5QrCode = null;
+    let html5QrCode = null;         // untuk scan QR siswa
+    let quaggaRunning = false;      // untuk scan barcode buku (Quagga2)
     let cameraDevices = [];
     let currentCameraIndex = 0;
     let activeTarget = 'siswa';
     let currentZoom = 1.0;
     let videoTrackRef = null;
 
-    // Format dipisah per konteks supaya decoder tidak salah tebak format
-    // (menggabungkan QR + 1D barcode dalam satu sesi scan adalah penyebab
-    // utama hasil scan CODE_128 sering "ngaco").
-    // Dibungkus fungsi (lazy) supaya Html5QrcodeSupportedFormats baru
-    // diakses saat dipanggil di dalam startCamera(), bukan saat script
-    // ini pertama kali di-parse — menghindari ReferenceError kalau
-    // library html5-qrcode dari CDN belum sempat ter-load duluan.
+    // ================== SCANNER QR (SISWA) — html5-qrcode ==================
     function getQrFormats() {
       return [Html5QrcodeSupportedFormats.QR_CODE];
-    }
-
-    function getBarcodeFormats() {
-      return [
-        Html5QrcodeSupportedFormats.CODE_128,
-        Html5QrcodeSupportedFormats.CODE_39,
-        Html5QrcodeSupportedFormats.EAN_13,
-        Html5QrcodeSupportedFormats.EAN_8,
-        Html5QrcodeSupportedFormats.UPC_A
-      ];
     }
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -720,14 +706,12 @@
     }
 
     async function startCamera(target) {
-      activeTarget = target;
+      // Fungsi ini sekarang khusus untuk scan QR siswa.
+      // Scan buku ditangani terpisah oleh startBarcodeScanner() (Quagga2).
+      activeTarget = 'siswa';
+      const alertId = 'alert-siswa';
+      const elementId = 'reader-siswa';
 
-      const alertId = target === 'siswa' ? 'alert-siswa' : 'alert-buku';
-      const elementId = target === 'siswa' ? 'reader-siswa' : 'reader-buku';
-      const isSiswa = target === 'siswa';
-
-      // Guard: kalau library CDN belum selesai load, tunggu sebentar lalu
-      // coba lagi otomatis, daripada langsung ReferenceError.
       if (typeof Html5Qrcode === 'undefined' || typeof Html5QrcodeSupportedFormats === 'undefined') {
         showAlert(alertId, '⏳ Loading scanner library, please wait...', 'success');
         setTimeout(() => startCamera(target), 500);
@@ -736,15 +720,10 @@
 
       await stopCamera();
 
-      // Konfigurasi dibedakan: QR (persegi, fps lebih tinggi) vs
-      // Barcode 1D (kotak lebar-pendek, fps lebih rendah supaya gambar
-      // per-frame lebih tajam dan tidak blur).
       const config = {
-        fps: isSiswa ? 15 : 10,
-        qrbox: isSiswa
-          ? { width: 250, height: 250 }
-          : { width: 300, height: 120 },
-        formatsToSupport: isSiswa ? getQrFormats() : getBarcodeFormats(),
+        fps: 15,
+        qrbox: { width: 250, height: 250 },
+        formatsToSupport: getQrFormats(),
         disableFlip: false,
         videoConstraints: {
           facingMode: "environment",
@@ -755,80 +734,180 @@
 
       html5QrCode = new Html5Qrcode(elementId);
 
-      const onScanSuccess = async (decodedText, decodedResult) => {
-        // Filter tambahan: kalau format yang terbaca tidak sesuai konteks
-        // (misal ke-detect QR saat scan buku, atau sebaliknya), abaikan
-        // dan biarkan scanner terus jalan.
-        const formatName = decodedResult && decodedResult.result && decodedResult.result.format
-          ? decodedResult.result.format.formatName
-          : '';
-
-        if (!isSiswa && formatName === 'QR_CODE') return;
-        if (isSiswa && formatName && formatName !== 'QR_CODE') return;
-
+      const onScanSuccess = async (decodedText) => {
         playBeep();
         await stopCamera();
-        const cleanText = sanitizeScannedText(decodedText);
-        if (target === 'siswa') processNisScan(cleanText);
-        else if (target === 'buku') processBukuScan(cleanText);
+        processNisScan(sanitizeScannedText(decodedText));
       };
 
       try {
-        if (cameraDevices.length === 0) {
-          const rawDevices = await Html5Qrcode.getCameras();
-          if (rawDevices && rawDevices.length > 0) {
-            let backCams = [];
-            rawDevices.forEach(dev => {
-              const label = dev.label.toLowerCase();
-              if (!label.includes('front') && !label.includes('selfie') && !label.includes('depan') && !label.includes('user')) {
-                backCams.push(dev);
-              }
-            });
-            cameraDevices = backCams.length > 0 ? backCams.reverse() : rawDevices;
-          }
-        }
-
+        await ensureCameraDevices();
         let cameraConfig = { facingMode: "environment" };
         if (cameraDevices && cameraDevices.length > 0) {
           cameraConfig = { deviceId: { exact: cameraDevices[currentCameraIndex].id } };
         }
 
-        await html5QrCode.start(
-          cameraConfig,
-          config,
-          onScanSuccess,
-          () => {}
-        );
+        await html5QrCode.start(cameraConfig, config, onScanSuccess, () => {});
 
-        setTimeout(() => {
-          const videoEl = document.querySelector(`#${elementId} video`);
-          if (videoEl && videoEl.srcObject) {
-            const track = videoEl.srcObject.getVideoTracks()[0];
-            if (track) {
-              videoTrackRef = track;
-              const capabilities = track.getCapabilities();
-              if (capabilities && capabilities.zoom) {
-                currentZoom = capabilities.zoom.min;
-              }
-              // Aktifkan continuous autofocus kalau device mendukung —
-              // membantu fokus otomatis saat barcode kertas didekatkan.
-              if (capabilities && capabilities.focusMode && capabilities.focusMode.includes('continuous')) {
-                track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] }).catch(() => {});
-              }
-            }
-          }
-        }, 800);
+        setTimeout(() => attachVideoTrackRef(elementId), 800);
 
       } catch (err1) {
         try {
-          await html5QrCode.start(
-            { facingMode: "environment" },
-            config,
-            onScanSuccess,
-            () => {}
-          );
+          await html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess, () => {});
         } catch (err2) {
           showAlert(alertId, '⚠️ Webcam cannot be opened. Make sure camera permission is allowed in your browser settings.', 'danger');
+        }
+      }
+    }
+
+    async function stopCamera() {
+      if (html5QrCode) {
+        try {
+          if (html5QrCode.isScanning) {
+            await html5QrCode.stop();
+          }
+          html5QrCode.clear();
+        } catch (err) { }
+      }
+    }
+
+    // ================== SCANNER BARCODE BUKU — Quagga2 ==================
+    // Quagga2 jauh lebih akurat dibanding decoder bawaan html5-qrcode
+    // (berbasis ZXing) untuk barcode 1D seperti CODE_128, terutama di
+    // kondisi kamera HP/webcam yang tidak sempurna.
+    let detectionBuffer = [];
+    const REQUIRED_MATCHES = 3;   // kode yang sama harus terbaca 3x sebelum diterima
+    const BUFFER_SIZE = 6;
+
+    function startBarcodeScanner() {
+      activeTarget = 'buku';
+      detectionBuffer = [];
+
+      if (typeof Quagga === 'undefined') {
+        showAlert('alert-buku', '⏳ Loading scanner library, please wait...', 'success');
+        setTimeout(() => startBarcodeScanner(), 500);
+        return;
+      }
+
+      stopBarcodeScanner();
+
+      let constraints = { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 } };
+      if (cameraDevices && cameraDevices.length > 0) {
+        constraints = {
+          deviceId: { exact: cameraDevices[currentCameraIndex].id },
+          width: { ideal: 1920 },
+          height: { ideal: 1080 }
+        };
+      }
+
+      Quagga.init({
+        inputStream: {
+          type: "LiveStream",
+          target: document.querySelector('#reader-buku'),
+          constraints: constraints,
+          area: { top: "15%", right: "5%", left: "5%", bottom: "15%" }
+        },
+        locator: {
+          patchSize: "medium",
+          halfSample: true
+        },
+        numOfWorkers: (navigator.hardwareConcurrency ? Math.min(navigator.hardwareConcurrency, 4) : 2),
+        frequency: 10,
+        decoder: {
+          readers: [
+            "code_128_reader",
+            "code_39_reader",
+            "ean_reader",
+            "ean_8_reader",
+            "upc_reader"
+          ],
+          multiple: false
+        },
+        locate: true
+      }, async (err) => {
+        if (err) {
+          console.error(err);
+          showAlert('alert-buku', '⚠️ Webcam cannot be opened. Make sure camera permission is allowed in your browser settings.', 'danger');
+          return;
+        }
+        Quagga.start();
+        quaggaRunning = true;
+        await ensureCameraDevices();
+        setTimeout(() => attachVideoTrackRef('reader-buku'), 800);
+      });
+
+      Quagga.onDetected(handleQuaggaDetected);
+    }
+
+    function handleQuaggaDetected(result) {
+      if (!result || !result.codeResult || !result.codeResult.code) return;
+      const code = result.codeResult.code.trim();
+      if (!code) return;
+
+      // Voting multi-frame: tolak kode yang cuma nongol sekali (biasanya
+      // hasil salah baca), baru terima kalau kode yang SAMA PERSIS
+      // muncul berkali-kali berturut-turut.
+      detectionBuffer.push(code);
+      if (detectionBuffer.length > BUFFER_SIZE) detectionBuffer.shift();
+
+      const counts = {};
+      detectionBuffer.forEach(c => { counts[c] = (counts[c] || 0) + 1; });
+      let winner = null, winnerCount = 0;
+      Object.keys(counts).forEach(c => {
+        if (counts[c] > winnerCount) { winner = c; winnerCount = counts[c]; }
+      });
+
+      if (winner && winnerCount >= REQUIRED_MATCHES) {
+        detectionBuffer = [];
+        playBeep();
+        stopBarcodeScanner();
+        processBukuScan(sanitizeScannedText(winner));
+      }
+    }
+
+    function stopBarcodeScanner() {
+      try {
+        Quagga.offDetected(handleQuaggaDetected);
+        if (quaggaRunning) {
+          Quagga.stop();
+        }
+      } catch (e) { }
+      quaggaRunning = false;
+    }
+
+    // ================== UTILITAS BERSAMA (kamera, zoom) ==================
+    async function ensureCameraDevices() {
+      if (cameraDevices.length > 0) return;
+      try {
+        const rawDevices = typeof Html5Qrcode !== 'undefined'
+          ? await Html5Qrcode.getCameras()
+          : [];
+        if (rawDevices && rawDevices.length > 0) {
+          let backCams = [];
+          rawDevices.forEach(dev => {
+            const label = dev.label.toLowerCase();
+            if (!label.includes('front') && !label.includes('selfie') && !label.includes('depan') && !label.includes('user')) {
+              backCams.push(dev);
+            }
+          });
+          cameraDevices = backCams.length > 0 ? backCams.reverse() : rawDevices;
+        }
+      } catch (e) { }
+    }
+
+    function attachVideoTrackRef(elementId) {
+      const videoEl = document.querySelector(`#${elementId} video`);
+      if (videoEl && videoEl.srcObject) {
+        const track = videoEl.srcObject.getVideoTracks()[0];
+        if (track) {
+          videoTrackRef = track;
+          const capabilities = track.getCapabilities ? track.getCapabilities() : {};
+          if (capabilities && capabilities.zoom) {
+            currentZoom = capabilities.zoom.min;
+          }
+          if (capabilities && capabilities.focusMode && capabilities.focusMode.includes('continuous')) {
+            track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] }).catch(() => {});
+          }
         }
       }
     }
@@ -837,7 +916,11 @@
       if (cameraDevices.length > 1) {
         currentCameraIndex = (currentCameraIndex + 1) % cameraDevices.length;
         currentZoom = 1.0;
-        await startCamera(activeTarget);
+        if (activeTarget === 'buku') {
+          startBarcodeScanner();
+        } else {
+          await startCamera('siswa');
+        }
       } else {
         alert("Only 1 active camera lens is detected on this device.");
       }
@@ -861,18 +944,6 @@
         } catch (e) {
           console.log("Zoom error:", e);
         }
-      }
-    }
-
-    async function stopCamera() {
-      videoTrackRef = null;
-      if (html5QrCode) {
-        try {
-          if (html5QrCode.isScanning) {
-            await html5QrCode.stop();
-          }
-          html5QrCode.clear();
-        } catch (err) { }
       }
     }
 
@@ -920,7 +991,7 @@
             await loadBukuDipinjam(nis);
           } else {
             document.getElementById('container-tabel-pinjaman').style.display = 'none';
-            startCamera('buku');
+            startBarcodeScanner();
           }
         } else {
           showAlert('alert-siswa', res.message, 'danger');
@@ -966,16 +1037,16 @@
           if (currentMode === 'return') {
             await loadBukuDipinjam(currentSiswa.nis);
           } else {
-            setTimeout(() => startCamera('buku'), 1200);
+            setTimeout(() => startBarcodeScanner(), 1200);
           }
         } else {
           showAlert('alert-buku', res.message || 'Failed to process book transaction.', 'danger');
           document.getElementById('input-barcode').value = '';
-          setTimeout(() => startCamera('buku'), 2500);
+          setTimeout(() => startBarcodeScanner(), 2500);
         }
       } catch (err) {
         showAlert('alert-buku', '❌ Failed to process transaction!', 'danger');
-        setTimeout(() => startCamera('buku'), 2000);
+        setTimeout(() => startBarcodeScanner(), 2000);
       }
     }
 
@@ -999,10 +1070,10 @@
           tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color: var(--text-muted);">No active loans found.</td></tr>';
         }
 
-        setTimeout(() => startCamera('buku'), 800);
+        setTimeout(() => startBarcodeScanner(), 800);
       } catch (err) {
         tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color: var(--danger);">Failed to load data.</td></tr>';
-        setTimeout(() => startCamera('buku'), 800);
+        setTimeout(() => startBarcodeScanner(), 800);
       }
     }
 
@@ -1013,6 +1084,8 @@
 
     async function resetToHome() {
       await stopCamera();
+      stopBarcodeScanner();
+      videoTrackRef = null;
       currentMode = '';
       currentSiswa = { nis: '', nama: '', role: '' };
       document.getElementById('input-nis').value = '';
