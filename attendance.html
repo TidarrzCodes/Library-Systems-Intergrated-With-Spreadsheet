@@ -9,7 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- Favicon / Logo di Tab Browser -->
-<link rel="icon" type="image/png" href="./logo.png">
+  <link rel="icon" type="image/png" href="./logo.png">
 
   <style>
     :root {
@@ -111,6 +111,7 @@
       grid-column: 1 / -1;
       padding-bottom: 12px;
       border-bottom: 1px solid var(--border-color);
+      gap: 10px;
     }
 
     .live-clock {
@@ -120,6 +121,12 @@
       display: flex;
       align-items: center;
       gap: 6px;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
     .btn-theme-icon {
@@ -135,6 +142,29 @@
       width: 36px; 
       height: 36px; 
       font-size: 15px;
+    }
+
+    /* Style untuk Tombol Back di sebelah tombol tema */
+    .btn-back-top {
+      background: var(--bg-color);
+      color: var(--text-muted);
+      border: 1px solid var(--border-color);
+      text-decoration: none;
+      padding: 0 12px;
+      height: 36px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-back-top:hover {
+      background: var(--card-bg);
+      color: var(--text-main);
+      border-color: var(--text-muted);
     }
 
     .brand-header-center {
@@ -322,11 +352,12 @@
 <body>
 
   <div class="card">
-    <!-- Top Bar -->
+    <!-- Top Bar dengan Tombol Back di Samping Tombol Tema -->
     <div class="card-top-bar">
       <div class="live-clock" id="live-clock">⏳ Loading...</div>
-      <div style="display: flex; gap: 8px;">
+      <div class="top-actions">
         <button class="btn-theme-icon" onclick="toggleTheme()"><span id="theme-icon">☀️</span></button>
+        <a href="./index.html" class="btn-back-top"><i class="fa-solid fa-arrow-left"></i> Back to Menu</a>
       </div>
     </div>
 
@@ -353,6 +384,9 @@
         </div>
       </div>
 
+      <div class="footer-left-content">
+        <p style="font-size: 11px; color: var(--text-muted); font-weight: 600;">* Developed by RNX *</p>
+      </div>
     </div>
 
     <!-- Right Side: Scanner & Form -->
