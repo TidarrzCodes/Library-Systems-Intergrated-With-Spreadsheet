@@ -225,7 +225,7 @@
     .btn-switch {
       background: #334155;
       color: #f8fafc;
-      margin-bottom: 15px;
+      margin-bottom: 8px;
       font-size: 13px;
       padding: 10px;
       border-radius: 10px;
@@ -241,6 +241,32 @@
 
     .btn-switch:hover {
       background: #475569;
+    }
+
+    .zoom-controls {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .btn-zoom {
+      flex: 1;
+      background: #1e293b;
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      padding: 8px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn-zoom:hover {
+      background: var(--border-color);
     }
 
     .btn-back {
@@ -288,7 +314,7 @@
 
     .cam-box {
       width: 100%;
-      height: 260px;
+      height: 240px;
       border-radius: 10px;
       overflow: hidden;
       position: relative;
@@ -339,7 +365,7 @@
       display: flex;
       align-items: center;
       text-align: center;
-      margin: 20px 0;
+      margin: 16px 0;
       color: var(--text-muted);
       font-size: 12px;
       font-weight: 600;
@@ -552,7 +578,13 @@
         <div class="scanner-laser"></div>
         <div id="reader-buku" class="cam-box"></div>
       </div>
-      <button type="button" class="btn-switch" onclick="switchCameraTarget()"><i class="fa-solid fa-camera-rotate"></i> Switch Camera Lens (1x / Ultra-Wide)</button>
+
+      <!-- Tombol Switch Kamera & Kontrol Zoom untuk Membantu Fokus Barcode Kertas -->
+      <button type="button" class="btn-switch" onclick="switchCameraTarget()"><i class="fa-solid fa-camera-rotate"></i> Switch Camera Lens</button>
+      <div class="zoom-controls">
+        <button type="button" class="btn-zoom" onclick="adjustZoom(-0.5)"><i class="fa-solid fa-magnifying-glass-minus"></i> Zoom Out (-)</button>
+        <button type="button" class="btn-zoom" onclick="adjustZoom(0.5)"><i class="fa-solid fa-magnifying-glass-plus"></i> Zoom In (+)</button>
+      </div>
 
       <div class="divider"><span>Or</span></div>
 
@@ -595,6 +627,8 @@
     let cameraDevices = [];
     let currentCameraIndex = 0;
     let activeTarget = 'siswa';
+    let currentZoom = 1.0;
+    let videoTrackRef = null;
 
     window.addEventListener('DOMContentLoaded', () => {
       document.documentElement.setAttribute('data-theme', 'dark');
@@ -680,7 +714,7 @@
         Html5QrcodeSupportedFormats.UPC_A
       ];
 
-      // KONFIGURASI SENSITIVITAS TINGGI (FPS 30, Area Scan Diperbesar)
+      // Konfigurasi sensitivitas tinggi agar barcode kertas cepat terbaca
       const config = { 
         fps: 30, 
         qrbox: { width: 280, height: 140 }, 
@@ -707,35 +741,39 @@
           }
         }
 
+        let startConfigIdOrFacing = { facingMode: "environment" };
         if (cameraDevices && cameraDevices.length > 0) {
-          let selectedCamId = cameraDevices[currentCameraIndex].id;
-
-          await html5QrCode.start(
-            selectedCamId,
-            config,
-            async (decodedText) => {
-              playBeep();
-              await stopCamera();
-              const cleanText = sanitizeScannedText(decodedText);
-              if (target === 'siswa') processNisScan(cleanText);
-              else if (target === 'buku') processBukuScan(cleanText);
-            },
-            () => {}
-          );
-        } else {
-          await html5QrCode.start(
-            { facingMode: { exact: "environment" } },
-            config,
-            async (decodedText) => {
-              playBeep();
-              await stopCamera();
-              const cleanText = sanitizeScannedText(decodedText);
-              if (target === 'siswa') processNisScan(cleanText);
-              else if (target === 'buku') processBukuScan(cleanText);
-            },
-            () => {}
-          );
+          startConfigIdOrFacing = cameraDevices[currentCameraIndex].id;
         }
+
+        await html5QrCode.start(
+          startConfigIdOrFacing,
+          config,
+          async (decodedText) => {
+            playBeep();
+            await stopCamera();
+            const cleanText = sanitizeScannedText(decodedText);
+            if (target === 'siswa') processNisScan(cleanText);
+            else if (target === 'buku') processBukuScan(cleanText);
+          },
+          () => {}
+        );
+
+        // Ambil track video aktif untuk mendukung kontrol zoom fisik kamera HP
+        setTimeout(() => {
+          const videoEl = document.querySelector(`#${elementId} video`);
+          if (videoEl && videoEl.srcObject) {
+            const track = videoEl.srcObject.getVideoTracks()[0];
+            if (track) {
+              videoTrackRef = track;
+              const capabilities = track.getCapabilities();
+              if (capabilities && capabilities.zoom) {
+                currentZoom = capabilities.zoom.min;
+              }
+            }
+          }
+        }, 800);
+
       } catch (err1) {
         try {
           await html5QrCode.start(
@@ -759,13 +797,37 @@
     async function switchCameraTarget() {
       if (cameraDevices.length > 1) {
         currentCameraIndex = (currentCameraIndex + 1) % cameraDevices.length;
+        currentZoom = 1.0;
         await startCamera(activeTarget);
       } else {
         alert("Only 1 active camera lens is detected on this device.");
       }
     }
 
+    async function adjustZoom(delta) {
+      if (videoTrackRef) {
+        try {
+          const capabilities = videoTrackRef.getCapabilities();
+          if (capabilities && capabilities.zoom) {
+            currentZoom = Math.max(capabilities.zoom.min, Math.min(capabilities.zoom.max, currentZoom + delta));
+            await videoTrackRef.applyConstraints({ advanced: [{ zoom: currentZoom }] });
+          } else {
+            // Fallback CSS scale jika hardware zoom tidak didukung browser
+            const videoEl = document.querySelector(`#reader-${activeTarget} video`);
+            if (videoEl) {
+              currentZoom = Math.max(1, Math.min(3, currentZoom + delta));
+              videoEl.style.transform = `scale(${currentZoom})`;
+              videoEl.style.transformOrigin = 'center center';
+            }
+          }
+        } catch (e) {
+          console.log("Zoom error:", e);
+        }
+      }
+    }
+
     async function stopCamera() {
+      videoTrackRef = null;
       if (html5QrCode) {
         try {
           if (html5QrCode.isScanning) {
@@ -861,7 +923,7 @@
 
         if (res.success) {
           showAlert('alert-buku', res.message, 'success');
-          document.getElementById('input-barcode').value = '';
+          document.getElementById('input-barcode').value,document.getElementById('input-barcode').value = '';
 
           if (currentMode === 'return') {
             await loadBukuDipinjam(currentSiswa.nis);
@@ -881,7 +943,7 @@
 
     async function loadBukuDipinjam(nis) {
       const tbody = document.getElementById('tabel-pinjaman-body');
-      tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color: var(--text-muted);">Loading...</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color: var.text-muted);">Loading...</td></tr>';
 
       try {
         const response = await fetch(`${GAS_URL}?action=getBukuDipinjamSiswa&nis=${encodeURIComponent(nis)}`);
