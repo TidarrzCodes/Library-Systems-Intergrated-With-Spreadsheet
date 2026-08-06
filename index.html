@@ -211,7 +211,6 @@
       transform: translateY(-2px);
     }
 
-    /* Warna Baru untuk Tombol Attendance (Oranye/Amber) */
     .btn-attendance {
       background: linear-gradient(135deg, #f59e0b, #d97706);
       box-shadow: 0 10px 15px -3px rgba(245, 158, 11, 0.3);
@@ -494,7 +493,6 @@
         <p>Select transaction mode to start scanning</p>
       </div>
       <div class="btn-group">
-        <!-- Tombol Attendance Diperbaiki (Tag <a> membungkus class btn btn-attendance dengan benar) -->
         <a href="./attendance.html" class="btn btn-attendance">
           <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -675,17 +673,23 @@
 
       const formats = [
         Html5QrcodeSupportedFormats.QR_CODE,
-        Html5QrcodeSupportedFormats.EAN_13,
-        Html5QrcodeSupportedFormats.EAN_8,
         Html5QrcodeSupportedFormats.CODE_128,
         Html5QrcodeSupportedFormats.CODE_39,
-        Html5QrcodeSupportedFormats.UPC_A,
-        Html5QrcodeSupportedFormats.UPC_E,
-        Html5QrcodeSupportedFormats.ITF,
-        Html5QrcodeSupportedFormats.RSS_14
+        Html5QrcodeSupportedFormats.EAN_13,
+        Html5QrcodeSupportedFormats.EAN_8,
+        Html5QrcodeSupportedFormats.UPC_A
       ];
 
-      const config = { fps: 20, qrbox: { width: 220, height: 120 }, formatsToSupport: formats };
+      // KONFIGURASI SENSITIVITAS TINGGI (FPS 30, Area Scan Diperbesar)
+      const config = { 
+        fps: 30, 
+        qrbox: { width: 280, height: 140 }, 
+        formatsToSupport: formats,
+        experimentalFeatures: {
+          useBarCodeDetectorIfSupported: true
+        }
+      };
+
       html5QrCode = new Html5Qrcode(elementId);
 
       try {
