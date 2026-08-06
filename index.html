@@ -629,6 +629,17 @@
       } catch (e) { }
     }
 
+    // Fungsi pembersih teks barcode agar karakter khusus seperti garis miring (/) terbaca normal
+    function sanitizeScannedText(text) {
+      if (!text) return "";
+      try {
+        // Mengatasi masalah encoding karakter khusus pada Code 128 / QR
+        return decodeURIComponent(escape(text.trim()));
+      } catch (e) {
+        return text.trim();
+      }
+    }
+
     function selectMode(mode) {
       currentMode = mode;
       document.getElementById('mode-title').innerText = mode === 'borrow' ? '📖 Scan QR (Borrow)' : '📦 Scan QR (Return)';
@@ -682,8 +693,9 @@
             async (decodedText) => {
               playBeep();
               await stopCamera();
-              if (target === 'siswa') processNisScan(decodedText);
-              else if (target === 'buku') processBukuScan(decodedText);
+              const cleanText = sanitizeScannedText(decodedText);
+              if (target === 'siswa') processNisScan(cleanText);
+              else if (target === 'buku') processBukuScan(cleanText);
             },
             () => {}
           );
@@ -694,8 +706,9 @@
             async (decodedText) => {
               playBeep();
               await stopCamera();
-              if (target === 'siswa') processNisScan(decodedText);
-              else if (target === 'buku') processBukuScan(decodedText);
+              const cleanText = sanitizeScannedText(decodedText);
+              if (target === 'siswa') processNisScan(cleanText);
+              else if (target === 'buku') processBukuScan(cleanText);
             },
             () => {}
           );
@@ -708,8 +721,9 @@
             async (decodedText) => {
               playBeep();
               await stopCamera();
-              if (target === 'siswa') processNisScan(decodedText);
-              else if (target === 'buku') processBukuScan(decodedText);
+              const cleanText = sanitizeScannedText(decodedText);
+              if (target === 'siswa') processNisScan(cleanText);
+              else if (target === 'buku') processBukuScan(cleanText);
             },
             () => {}
           );
@@ -743,7 +757,7 @@
       if (e.key === 'Enter') {
         e.preventDefault();
         playBeep();
-        processNisScan(e.target.value.trim());
+        processNisScan(sanitizeScannedText(e.target.value));
       }
     }
 
@@ -799,7 +813,7 @@
       if (e.key === 'Enter') {
         e.preventDefault();
         playBeep();
-        processBukuScan(e.target.value.trim());
+        processBukuScan(sanitizeScannedText(e.target.value));
       }
     }
 
