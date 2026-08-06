@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Scan | BM400 Cibubur | Digital Library System</title>
-  <script src="https://unpkg.com/html5-qrcode"></script>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -221,7 +221,7 @@
       box-shadow: 0 12px 20px -3px rgba(245, 158, 11, 0.4);
       transform: translateY(-2px);
     }
-    
+
     .btn-switch {
       background: #334155;
       color: #f8fafc;
@@ -630,6 +630,27 @@
     let currentZoom = 1.0;
     let videoTrackRef = null;
 
+    // Format dipisah per konteks supaya decoder tidak salah tebak format
+    // (menggabungkan QR + 1D barcode dalam satu sesi scan adalah penyebab
+    // utama hasil scan CODE_128 sering "ngaco").
+    // Dibungkus fungsi (lazy) supaya Html5QrcodeSupportedFormats baru
+    // diakses saat dipanggil di dalam startCamera(), bukan saat script
+    // ini pertama kali di-parse — menghindari ReferenceError kalau
+    // library html5-qrcode dari CDN belum sempat ter-load duluan.
+    function getQrFormats() {
+      return [Html5QrcodeSupportedFormats.QR_CODE];
+    }
+
+    function getBarcodeFormats() {
+      return [
+        Html5QrcodeSupportedFormats.CODE_128,
+        Html5QrcodeSupportedFormats.CODE_39,
+        Html5QrcodeSupportedFormats.EAN_13,
+        Html5QrcodeSupportedFormats.EAN_8,
+        Html5QrcodeSupportedFormats.UPC_A
+      ];
+    }
+
     window.addEventListener('DOMContentLoaded', () => {
       document.documentElement.setAttribute('data-theme', 'dark');
       document.getElementById('theme-icon').innerText = '☀️';
@@ -640,15 +661,15 @@
 
     function updateLiveClock() {
       const now = new Date();
-      const options = { 
-        weekday: 'short', 
-        year: 'numeric', 
-        month: 'short', 
-        day: 'numeric', 
-        hour: '2-digit', 
-        minute: '2-digit', 
-        second: '2-digit', 
-        hour12: false 
+      const options = {
+        weekday: 'short',
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
       };
       const timeString = now.toLocaleString('en-US', options);
       document.getElementById('live-clock').innerHTML = `🕒 ${timeString}`;
@@ -700,30 +721,57 @@
 
     async function startCamera(target) {
       activeTarget = target;
-      await stopCamera();
 
       const alertId = target === 'siswa' ? 'alert-siswa' : 'alert-buku';
       const elementId = target === 'siswa' ? 'reader-siswa' : 'reader-buku';
+      const isSiswa = target === 'siswa';
 
-      const formats = [
-        Html5QrcodeSupportedFormats.CODE_128,
-        Html5QrcodeSupportedFormats.CODE_39,
-        Html5QrcodeSupportedFormats.EAN_13,
-        Html5QrcodeSupportedFormats.EAN_8,
-        Html5QrcodeSupportedFormats.QR_CODE,
-        Html5QrcodeSupportedFormats.UPC_A
-      ];
+      // Guard: kalau library CDN belum selesai load, tunggu sebentar lalu
+      // coba lagi otomatis, daripada langsung ReferenceError.
+      if (typeof Html5Qrcode === 'undefined' || typeof Html5QrcodeSupportedFormats === 'undefined') {
+        showAlert(alertId, '⏳ Loading scanner library, please wait...', 'success');
+        setTimeout(() => startCamera(target), 500);
+        return;
+      }
 
-      const config = { 
-        fps: 30, 
-        qrbox: { width: 320, height: 160 }, 
-        formatsToSupport: formats,
-        experimentalFeatures: {
-          useBarCodeDetectorIfSupported: true
+      await stopCamera();
+
+      // Konfigurasi dibedakan: QR (persegi, fps lebih tinggi) vs
+      // Barcode 1D (kotak lebar-pendek, fps lebih rendah supaya gambar
+      // per-frame lebih tajam dan tidak blur).
+      const config = {
+        fps: isSiswa ? 15 : 10,
+        qrbox: isSiswa
+          ? { width: 250, height: 250 }
+          : { width: 300, height: 120 },
+        formatsToSupport: isSiswa ? getQrFormats() : getBarcodeFormats(),
+        disableFlip: false,
+        videoConstraints: {
+          facingMode: "environment",
+          width: { ideal: 1920 },
+          height: { ideal: 1080 }
         }
       };
 
       html5QrCode = new Html5Qrcode(elementId);
+
+      const onScanSuccess = async (decodedText, decodedResult) => {
+        // Filter tambahan: kalau format yang terbaca tidak sesuai konteks
+        // (misal ke-detect QR saat scan buku, atau sebaliknya), abaikan
+        // dan biarkan scanner terus jalan.
+        const formatName = decodedResult && decodedResult.result && decodedResult.result.format
+          ? decodedResult.result.format.formatName
+          : '';
+
+        if (!isSiswa && formatName === 'QR_CODE') return;
+        if (isSiswa && formatName && formatName !== 'QR_CODE') return;
+
+        playBeep();
+        await stopCamera();
+        const cleanText = sanitizeScannedText(decodedText);
+        if (target === 'siswa') processNisScan(cleanText);
+        else if (target === 'buku') processBukuScan(cleanText);
+      };
 
       try {
         if (cameraDevices.length === 0) {
@@ -748,13 +796,7 @@
         await html5QrCode.start(
           cameraConfig,
           config,
-          async (decodedText) => {
-            playBeep();
-            await stopCamera();
-            const cleanText = sanitizeScannedText(decodedText);
-            if (target === 'siswa') processNisScan(cleanText);
-            else if (target === 'buku') processBukuScan(cleanText);
-          },
+          onScanSuccess,
           () => {}
         );
 
@@ -768,6 +810,11 @@
               if (capabilities && capabilities.zoom) {
                 currentZoom = capabilities.zoom.min;
               }
+              // Aktifkan continuous autofocus kalau device mendukung —
+              // membantu fokus otomatis saat barcode kertas didekatkan.
+              if (capabilities && capabilities.focusMode && capabilities.focusMode.includes('continuous')) {
+                track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] }).catch(() => {});
+              }
             }
           }
         }, 800);
@@ -777,13 +824,7 @@
           await html5QrCode.start(
             { facingMode: "environment" },
             config,
-            async (decodedText) => {
-              playBeep();
-              await stopCamera();
-              const cleanText = sanitizeScannedText(decodedText);
-              if (target === 'siswa') processNisScan(cleanText);
-              else if (target === 'buku') processBukuScan(cleanText);
-            },
+            onScanSuccess,
             () => {}
           );
         } catch (err2) {
