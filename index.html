@@ -714,7 +714,6 @@
         Html5QrcodeSupportedFormats.UPC_A
       ];
 
-      // Konfigurasi Penajaman Agresif untuk Kertas Cetak Standar
       const config = { 
         fps: 30, 
         qrbox: { width: 320, height: 160 }, 
@@ -741,23 +740,13 @@
           }
         }
 
-        let selectedCamId = { facingMode: "environment" };
+        let cameraConfig = { facingMode: "environment" };
         if (cameraDevices && cameraDevices.length > 0) {
-          selectedCamId = cameraDevices[currentCameraIndex].id;
-        }
-
-        // Memaksa resolusi tinggi agar garis tipis barcode tercakup piksel sensor dengan jelas
-        const customVideoConstraints = {
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
-          facingMode: "environment"
-        };
-        if (typeof selectedCamId === 'string') {
-          customVideoConstraints.deviceId = { exact: selectedCamId };
+          cameraConfig = { deviceId: { exact: cameraDevices[currentCameraIndex].id } };
         }
 
         await html5QrCode.start(
-          customVideoConstraints,
+          cameraConfig,
           config,
           async (decodedText) => {
             playBeep();
@@ -769,7 +758,6 @@
           () => {}
         );
 
-        // Ambil track video aktif untuk mendukung kontrol zoom fisik kamera HP
         setTimeout(() => {
           const videoEl = document.querySelector(`#${elementId} video`);
           if (videoEl && videoEl.srcObject) {
@@ -822,7 +810,6 @@
             currentZoom = Math.max(capabilities.zoom.min, Math.min(capabilities.zoom.max, currentZoom + delta));
             await videoTrackRef.applyConstraints({ advanced: [{ zoom: currentZoom }] });
           } else {
-            // Fallback CSS scale jika hardware zoom tidak didukung browser
             const videoEl = document.querySelector(`#reader-${activeTarget} video`);
             if (videoEl) {
               currentZoom = Math.max(1, Math.min(3, currentZoom + delta));
@@ -933,7 +920,7 @@
 
         if (res.success) {
           showAlert('alert-buku', res.message, 'success');
-          document.getElementById('input-barcode').value = ''; // Diperbaiki dari bug duplikasi ganda
+          document.getElementById('input-barcode').value = '';
 
           if (currentMode === 'return') {
             await loadBukuDipinjam(currentSiswa.nis);
