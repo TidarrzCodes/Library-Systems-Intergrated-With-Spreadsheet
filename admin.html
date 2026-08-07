@@ -14,6 +14,8 @@
   </script>
 
   <script src="https://unpkg.com/html5-qrcode"></script>
+  <!-- Tesseract.js Library untuk OCR Nomor Induk Buku -->
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <!-- Favicon / Logo di Tab Browser -->
   <link rel="icon" type="image/png" href="./logo.png">
@@ -116,7 +118,7 @@
     }
     .btn-sub-action {
       flex: 1; padding: 8px 6px; border: none; background: transparent; font-weight: 700;
-      font-size: 10px; color: var(--text-muted); border-radius: 9px; cursor: pointer; white-space: nowrap; text-align: center;
+      font-size: 10px; color: var(--text-muted); border-radius: 99px; cursor: pointer; white-space: nowrap; text-align: center;
     }
     .btn-sub-action.active { background: var(--card-bg); color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
 
@@ -132,10 +134,17 @@
 
     .webcam-container {
       border: 2px solid var(--border-color); border-radius: var(--radius); padding: 4px;
-      background: #000; margin-bottom: 14px; width: 100%; max-width: 400px; margin-left: auto; margin-right: auto;
+      background: #000; margin-bottom: 14px; width: 100%; max-width: 400px; margin-left: auto; margin-right: auto; position: relative;
     }
-    .cam-box { width: 100%; height: 220px; border-radius: 8px; overflow: hidden; position: relative; }
+    .cam-box { width: 100%; height: 240px; border-radius: 8px; overflow: hidden; position: relative; }
     .cam-box video { width: 100% !important; height: 100% !important; object-fit: cover !important; }
+
+    .scanner-laser {
+      position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, transparent, #ef4444, transparent);
+      box-shadow: 0 0 15px #ef4444; animation: scan 2s infinite ease-in-out; z-index: 10; pointer-events: none;
+    }
+    @keyframes scan { 0% { top: 5%; } 50% { top: 90%; } 100% { top: 5%; } }
 
     .form-group { margin-bottom: 14px; }
     label { display: block; font-weight: 700; margin-bottom: 5px; font-size: 12px; }
@@ -151,6 +160,10 @@
     }
     .btn-scan-sm {
       background: var(--warning-light); color: var(--warning); border: 1px solid var(--border-color);
+      padding: 6px 10px; border-radius: 8px; font-weight: 700; font-size: 11px; cursor: pointer; margin-top: 6px; display: inline-block; margin-right: 4px;
+    }
+    .btn-ocr-sm {
+      background: var(--primary-light); color: var(--primary); border: 1px solid var(--border-color);
       padding: 6px 10px; border-radius: 8px; font-weight: 700; font-size: 11px; cursor: pointer; margin-top: 6px; display: inline-block;
     }
 
@@ -291,9 +304,20 @@
         <div id="subtab-buku-add" class="sub-tab-content active">
           <h2 id="buku-form-title">📚 Add Master Book</h2>
 
+          <!-- Reader standar untuk QR/Barcode -->
           <div class="webcam-container" id="box-cam-buku" style="display: none;">
             <div id="reader-admin-buku" class="cam-box"></div>
             <button type="button" class="btn btn-secondary" style="padding:6px; font-size:11px; margin-top:6px;" onclick="stopAdminCamera()">Close Camera</button>
+          </div>
+
+          <!-- Video element khusus untuk Tesseract OCR Text Reader -->
+          <div class="webcam-container" id="box-ocr-admin" style="display: none;">
+            <div class="scanner-laser"></div>
+            <div class="cam-box">
+              <video id="admin-ocr-video" autoplay playsinline muted></video>
+            </div>
+            <p id="admin-ocr-status" style="font-size:11px; color:var(--text-muted); text-align:center; margin-top:4px; font-weight:600;">🔍 Position text BM400C/... in camera view...</p>
+            <button type="button" class="btn btn-secondary" style="padding:6px; font-size:11px; margin-top:6px;" onclick="stopAdminOcrCamera()">Close OCR Camera</button>
           </div>
 
           <form onsubmit="submitBuku(event)">
@@ -302,13 +326,14 @@
             <div class="form-group">
               <label>ISBN</label>
               <input type="text" id="isbn-buku" placeholder="Book ISBN number...">
-              <button type="button" class="btn-scan-sm" onclick="startAdminCamera('isbn')">📷 Scan ISBN</button>
+              <button type="button" class="btn-scan-sm" onclick="startAdminCamera('isbn')">📷 Scan ISBN Barcode</button>
             </div>
 
             <div class="form-group">
-              <label>Book Code / Inventory No</label>
-              <input type="text" id="barcode-buku" required placeholder="Physical unique book code...">
-              <button type="button" class="btn-scan-sm" onclick="startAdminCamera('barcode')">📷 Scan Book Code</button>
+              <label>Book Code / Inventory No (Nomor Induk)</label>
+              <input type="text" id="barcode-buku" required placeholder="Physical unique book code (e.g. BM400C/2025/B00044)...">
+              <button type="button" class="btn-scan-sm" onclick="startAdminCamera('barcode')">📷 Scan Barcode</button>
+              <button type="button" class="btn-ocr-sm" onclick="startAdminOcrCamera()">🔍 Scan Text OCR (Tesseract)</button>
             </div>
 
             <div class="form-group"><label>Book Title</label><input type="text" id="judul-buku" required placeholder="Book title..."></div>
@@ -442,13 +467,22 @@
 
   </div>
 
+  <!-- Canvas tersembunyi untuk snapshot OCR Tesseract -->
+  <canvas id="admin-ocr-canvas" style="display: none;"></canvas>
+
   <script>
     const GAS_URL = "https://script.google.com/macros/s/AKfycbyJoel9cymtOuIUSPK73NtP2qSy3xukR9NyheWx_tCybGV-irJGbt8mABVexY9VfVKd/exec";
 
     let adminHtml5QrCode = null;
     let activeTargetField = null;
-    let cameraDevices = [];
-    let currentCameraIndex = 0;
+    let lockedMainCameraId = null;
+    
+    // Variabel OCR Tesseract khusus Admin
+    let ocrWorker = null;
+    let adminOcrVideoStream = null;
+    let isProcessingAdminOcr = false;
+    let adminOcrInterval = null;
+
     let globalLaporanData = [];
     let globalEmailData = [];
     let globalUserData = [];
@@ -464,10 +498,19 @@
         document.getElementById('live-clock').innerText = `🕒 ${new Date().toLocaleString('en-US', { hour12: false })}`;
       }, 1000);
 
+      initTesseractWorker();
       loadDashboardStats();
       loadUserList();
       loadBukuList();
     });
+
+    async function initTesseractWorker() {
+      try {
+        ocrWorker = await Tesseract.createWorker('eng');
+      } catch (e) {
+        console.error("Gagal memuat Tesseract Worker Admin:", e);
+      }
+    }
 
     function toggleTheme() {
       const current = document.documentElement.getAttribute('data-theme');
@@ -478,6 +521,7 @@
 
     function switchTab(name) {
       stopAdminCamera();
+      stopAdminOcrCamera();
       document.querySelectorAll('.action-bar .btn-nav-action').forEach(b => b.classList.remove('active'));
       document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
 
@@ -502,6 +546,7 @@
 
     function switchSubTab(parent, sub) {
       stopAdminCamera();
+      stopAdminOcrCamera();
       if (parent === 'user') {
         document.getElementById('btn-sub-adduser').classList.toggle('active', sub === 'add');
         document.getElementById('btn-sub-manageuser').classList.toggle('active', sub === 'manage');
@@ -538,8 +583,48 @@
       } catch (e) {}
     }
 
+    // =========================================================================
+    // MODUL PENYELEKSI KAMERA UTAMA UNTUK ADMIN (ANTI ULTRAWIDE 0.5x, TANPA ZOOM)
+    // =========================================================================
+    async function lockMainCamera() {
+      if (lockedMainCameraId) return lockedMainCameraId;
+
+      try {
+        let dummyStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        dummyStream.getTracks().forEach(t => t.stop());
+
+        const videoDevices = devices.filter(d => d.kind === 'videoinput');
+        const backCams = videoDevices.filter(d => {
+          const l = d.label.toLowerCase();
+          return l.includes('back') || l.includes('rear') || l.includes('environment') || l.includes('belakang') || l.includes('0');
+        });
+
+        if (backCams.length === 0) return null;
+
+        const pureMainCams = backCams.filter(d => {
+          const l = d.label.toLowerCase();
+          return !l.includes('ultra') && !l.includes('wide') && !l.includes('macro') 
+              && !l.includes('.5') && !l.includes('depth') && !l.includes('tele') && !l.includes('aux');
+        });
+
+        const androidMain = pureMainCams.find(d => d.label.toLowerCase().includes('camera2 0') || d.label.toLowerCase().includes('0, facing back'));
+        const iosMain = pureMainCams.find(d => d.label.toLowerCase() === 'back camera');
+
+        if (androidMain) lockedMainCameraId = androidMain.deviceId;
+        else if (iosMain) lockedMainCameraId = iosMain.deviceId;
+        else if (pureMainCams.length > 0) lockedMainCameraId = pureMainCams[0].deviceId;
+        else lockedMainCameraId = backCams[0].deviceId;
+
+        return lockedMainCameraId;
+      } catch (e) {
+        return null;
+      }
+    }
+
     async function startAdminCamera(target) {
       await stopAdminCamera();
+      await stopAdminOcrCamera();
       activeTargetField = target;
       
       const elementId = target === 'siswa' ? 'reader-admin-siswa' : 'reader-admin-buku';
@@ -562,88 +647,42 @@
       ];
 
       adminHtml5QrCode = new Html5Qrcode(elementId);
-      const config = { fps: 20, qrbox: { width: 220, height: 120 }, formatsToSupport: formats };
+      const config = { fps: 20, qrbox: { width: 220, height: 140 }, formatsToSupport: formats };
+
+      const onScanSuccess = async (text) => {
+        playBeep();
+        await stopAdminCamera();
+        const cleanText = text.trim();
+        if (target === 'siswa') {
+          document.getElementById('nis').value = cleanText;
+          showAlert('alert-siswa', `✅ QR Detected: ${cleanText}`, 'success');
+        } else if (target === 'isbn') {
+          document.getElementById('isbn-buku').value = cleanText;
+          showAlert('alert-buku', `✅ ISBN Detected: ${cleanText}`, 'success');
+        } else if (target === 'barcode') {
+          document.getElementById('barcode-buku').value = cleanText;
+          showAlert('alert-buku', `✅ Book Code Detected: ${cleanText}`, 'success');
+        }
+      };
 
       try {
-        if (cameraDevices.length === 0) {
-          const rawDevices = await Html5Qrcode.getCameras();
-          if (rawDevices && rawDevices.length > 0) {
-            let backCams = [];
-            rawDevices.forEach(dev => {
-              const label = dev.label.toLowerCase();
-              if (!label.includes('front') && !label.includes('selfie') && !label.includes('depan') && !label.includes('user')) {
-                backCams.push(dev);
-              }
-            });
-            cameraDevices = backCams.length > 0 ? backCams.reverse() : rawDevices;
+        const mainCamId = await lockMainCamera();
+        const cameraConstraint = mainCamId ? { deviceId: { exact: mainCamId } } : { facingMode: "environment" };
+
+        await adminHtml5QrCode.start(cameraConstraint, config, onScanSuccess, () => {});
+
+        setTimeout(() => {
+          const videoTrack = adminHtml5QrCode.getRunningTrack();
+          if (videoTrack && videoTrack.applyConstraints) {
+            videoTrack.applyConstraints({
+              advanced: [{ focusMode: "continuous" }]
+            }).catch(() => {});
           }
-        }
+        }, 500);
 
-        if (cameraDevices && cameraDevices.length > 0) {
-          currentCameraIndex = 0;
-          let selectedCamId = cameraDevices[currentCameraIndex].id;
-
-          await adminHtml5QrCode.start(
-            selectedCamId, 
-            config, 
-            async (text) => {
-              await stopAdminCamera();
-              const cleanText = text.trim();
-              if (target === 'siswa') {
-                document.getElementById('nis').value = cleanText;
-                showAlert('alert-siswa', `✅ QR Detected: ${cleanText}`, 'success');
-              } else if (target === 'isbn') {
-                document.getElementById('isbn-buku').value = cleanText;
-                showAlert('alert-buku', `✅ ISBN Detected: ${cleanText}`, 'success');
-              } else if (target === 'barcode') {
-                document.getElementById('barcode-buku').value = cleanText;
-                showAlert('alert-buku', `✅ Book Code Detected: ${cleanText}`, 'success');
-              }
-            }, 
-            () => {}
-          );
-        } else {
-          await adminHtml5QrCode.start(
-            { facingMode: { exact: "environment" } }, 
-            config, 
-            async (text) => {
-              await stopAdminCamera();
-              const cleanText = text.trim();
-              if (target === 'siswa') {
-                document.getElementById('nis').value = cleanText;
-                showAlert('alert-siswa', `✅ QR Detected: ${cleanText}`, 'success');
-              } else if (target === 'isbn') {
-                document.getElementById('isbn-buku').value = cleanText;
-                showAlert('alert-buku', `✅ ISBN Detected: ${cleanText}`, 'success');
-              } else if (target === 'barcode') {
-                document.getElementById('barcode-buku').value = cleanText;
-                showAlert('alert-buku', `✅ Book Code Detected: ${cleanText}`, 'success');
-              }
-            }, 
-            () => {}
-          );
-        }
       } catch (e) {
         try {
-          await adminHtml5QrCode.start(
-            { facingMode: "environment" },
-            config,
-            async (text) => {
-              await stopAdminCamera();
-              const cleanText = text.trim();
-              if (target === 'siswa') {
-                document.getElementById('nis').value = cleanText;
-                showAlert('alert-siswa', `✅ QR Detected: ${cleanText}`, 'success');
-              } else if (target === 'isbn') {
-                document.getElementById('isbn-buku').value = cleanText;
-                showAlert('alert-buku', `✅ ISBN Detected: ${cleanText}`, 'success');
-              } else if (target === 'barcode') {
-                document.getElementById('barcode-buku').value = cleanText;
-                showAlert('alert-buku', `✅ Book Code Detected: ${cleanText}`, 'success');
-              }
-            },
-            () => {}
-          );
+          await adminHtml5QrCode.start({ facingMode: "environment" }, config, onScanSuccess, () => {});
         } catch (err2) {
           showAlert(target === 'siswa' ? 'alert-siswa' : 'alert-buku', '⚠️ Failed to open back camera.', 'danger');
         }
@@ -660,6 +699,119 @@
       }
       document.getElementById('box-cam-siswa').style.display = 'none';
       document.getElementById('box-cam-buku').style.display = 'none';
+    }
+
+    // =========================================================================
+    // MODUL TESSERACT OCR ADMIN (KHUSUS PENAMBAHAN BUKU BARU / NOMOR INDUK)
+    // =========================================================================
+    async function startAdminOcrCamera() {
+      await stopAdminCamera();
+      await stopAdminOcrCamera();
+
+      const boxOcr = document.getElementById('box-ocr-admin');
+      const videoEl = document.getElementById('admin-ocr-video');
+      const statusEl = document.getElementById('admin-ocr-status');
+
+      boxOcr.style.display = 'block';
+
+      try {
+        const mainCamId = await lockMainCamera();
+        const videoConstraints = mainCamId 
+          ? { deviceId: { exact: mainCamId }, width: { ideal: 1920 }, height: { ideal: 1080 } }
+          : { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 } };
+
+        adminOcrVideoStream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints });
+        videoEl.srcObject = adminOcrVideoStream;
+
+        const track = adminOcrVideoStream.getVideoTracks()[0];
+        if (track && track.getCapabilities) {
+          const capabilities = track.getCapabilities();
+          if (capabilities.focusMode && capabilities.focusMode.includes('continuous')) {
+            track.applyConstraints({ advanced: [{ focusMode: "continuous" }] }).catch(() => {});
+          }
+        }
+
+        statusEl.innerText = "🔍 Scanning text (BM400C...)...";
+        isProcessingAdminOcr = false;
+
+        adminOcrInterval = setInterval(() => {
+          captureAndRecognizeAdminText();
+        }, 1200);
+
+      } catch (err) {
+        showAlert('alert-buku', '⚠️ OCR Camera cannot be opened.', 'danger');
+        boxOcr.style.display = 'none';
+      }
+    }
+
+    function stopAdminOcrCamera() {
+      if (adminOcrInterval) clearInterval(adminOcrInterval);
+      if (adminOcrVideoStream) {
+        adminOcrVideoStream.getTracks().forEach(track => track.stop());
+        adminOcrVideoStream = null;
+      }
+      document.getElementById('box-ocr-admin').style.display = 'none';
+    }
+
+    async function captureAndRecognizeAdminText() {
+      if (isProcessingAdminOcr || !ocrWorker) return;
+
+      const videoEl = document.getElementById('admin-ocr-video');
+      const canvas = document.getElementById('admin-ocr-canvas');
+      const statusEl = document.getElementById('admin-ocr-status');
+
+      if (!videoEl.videoWidth) return;
+
+      isProcessingAdminOcr = true;
+      canvas.width = videoEl.videoWidth;
+      canvas.height = videoEl.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
+
+      try {
+        const { data: { text } } = await ocrWorker.recognize(canvas);
+
+        let rawText = text.replace(/\s+/g, '').toUpperCase();
+        rawText = rawText.replace(/([8B])M4[0O]{2}C/g, 'BM400C');
+
+        const match = rawText.match(/BM400C\/[0-9]{4}\/([A-Z0-9]+)/i);
+
+        if (match) {
+          let bookCode = match[1];
+
+          if (/^8\d+$/.test(bookCode)) {
+            bookCode = 'B' + bookCode.substring(1);
+          }
+
+          const year = match[0].split('/')[1];
+          const detectedBarcode = `BM400C/${year}/${bookCode}`;
+
+          playBeep();
+          document.getElementById('barcode-buku').value = detectedBarcode;
+          showAlert('alert-buku', `✅ Book Code Detected: ${detectedBarcode}`, 'success');
+          stopAdminOcrCamera();
+        } else {
+          statusEl.innerText = "🔍 Scanning text (BM400C...)...";
+          isProcessingAdminOcr = false;
+        }
+      } catch (err) {
+        isProcessingAdminOcr = false;
+      }
+    }
+
+    function playBeep() {
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.15);
+      } catch (e) { }
     }
 
     async function loadUserList() {
@@ -1045,7 +1197,6 @@
           globalAttendanceData = res.data || [];
           filterAttendanceData();
         } else {
-          // Fallback jika action belum ada di GAS, ambil lewat getAllUsers atau buat struktur kosong
           tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No attendance data found or endpoint missing.</td></tr>';
         }
       } catch (e) {
