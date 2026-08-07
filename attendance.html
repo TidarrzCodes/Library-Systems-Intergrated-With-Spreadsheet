@@ -375,7 +375,7 @@
         <div class="regulations-box">
           <h3><i class="fa-solid fa-circle-info"></i> Library Regulations</h3>
           <ul>
-            <li>Scan your QR ID or enter NIS upon entry.</li>
+            <li>Scan your QR ID upon entry.</li>
             <li>Maintain quietness and a conducive study environment.</li>
             <li>Handle books and library equipment with care.</li>
             <li>Food and beverages are strictly prohibited inside.</li>
@@ -403,11 +403,10 @@
         <div class="scanner-laser"></div>
         <div id="reader-attendance" class="cam-box"></div>
       </div>
-      <button type="button" class="btn btn-switch" onclick="switchCameraTarget()"><i class="fa-solid fa-camera-rotate"></i> Switch Camera Lens</button>
 
       <div class="form-group">
-        <label>Or Enter QR ID / NIS Manually</label>
-        <input type="text" id="input-attendance-nis" placeholder="Type NIS then press Enter..." onkeypress="handleAttendanceManual(event)">
+        <label>Or Enter QR ID Manually</label>
+        <input type="text" id="input-attendance-nis" placeholder="Type QR ID then press Enter..." onkeypress="handleAttendanceManual(event)">
       </div>
 
       <div id="alert-attendance" class="alert"></div>
@@ -419,7 +418,7 @@
   </div>
 
   <script>
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbzVEhLG3SNLFex_j1p3oqDTltuAsCY6wgByyXYpGl6xSSdVo9jI4oeWb1DPH8BEp-qT/exec";
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbxW551CCTSxpgN0a4c6VPppkZPpVGg0pDjcrjOqz7tQrMoKbqWw_cspagU-BNPrFCI/exec";
 
     let html5QrCode = null;
     let cameraDevices = [];
