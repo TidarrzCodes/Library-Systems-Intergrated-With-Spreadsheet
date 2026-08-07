@@ -257,7 +257,7 @@
 
           <form onsubmit="submitSiswa(event)">
             <input type="hidden" id="form-mode-user" value="add">
-            <div class="form-group"><label>NIS / User ID</label><input type="text" id="nis" required placeholder="Enter NIS..."></div>
+            <div class="form-group"><label>User ID</label><input type="text" id="nis" required placeholder="Enter User ID..."></div>
             <div class="form-group"><label>Full Name</label><input type="text" id="nama-siswa" required placeholder="Full name..."></div>
             <div class="form-group"><label>Class</label><input type="text" id="kelas-siswa" placeholder="Example: 10 IPA 1"></div>
             <div class="form-group"><label>Email</label><input type="email" id="email-siswa" placeholder="Notification email..."></div>
@@ -280,10 +280,10 @@
             <h3 style="font-size: 13px; font-weight: 800;">📋 User List</h3>
             <button class="btn-home" onclick="loadUserList()">🔄 Refresh</button>
           </div>
-          <div class="form-group"><input type="text" id="input-search-user" placeholder="🔍 Search name, NIS, class..." oninput="filterUserList()"></div>
+          <div class="form-group"><input type="text" id="input-search-user" placeholder="🔍 Search name, User ID, class..." oninput="filterUserList()"></div>
           <div class="table-container">
             <table>
-              <thead><tr><th>NIS</th><th>Name</th><th>Class</th><th>Role</th><th>Action</th></tr></thead>
+              <thead><tr><th>User ID</th><th>Name</th><th>Class</th><th>Role</th><th>Action</th></tr></thead>
               <tbody id="tabel-user-body"><tr><td colspan="5" style="text-align: center;">Loading data...</td></tr></tbody>
             </table>
           </div>
