@@ -330,9 +330,8 @@
             </div>
 
             <div class="form-group">
-              <label>Book Code / Inventory No (Nomor Induk)</label>
+              <label>Book Code</label>
               <input type="text" id="barcode-buku" required placeholder="Physical unique book code (e.g. BM400C/2025/B00044)...">
-              <button type="button" class="btn-scan-sm" onclick="startAdminCamera('barcode')">📷 Scan Barcode</button>
               <button type="button" class="btn-ocr-sm" onclick="startAdminOcrCamera()">🔍 Scan Text OCR (Tesseract)</button>
             </div>
 
@@ -408,7 +407,7 @@
 
           <div class="table-container">
             <table>
-              <thead><tr><th>Time</th><th>NIS</th><th>Name</th><th>Book Title</th><th>Status</th></tr></thead>
+              <thead><tr><th>Time</th><th>User ID</th><th>Name</th><th>Book Title</th><th>Status</th></tr></thead>
               <tbody id="tabel-laporan-body"><tr><td colspan="5" style="text-align: center;">Loading report...</td></tr></tbody>
             </table>
           </div>
@@ -454,11 +453,11 @@
           <input type="date" id="input-custom-attendance-date" onchange="filterAttendanceData()">
         </div>
 
-        <div class="form-group"><input type="text" id="input-search-attendance" placeholder="🔍 Search by name, NIS, class, or purpose..." oninput="filterAttendanceData()"></div>
+        <div class="form-group"><input type="text" id="input-search-attendance" placeholder="🔍 Search by name, User ID, class, or purpose..." oninput="filterAttendanceData()"></div>
 
         <div class="table-container">
           <table>
-            <thead><tr><th>No</th><th>Date & Time</th><th>NIS</th><th>Name</th><th>Class</th><th>Purpose / Need</th></tr></thead>
+            <thead><tr><th>No</th><th>Date & Time</th><th>User ID</th><th>Name</th><th>Class</th><th>Purpose / Need</th></tr></thead>
             <tbody id="tabel-attendance-body"><tr><td colspan="6" style="text-align: center;">Loading attendance data...</td></tr></tbody>
           </table>
         </div>
