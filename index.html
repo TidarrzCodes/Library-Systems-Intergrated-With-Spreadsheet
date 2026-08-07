@@ -687,6 +687,30 @@
       startCamera('siswa');
     }
 
+    // Fungsi helper cerdas untuk memilih kamera belakang UTAMA (menghindari lensa 0.5x / wide / macro)
+    async function getMainBackCameraId() {
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoDevices = devices.filter(d => d.kind === 'videoinput');
+        
+        const backCams = videoDevices.filter(d => {
+          const label = d.label.toLowerCase();
+          return label.includes('back') || label.includes('rear') || label.includes('environment') || (!label.includes('front') && !label.includes('selfie') && !label.includes('depan'));
+        });
+
+        if (backCams.length === 0) return null;
+
+        const mainCam = backCams.find(d => {
+          const l = d.label.toLowerCase();
+          return !l.includes('ultra') && !l.includes('wide') && !l.includes('macro') && !l.includes('.5') && !l.includes('tele');
+        });
+
+        return mainCam ? mainCam.deviceId : backCams[0].deviceId;
+      } catch (e) {
+        return null;
+      }
+    }
+
     async function startCamera(target) {
       const alertId = 'alert-siswa';
       const elementId = 'reader-siswa';
@@ -699,17 +723,11 @@
 
       await stopCamera();
 
-      // Memaksa kamera utama belakang (menghindari wide 0.5x dengan memprioritaskan resolusi utama)
       const config = {
         fps: 15,
         qrbox: { width: 250, height: 250 },
         formatsToSupport: getQrFormats(),
-        disableFlip: false,
-        videoConstraints: {
-          facingMode: { exact: "environment" },
-          width: { min: 640, ideal: 1280, max: 1920 },
-          height: { min: 480, ideal: 720, max: 1080 }
-        }
+        disableFlip: false
       };
 
       html5QrCode = new Html5Qrcode(elementId);
@@ -721,11 +739,13 @@
       };
 
       try {
-        // Coba buka dengan exact environment (kamera utama)
-        await html5QrCode.start({ facingMode: { exact: "environment" } }, config, onScanSuccess, () => { });
+        const mainCamId = await getMainBackCameraId();
+        const cameraConstraint = mainCamId ? { deviceId: { exact: mainCamId } } : { facingMode: "environment" };
+
+        await html5QrCode.start(cameraConstraint, config, onScanSuccess, () => { });
+
       } catch (err1) {
         try {
-          // Fallback ke environment standar jika exact tidak didukung perangkat
           await html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess, () => { });
         } catch (err2) {
           showAlert(alertId, '⚠️ Webcam cannot be opened. Make sure camera permission is allowed in your browser settings.', 'danger');
@@ -799,7 +819,6 @@
             setTimeout(() => focusInputBarcode(), 300);
           }
 
-          // Jalankan Kamera OCR Tesseract khusus kamera utama (mengunci 0.5x)
           startOcrCamera();
         } else {
           showAlert('alert-siswa', res.message, 'danger');
@@ -817,14 +836,12 @@
       const statusEl = document.getElementById('ocr-status');
 
       try {
-        // Mengunci constraint agar wajib menggunakan kamera utama belakang (menghindari lensa wide 0.5x)
-        ocrVideoStream = await navigator.mediaDevices.getUserMedia({
-          video: { 
-            facingMode: { exact: "environment" }, 
-            width: { ideal: 1280 }, 
-            height: { ideal: 720 } 
-          }
-        });
+        const mainCamId = await getMainBackCameraId();
+        const constraints = mainCamId 
+          ? { video: { deviceId: { exact: mainCamId }, width: { ideal: 1280 }, height: { ideal: 720 } } }
+          : { video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } } };
+
+        ocrVideoStream = await navigator.mediaDevices.getUserMedia(constraints);
         videoEl.srcObject = ocrVideoStream;
 
         statusEl.innerText = "🔍 Scanning text (BM400C...)...";
@@ -835,14 +852,9 @@
         }, 1500);
 
       } catch (err) {
-        // Fallback jika exact environment ditolak perangkat
         try {
           ocrVideoStream = await navigator.mediaDevices.getUserMedia({
-            video: { 
-              facingMode: "environment", 
-              width: { ideal: 1280 }, 
-              height: { ideal: 720 } 
-            }
+            video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } }
           });
           videoEl.srcObject = ocrVideoStream;
           
