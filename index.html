@@ -596,9 +596,7 @@
 
     let currentMode = '';
     let currentSiswa = { nis: '', nama: '', role: '' };
-    let html5QrCode = null;         // untuk scan QR siswa
-    let cameraDevices = [];
-    let currentCameraIndex = 0;
+    let html5QrCode = null;
 
     // Variabel OCR Tesseract
     let ocrWorker = null;
@@ -618,7 +616,6 @@
       updateLiveClock();
       setInterval(updateLiveClock, 1000);
 
-      // Inisialisasi Tesseract Worker di latar belakang
       initTesseractWorker();
     });
 
@@ -702,15 +699,16 @@
 
       await stopCamera();
 
+      // Memaksa kamera utama belakang (menghindari wide 0.5x dengan memprioritaskan resolusi utama)
       const config = {
         fps: 15,
         qrbox: { width: 250, height: 250 },
         formatsToSupport: getQrFormats(),
         disableFlip: false,
         videoConstraints: {
-          facingMode: "environment",
-          width: { ideal: 1920 },
-          height: { ideal: 1080 }
+          facingMode: { exact: "environment" },
+          width: { min: 640, ideal: 1280, max: 1920 },
+          height: { min: 480, ideal: 720, max: 1080 }
         }
       };
 
@@ -723,16 +721,11 @@
       };
 
       try {
-        await ensureCameraDevices();
-        let cameraConfig = { facingMode: "environment" };
-        if (cameraDevices && cameraDevices.length > 0) {
-          cameraConfig = { deviceId: { exact: cameraDevices[currentCameraIndex].id } };
-        }
-
-        await html5QrCode.start(cameraConfig, config, onScanSuccess, () => { });
-
+        // Coba buka dengan exact environment (kamera utama)
+        await html5QrCode.start({ facingMode: { exact: "environment" } }, config, onScanSuccess, () => { });
       } catch (err1) {
         try {
+          // Fallback ke environment standar jika exact tidak didukung perangkat
           await html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess, () => { });
         } catch (err2) {
           showAlert(alertId, '⚠️ Webcam cannot be opened. Make sure camera permission is allowed in your browser settings.', 'danger');
@@ -749,25 +742,6 @@
           html5QrCode.clear();
         } catch (err) { }
       }
-    }
-
-    async function ensureCameraDevices() {
-      if (cameraDevices.length > 0) return;
-      try {
-        const rawDevices = typeof Html5Qrcode !== 'undefined'
-          ? await Html5Qrcode.getCameras()
-          : [];
-        if (rawDevices && rawDevices.length > 0) {
-          let backCams = [];
-          rawDevices.forEach(dev => {
-            const label = dev.label.toLowerCase();
-            if (!label.includes('front') && !label.includes('selfie') && !label.includes('depan') && !label.includes('user')) {
-              backCams.push(dev);
-            }
-          });
-          cameraDevices = backCams.length > 0 ? backCams.reverse() : rawDevices;
-        }
-      } catch (e) { }
     }
 
     function handleNisManual(e) {
@@ -825,7 +799,7 @@
             setTimeout(() => focusInputBarcode(), 300);
           }
 
-          // Jalankan Kamera OCR Tesseract untuk Buku
+          // Jalankan Kamera OCR Tesseract khusus kamera utama (mengunci 0.5x)
           startOcrCamera();
         } else {
           showAlert('alert-siswa', res.message, 'danger');
@@ -843,21 +817,43 @@
       const statusEl = document.getElementById('ocr-status');
 
       try {
+        // Mengunci constraint agar wajib menggunakan kamera utama belakang (menghindari lensa wide 0.5x)
         ocrVideoStream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } }
+          video: { 
+            facingMode: { exact: "environment" }, 
+            width: { ideal: 1280 }, 
+            height: { ideal: 720 } 
+          }
         });
         videoEl.srcObject = ocrVideoStream;
 
         statusEl.innerText = "🔍 Scanning text (BM400C...)...";
         isProcessingOcr = false;
 
-        // Ambil frame snapshot setiap 1.5 detik
         ocrInterval = setInterval(() => {
           captureAndRecognizeText();
         }, 1500);
 
       } catch (err) {
-        statusEl.innerText = "⚠️ Camera inactive. Use USB Scanner / Input Manual.";
+        // Fallback jika exact environment ditolak perangkat
+        try {
+          ocrVideoStream = await navigator.mediaDevices.getUserMedia({
+            video: { 
+              facingMode: "environment", 
+              width: { ideal: 1280 }, 
+              height: { ideal: 720 } 
+            }
+          });
+          videoEl.srcObject = ocrVideoStream;
+          
+          statusEl.innerText = "🔍 Scanning text (BM400C...)...";
+          isProcessingOcr = false;
+          ocrInterval = setInterval(() => {
+            captureAndRecognizeText();
+          }, 1500);
+        } catch (fallbackErr) {
+          statusEl.innerText = "⚠️ Camera inactive. Use USB Scanner / Input Manual.";
+        }
       }
     }
 
@@ -887,26 +883,18 @@
       try {
         const { data: { text } } = await ocrWorker.recognize(canvas);
 
-        // 1. Bersihkan spasi berlebih dan ubah ke uppercase
         let rawText = text.replace(/\s+/g, '').toUpperCase();
-
-        // 2. Koreksi kesalahan OCR umum pada prefix 'BM400C'
-        // Memperbaiki misal '8M400C' atau 'BM4OOC' menjadi 'BM400C'
         rawText = rawText.replace(/([8B])M4[0O]{2}C/g, 'BM400C');
 
-        // 3. Match pola barcode buku (Contoh: BM400C/2025/B00044 atau BM400C/2025/800044)
         const match = rawText.match(/BM400C\/[0-9]{4}\/([A-Z0-9]+)/i);
 
         if (match) {
           let bookCode = match[1];
 
-          // FIX: Jika kode buku diawali angka 8 yang diikuti angka lain (misal: 800044),
-          // ubah angka 8 pertama menjadi huruf 'B' (menjadi B00044)
           if (/^8\d+$/.test(bookCode)) {
             bookCode = 'B' + bookCode.substring(1);
           }
 
-          // Gabungkan kembali kode barcode yang sudah dibersihkan
           const year = match[0].split('/')[1];
           const detectedBarcode = `BM400C/${year}/${bookCode}`;
 
