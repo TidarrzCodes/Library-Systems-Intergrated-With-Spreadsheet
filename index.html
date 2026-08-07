@@ -494,7 +494,8 @@
         <a href="./attendance.html" class="btn btn-attendance">
           <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4">
+            </path>
           </svg>
           Attendance
         </a>
@@ -885,16 +886,34 @@
 
       try {
         const { data: { text } } = await ocrWorker.recognize(canvas);
-        
-        // Match pola teks BM400C/2025/B00044
-        const match = text.match(/BM400C\/[0-9]{4}\/[A-Za-z0-9]+/i);
+
+        // 1. Bersihkan spasi berlebih dan ubah ke uppercase
+        let rawText = text.replace(/\s+/g, '').toUpperCase();
+
+        // 2. Koreksi kesalahan OCR umum pada prefix 'BM400C'
+        // Memperbaiki misal '8M400C' atau 'BM4OOC' menjadi 'BM400C'
+        rawText = rawText.replace(/([8B])M4[0O]{2}C/g, 'BM400C');
+
+        // 3. Match pola barcode buku (Contoh: BM400C/2025/B00044 atau BM400C/2025/800044)
+        const match = rawText.match(/BM400C\/[0-9]{4}\/([A-Z0-9]+)/i);
 
         if (match) {
-          const detectedBarcode = match[0].toUpperCase();
+          let bookCode = match[1];
+
+          // FIX: Jika kode buku diawali angka 8 yang diikuti angka lain (misal: 800044),
+          // ubah angka 8 pertama menjadi huruf 'B' (menjadi B00044)
+          if (/^8\d+$/.test(bookCode)) {
+            bookCode = 'B' + bookCode.substring(1);
+          }
+
+          // Gabungkan kembali kode barcode yang sudah dibersihkan
+          const year = match[0].split('/')[1];
+          const detectedBarcode = `BM400C/${year}/${bookCode}`;
+
           playBeep();
           statusEl.innerText = `✅ Detected: ${detectedBarcode}`;
           stopOcrCamera();
-          
+
           processBukuScan(detectedBarcode);
         } else {
           statusEl.innerText = "🔍 Scanning text (BM400C...)...";
