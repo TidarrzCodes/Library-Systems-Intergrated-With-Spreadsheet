@@ -603,6 +603,9 @@
     let ocrVideoStream = null;
     let isProcessingOcr = false;
     let ocrInterval = null;
+    
+    // Variabel Penyimpan ID Kamera Utama
+    let lockedMainCameraId = null;
 
     // ================== SCANNER QR (SISWA) — html5-qrcode ==================
     function getQrFormats() {
@@ -629,31 +632,15 @@
 
     function updateLiveClock() {
       const now = new Date();
-      const options = {
-        weekday: 'short',
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false
-      };
-      const timeString = now.toLocaleString('en-US', options);
-      document.getElementById('live-clock').innerHTML = `🕒 ${timeString}`;
+      const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+      document.getElementById('live-clock').innerHTML = `🕒 ${now.toLocaleString('en-US', options)}`;
     }
 
     function toggleTheme() {
       const currentTheme = document.documentElement.getAttribute('data-theme');
       const newTheme = currentTheme === 'light' ? 'dark' : 'light';
       document.documentElement.setAttribute('data-theme', newTheme);
-
-      const iconEl = document.getElementById('theme-icon');
-      if (newTheme === 'light') {
-        iconEl.innerText = '🌙';
-      } else {
-        iconEl.innerText = '☀️';
-      }
+      document.getElementById('theme-icon').innerText = newTheme === 'light' ? '🌙' : '☀️';
     }
 
     function playBeep() {
@@ -673,11 +660,8 @@
 
     function sanitizeScannedText(text) {
       if (!text) return "";
-      try {
-        return decodeURIComponent(escape(text.trim()));
-      } catch (e) {
-        return text.trim();
-      }
+      try { return decodeURIComponent(escape(text.trim())); } 
+      catch (e) { return text.trim(); }
     }
 
     function selectMode(mode) {
@@ -687,26 +671,51 @@
       startCamera('siswa');
     }
 
-    // Fungsi helper cerdas untuk memilih kamera belakang UTAMA (menghindari lensa 0.5x / wide / macro)
-    async function getMainBackCameraId() {
+    // =========================================================================
+    // FITUR CERDAS: MENGUNCI KAMERA UTAMA (ANTI 0.5x ULTRAWIDE) DGN AUTOFOCUS
+    // =========================================================================
+    async function lockMainCamera() {
+      if (lockedMainCameraId) return lockedMainCameraId;
+
       try {
+        // 1. Pancing izin kamera agar browser membuka label asli hardware
+        let stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+        
+        // 2. Baca seluruh hardware kamera di HP
         const devices = await navigator.mediaDevices.enumerateDevices();
+        
+        // 3. Matikan kamera pancingan
+        stream.getTracks().forEach(track => track.stop());
+
         const videoDevices = devices.filter(d => d.kind === 'videoinput');
         
+        // 4. Cari semua kamera belakang
         const backCams = videoDevices.filter(d => {
-          const label = d.label.toLowerCase();
-          return label.includes('back') || label.includes('rear') || label.includes('environment') || (!label.includes('front') && !label.includes('selfie') && !label.includes('depan'));
+          const l = d.label.toLowerCase();
+          return l.includes('back') || l.includes('rear') || l.includes('environment') || l.includes('belakang') || l.includes('camera2 0');
         });
 
         if (backCams.length === 0) return null;
 
-        const mainCam = backCams.find(d => {
+        // 5. FILTER MUTLAK: Buang semua lensa ultrawide, macro, depth, dan telephoto
+        const pureMainCams = backCams.filter(d => {
           const l = d.label.toLowerCase();
-          return !l.includes('ultra') && !l.includes('wide') && !l.includes('macro') && !l.includes('.5') && !l.includes('tele');
+          return !l.includes('ultra') && !l.includes('wide') && !l.includes('macro') 
+              && !l.includes('.5') && !l.includes('depth') && !l.includes('tele');
         });
 
-        return mainCam ? mainCam.deviceId : backCams[0].deviceId;
+        // 6. Prioritas Khusus OS
+        const androidMain = pureMainCams.find(d => d.label.toLowerCase().includes('camera2 0')); // API Standar Android
+        const iosMain = pureMainCams.find(d => d.label.toLowerCase() === 'back camera'); // API Standar iPhone
+
+        if (androidMain) lockedMainCameraId = androidMain.deviceId;
+        else if (iosMain) lockedMainCameraId = iosMain.deviceId;
+        else if (pureMainCams.length > 0) lockedMainCameraId = pureMainCams[0].deviceId;
+        else lockedMainCameraId = backCams[0].deviceId;
+
+        return lockedMainCameraId;
       } catch (e) {
+        console.warn("Gagal mengunci kamera utama, fallback ke environment.", e);
         return null;
       }
     }
@@ -739,13 +748,14 @@
       };
 
       try {
-        const mainCamId = await getMainBackCameraId();
+        // Panggil fungsi pengunci kamera utama
+        const mainCamId = await lockMainCamera();
         const cameraConstraint = mainCamId ? { deviceId: { exact: mainCamId } } : { facingMode: "environment" };
 
         await html5QrCode.start(cameraConstraint, config, onScanSuccess, () => { });
-
       } catch (err1) {
         try {
+          // Fallback darurat
           await html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess, () => { });
         } catch (err2) {
           showAlert(alertId, '⚠️ Webcam cannot be opened. Make sure camera permission is allowed in your browser settings.', 'danger');
@@ -836,12 +846,14 @@
       const statusEl = document.getElementById('ocr-status');
 
       try {
-        const mainCamId = await getMainBackCameraId();
-        const constraints = mainCamId 
-          ? { video: { deviceId: { exact: mainCamId }, width: { ideal: 1280 }, height: { ideal: 720 } } }
-          : { video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } } };
+        const mainCamId = await lockMainCamera();
+        
+        // Memaksa resolusi tinggi 1920x1080 dan mengaktifkan hardware autofocus "continuous"
+        const videoConstraints = mainCamId 
+          ? { deviceId: { exact: mainCamId }, width: { ideal: 1920 }, height: { ideal: 1080 }, advanced: [{ focusMode: "continuous" }] }
+          : { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 }, advanced: [{ focusMode: "continuous" }] };
 
-        ocrVideoStream = await navigator.mediaDevices.getUserMedia(constraints);
+        ocrVideoStream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints });
         videoEl.srcObject = ocrVideoStream;
 
         statusEl.innerText = "🔍 Scanning text (BM400C...)...";
@@ -853,6 +865,7 @@
 
       } catch (err) {
         try {
+          // Fallback tanpa advanced settings jika device tidak support
           ocrVideoStream = await navigator.mediaDevices.getUserMedia({
             video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } }
           });
@@ -938,11 +951,7 @@
       showAlert('alert-buku', '⏳ Verifying book availability...', 'success');
 
       const action = currentMode === 'borrow' ? 'pinjamBuku' : 'kembaliBuku';
-      const payload = {
-        action: action,
-        nis: String(currentSiswa.nis).trim(),
-        barcode: String(barcode).trim()
-      };
+      const payload = { action: action, nis: String(currentSiswa.nis).trim(), barcode: String(barcode).trim() };
 
       try {
         const response = await fetch(GAS_URL, {
@@ -965,17 +974,11 @@
         } else {
           showAlert('alert-buku', res.message || 'Failed to process book transaction.', 'danger');
           document.getElementById('input-barcode').value = '';
-          setTimeout(() => {
-            focusInputBarcode();
-            startOcrCamera();
-          }, 2500);
+          setTimeout(() => { focusInputBarcode(); startOcrCamera(); }, 2500);
         }
       } catch (err) {
         showAlert('alert-buku', '❌ Failed to process transaction!', 'danger');
-        setTimeout(() => {
-          focusInputBarcode();
-          startOcrCamera();
-        }, 2000);
+        setTimeout(() => { focusInputBarcode(); startOcrCamera(); }, 2000);
       }
     }
 
