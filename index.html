@@ -270,7 +270,7 @@
 
     .cam-box {
       width: 100%;
-      height: 240px;
+      height: 260px;
       border-radius: 10px;
       overflow: hidden;
       position: relative;
@@ -604,10 +604,9 @@
     let isProcessingOcr = false;
     let ocrInterval = null;
     
-    // Variabel Penyimpan ID Kamera Utama
+    // Key ID Kamera Utama
     let lockedMainCameraId = null;
 
-    // ================== SCANNER QR (SISWA) — html5-qrcode ==================
     function getQrFormats() {
       return [Html5QrcodeSupportedFormats.QR_CODE];
     }
@@ -672,41 +671,37 @@
     }
 
     // =========================================================================
-    // FITUR CERDAS: MENGUNCI KAMERA UTAMA (ANTI 0.5x ULTRAWIDE) DGN AUTOFOCUS
+    // MODUL CERDAS: MENYELEKSI & MENGUNCI KAMERA UTAMA (MENOLAK LENSA 0.5x ULTRAWIDE)
     // =========================================================================
     async function lockMainCamera() {
       if (lockedMainCameraId) return lockedMainCameraId;
 
       try {
-        // 1. Pancing izin kamera agar browser membuka label asli hardware
-        let stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-        
-        // 2. Baca seluruh hardware kamera di HP
+        // 1. Pancing permission agar browser tidak mengaburkan label hardware
+        let dummyStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
         const devices = await navigator.mediaDevices.enumerateDevices();
-        
-        // 3. Matikan kamera pancingan
-        stream.getTracks().forEach(track => track.stop());
+        dummyStream.getTracks().forEach(t => t.stop());
 
         const videoDevices = devices.filter(d => d.kind === 'videoinput');
-        
-        // 4. Cari semua kamera belakang
+
+        // 2. Filter hanya kamera belakang
         const backCams = videoDevices.filter(d => {
           const l = d.label.toLowerCase();
-          return l.includes('back') || l.includes('rear') || l.includes('environment') || l.includes('belakang') || l.includes('camera2 0');
+          return l.includes('back') || l.includes('rear') || l.includes('environment') || l.includes('belakang') || l.includes('0');
         });
 
         if (backCams.length === 0) return null;
 
-        // 5. FILTER MUTLAK: Buang semua lensa ultrawide, macro, depth, dan telephoto
+        // 3. ELEMINASI MUTLAK: Buang semua lensa ultrawide, macro, wide tambahan, dan depth
         const pureMainCams = backCams.filter(d => {
           const l = d.label.toLowerCase();
           return !l.includes('ultra') && !l.includes('wide') && !l.includes('macro') 
-              && !l.includes('.5') && !l.includes('depth') && !l.includes('tele');
+              && !l.includes('.5') && !l.includes('depth') && !l.includes('tele') && !l.includes('aux');
         });
 
-        // 6. Prioritas Khusus OS
-        const androidMain = pureMainCams.find(d => d.label.toLowerCase().includes('camera2 0')); // API Standar Android
-        const iosMain = pureMainCams.find(d => d.label.toLowerCase() === 'back camera'); // API Standar iPhone
+        // 4. Deteksi spesifik untuk Android/iOS
+        const androidMain = pureMainCams.find(d => d.label.toLowerCase().includes('camera2 0') || d.label.toLowerCase().includes('0, facing back'));
+        const iosMain = pureMainCams.find(d => d.label.toLowerCase() === 'back camera');
 
         if (androidMain) lockedMainCameraId = androidMain.deviceId;
         else if (iosMain) lockedMainCameraId = iosMain.deviceId;
@@ -715,7 +710,6 @@
 
         return lockedMainCameraId;
       } catch (e) {
-        console.warn("Gagal mengunci kamera utama, fallback ke environment.", e);
         return null;
       }
     }
@@ -733,7 +727,7 @@
       await stopCamera();
 
       const config = {
-        fps: 15,
+        fps: 20,
         qrbox: { width: 250, height: 250 },
         formatsToSupport: getQrFormats(),
         disableFlip: false
@@ -748,14 +742,23 @@
       };
 
       try {
-        // Panggil fungsi pengunci kamera utama
         const mainCamId = await lockMainCamera();
         const cameraConstraint = mainCamId ? { deviceId: { exact: mainCamId } } : { facingMode: "environment" };
 
         await html5QrCode.start(cameraConstraint, config, onScanSuccess, () => { });
+        
+        // Aktifkan hardware Continuous Autofocus jika didukung HP
+        setTimeout(() => {
+          const videoTrack = html5QrCode.getRunningTrack();
+          if (videoTrack && videoTrack.applyConstraints) {
+            videoTrack.applyConstraints({
+              advanced: [{ focusMode: "continuous" }]
+            }).catch(() => {});
+          }
+        }, 600);
+
       } catch (err1) {
         try {
-          // Fallback darurat
           await html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess, () => { });
         } catch (err2) {
           showAlert(alertId, '⚠️ Webcam cannot be opened. Make sure camera permission is allowed in your browser settings.', 'danger');
@@ -840,7 +843,9 @@
       }
     }
 
-    // ================== SCANNER BUKU (TESSERACT OCR) ==================
+    // =========================================================================
+    // SCANNER BUKU (TESSERACT OCR) DENGAN AUTOFOCUS & OPTIMALISASI JARAK FOKUS
+    // =========================================================================
     async function startOcrCamera() {
       const videoEl = document.getElementById('ocr-video');
       const statusEl = document.getElementById('ocr-status');
@@ -848,24 +853,42 @@
       try {
         const mainCamId = await lockMainCamera();
         
-        // Memaksa resolusi tinggi 1920x1080 dan mengaktifkan hardware autofocus "continuous"
+        // Memaksa resolusi tinggi 1920x1080 dan mengaktifkan Continuous Autofocus
         const videoConstraints = mainCamId 
-          ? { deviceId: { exact: mainCamId }, width: { ideal: 1920 }, height: { ideal: 1080 }, advanced: [{ focusMode: "continuous" }] }
-          : { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 }, advanced: [{ focusMode: "continuous" }] };
+          ? { deviceId: { exact: mainCamId }, width: { ideal: 1920 }, height: { ideal: 1080 } }
+          : { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 } };
 
         ocrVideoStream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints });
         videoEl.srcObject = ocrVideoStream;
+
+        // Terapkan Continuous Focus Mode langsung pada video track
+        const track = ocrVideoStream.getVideoTracks()[0];
+        if (track && track.getCapabilities) {
+          const capabilities = track.getCapabilities();
+          const constraintsToApply = {};
+
+          if (capabilities.focusMode && capabilities.focusMode.includes('continuous')) {
+            constraintsToApply.focusMode = 'continuous';
+          }
+          // Beri sedikit zoom (1.5x) agar tidak terlalu dekat ke kertas saat mengambil fokus
+          if (capabilities.zoom) {
+            constraintsToApply.zoom = Math.min(capabilities.zoom.max, 1.5);
+          }
+
+          if (Object.keys(constraintsToApply).length > 0) {
+            track.applyConstraints({ advanced: [constraintsToApply] }).catch(() => {});
+          }
+        }
 
         statusEl.innerText = "🔍 Scanning text (BM400C...)...";
         isProcessingOcr = false;
 
         ocrInterval = setInterval(() => {
           captureAndRecognizeText();
-        }, 1500);
+        }, 1200);
 
       } catch (err) {
         try {
-          // Fallback tanpa advanced settings jika device tidak support
           ocrVideoStream = await navigator.mediaDevices.getUserMedia({
             video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } }
           });
@@ -875,7 +898,7 @@
           isProcessingOcr = false;
           ocrInterval = setInterval(() => {
             captureAndRecognizeText();
-          }, 1500);
+          }, 1200);
         } catch (fallbackErr) {
           statusEl.innerText = "⚠️ Camera inactive. Use USB Scanner / Input Manual.";
         }
@@ -903,6 +926,8 @@
       canvas.width = videoEl.videoWidth;
       canvas.height = videoEl.videoHeight;
       const ctx = canvas.getContext('2d');
+      
+      // Ambil frame snapshot
       ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
 
       try {
