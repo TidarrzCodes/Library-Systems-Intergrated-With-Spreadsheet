@@ -487,7 +487,7 @@
     <div id="step-options" class="step active">
       <div class="header">
         <div class="brand-badge">📚 BM400 Digital Library</div>
-        <h1>Self-Service Circulation</h1>
+        <h1>Self-Service Library Systems</h1>
         <p>Select transaction mode to start scanning</p>
       </div>
       <div class="btn-group">
@@ -516,7 +516,7 @@
         </button>
       </div>
       <div class="footer-credit">
-        Copyright & Developed By Raditya NM (<span>RNX</span>)
+        Copyright & Developed By <span></span>
       </div>
     </div>
 
@@ -524,7 +524,7 @@
     <div id="step-siswa" class="step">
       <div class="header">
         <h1 id="mode-title">Scan Your QR</h1>
-        <p>Point Your QR Card at the camera area</p>
+        <p>Point Your QR of your ID Card at the camera area</p>
       </div>
 
       <div class="webcam-container">
@@ -559,7 +559,7 @@
       <div class="divider"><span>Or</span></div>
 
       <div class="form-group">
-        <label for="input-barcode">Scan Book Barcode (USB Scanner / Manual)</label>
+        <label for="input-barcode">Scan Book Barcode Manually</label>
         <input type="text" id="input-barcode" placeholder="Ready for USB Scanner input..."
           onkeypress="handleBukuManual(event)">
       </div>
@@ -665,7 +665,7 @@
 
     function selectMode(mode) {
       currentMode = mode;
-      document.getElementById('mode-title').innerText = mode === 'borrow' ? '📖 Scan QR (Borrow)' : '📦 Scan QR (Return)';
+      document.getElementById('mode-title').innerText = mode === 'borrow' ? '📖 Scan QR ID Card (Borrow)' : '📦 Scan QR ID Card (Return)';
       showStep('step-siswa');
       startCamera('siswa');
     }
@@ -719,7 +719,7 @@
       const elementId = 'reader-siswa';
 
       if (typeof Html5Qrcode === 'undefined' || typeof Html5QrcodeSupportedFormats === 'undefined') {
-        showAlert(alertId, '⏳ Loading scanner library, please wait...', 'success');
+        showAlert(alertId, 'Loading scanner library, please wait...', 'success');
         setTimeout(() => startCamera(target), 500);
         return;
       }
@@ -795,7 +795,7 @@
 
     async function processNisScan(nis) {
       if (!nis) return;
-      showAlert('alert-siswa', '🔍 Checking Student ID...', 'success');
+      showAlert('alert-siswa', 'Checking Student ID...', 'success');
 
       try {
         const response = await fetch(`${GAS_URL}?action=getSiswa&nis=${encodeURIComponent(nis)}`);
@@ -880,7 +880,7 @@
           }
         }
 
-        statusEl.innerText = "🔍 Scanning text (BM400C...)...";
+        statusEl.innerText = "Scanning text ....";
         isProcessingOcr = false;
 
         ocrInterval = setInterval(() => {
@@ -894,7 +894,7 @@
           });
           videoEl.srcObject = ocrVideoStream;
           
-          statusEl.innerText = "🔍 Scanning text (BM400C...)...";
+          statusEl.innerText = "Scanning text ....";
           isProcessingOcr = false;
           ocrInterval = setInterval(() => {
             captureAndRecognizeText();
@@ -954,7 +954,7 @@
 
           processBukuScan(detectedBarcode);
         } else {
-          statusEl.innerText = "🔍 Scanning text (BM400C...)...";
+          statusEl.innerText = "Scanning text ....";
           isProcessingOcr = false;
         }
       } catch (err) {
