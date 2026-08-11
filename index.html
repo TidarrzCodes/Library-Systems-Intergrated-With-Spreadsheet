@@ -8,8 +8,7 @@
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <!-- Tesseract.js Library untuk OCR Barcode Buku -->
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
-    rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- Favicon / Logo di Tab Browser -->
   <link rel="icon" type="image/png" href="./logo.png">
@@ -80,7 +79,7 @@
     .card {
       background: var(--card-bg);
       width: 100%;
-      max-width: 550px;
+      max-width: 600px;
       padding: 32px 24px;
       border-radius: 24px;
       box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
@@ -234,6 +233,32 @@
     .btn-back:hover {
       background: var(--card-bg);
       color: var(--text-main);
+    }
+
+    .btn-quick-return {
+      background: var(--info);
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .btn-quick-return:hover {
+      background: #0369a1;
+      transform: translateY(-1px);
+    }
+
+    .btn-quick-return:disabled {
+      background: var(--text-muted);
+      cursor: not-allowed;
+      opacity: 0.6;
     }
 
     .step {
@@ -410,7 +435,7 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 13px;
+      font-size: 12px;
       white-space: nowrap;
     }
 
@@ -419,15 +444,16 @@
       color: var(--text-muted);
       font-weight: 700;
       text-transform: uppercase;
-      font-size: 11px;
+      font-size: 10px;
       letter-spacing: 0.5px;
       border-bottom: 1px solid var(--border-color);
     }
 
     th,
     td {
-      padding: 12px 16px;
+      padding: 10px 12px;
       text-align: left;
+      vertical-align: middle;
     }
 
     td {
@@ -472,7 +498,6 @@
 </head>
 
 <body>
-
   <div class="card">
     <div class="card-top-bar">
       <div class="live-clock" id="live-clock">
@@ -496,23 +521,20 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4">
             </path>
-          </svg>
-          Attendance
+          </svg> Attendance
         </a>
         <button class="btn btn-borrow" onclick="selectMode('borrow')">
           <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253">
             </path>
-          </svg>
-          Borrow Book
+          </svg> Borrow Book
         </button>
         <button class="btn btn-return" onclick="selectMode('return')">
           <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
-          </svg>
-          Return Book
+          </svg> Return Book
         </button>
       </div>
       <div class="footer-credit">
@@ -526,18 +548,14 @@
         <h1 id="mode-title">Scan Your QR</h1>
         <p>Point Your QR of your ID Card at the camera area</p>
       </div>
-
       <div class="webcam-container">
         <div class="scanner-laser"></div>
         <div id="reader-siswa" class="cam-box"></div>
       </div>
-
       <div class="divider"><span>Or</span></div>
-
       <div class="form-group">
         <label for="input-nis">Enter Your QR ID Manually</label>
-        <input type="text" id="input-nis" placeholder="Type Your QR ID then press Enter..."
-          onkeypress="handleNisManual(event)">
+        <input type="text" id="input-nis" placeholder="Type Your QR ID then press Enter..." onkeypress="handleNisManual(event)">
       </div>
       <div id="alert-siswa" class="alert"></div>
       <button class="btn btn-back" onclick="resetToHome()">← Cancel / Go Back</button>
@@ -554,21 +572,19 @@
           <video id="ocr-video" autoplay playsinline muted></video>
         </div>
       </div>
-      <p id="ocr-status" class="ocr-status">📷 Position text BM400C/... in camera view...</p>
+      <p id="ocr-status" class="ocr-status">📷 Position book code in front of camera</p>
 
       <div class="divider"><span>Or</span></div>
 
       <div class="form-group">
         <label for="input-barcode">Scan Book Barcode Manually</label>
-        <input type="text" id="input-barcode" placeholder="Ready for USB Scanner input..."
-          onkeypress="handleBukuManual(event)">
+        <input type="text" id="input-barcode" placeholder="Ready for USB Scanner input..." onkeypress="handleBukuManual(event)">
       </div>
 
       <div id="alert-buku" class="alert"></div>
 
       <div id="container-tabel-pinjaman" style="display: none;">
-        <p
-          style="font-size: 12px; font-weight: 700; margin-top: 20px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">
+        <p style="font-size: 12px; font-weight: 700; margin-top: 20px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">
           Currently Borrowed Books:</p>
         <div class="table-container">
           <table>
@@ -577,6 +593,7 @@
                 <th>Book Title</th>
                 <th>Book Code</th>
                 <th>Borrowed Date</th>
+                <th>Action</th>
               </tr>
             </thead>
             <tbody id="tabel-pinjaman-body"></tbody>
@@ -603,7 +620,7 @@
     let ocrVideoStream = null;
     let isProcessingOcr = false;
     let ocrInterval = null;
-    
+
     // Key ID Kamera Utama
     let lockedMainCameraId = null;
 
@@ -614,10 +631,8 @@
     window.addEventListener('DOMContentLoaded', () => {
       document.documentElement.setAttribute('data-theme', 'dark');
       document.getElementById('theme-icon').innerText = '☀️';
-
       updateLiveClock();
       setInterval(updateLiveClock, 1000);
-
       initTesseractWorker();
     });
 
@@ -659,8 +674,11 @@
 
     function sanitizeScannedText(text) {
       if (!text) return "";
-      try { return decodeURIComponent(escape(text.trim())); } 
-      catch (e) { return text.trim(); }
+      try {
+        return decodeURIComponent(escape(text.trim()));
+      } catch (e) {
+        return text.trim();
+      }
     }
 
     function selectMode(mode) {
@@ -670,21 +688,15 @@
       startCamera('siswa');
     }
 
-    // =========================================================================
-    // MODUL CERDAS: MENYELEKSI & MENGUNCI KAMERA UTAMA (MENOLAK LENSA 0.5x ULTRAWIDE)
-    // =========================================================================
     async function lockMainCamera() {
       if (lockedMainCameraId) return lockedMainCameraId;
 
       try {
-        // 1. Pancing permission agar browser tidak mengaburkan label hardware
         let dummyStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
         const devices = await navigator.mediaDevices.enumerateDevices();
         dummyStream.getTracks().forEach(t => t.stop());
 
         const videoDevices = devices.filter(d => d.kind === 'videoinput');
-
-        // 2. Filter hanya kamera belakang
         const backCams = videoDevices.filter(d => {
           const l = d.label.toLowerCase();
           return l.includes('back') || l.includes('rear') || l.includes('environment') || l.includes('belakang') || l.includes('0');
@@ -692,14 +704,11 @@
 
         if (backCams.length === 0) return null;
 
-        // 3. ELEMINASI MUTLAK: Buang semua lensa ultrawide, macro, wide tambahan, dan depth
         const pureMainCams = backCams.filter(d => {
           const l = d.label.toLowerCase();
-          return !l.includes('ultra') && !l.includes('wide') && !l.includes('macro') 
-              && !l.includes('.5') && !l.includes('depth') && !l.includes('tele') && !l.includes('aux');
+          return !l.includes('ultra') && !l.includes('wide') && !l.includes('macro') && !l.includes('.5') && !l.includes('depth') && !l.includes('tele') && !l.includes('aux');
         });
 
-        // 4. Deteksi spesifik untuk Android/iOS
         const androidMain = pureMainCams.find(d => d.label.toLowerCase().includes('camera2 0') || d.label.toLowerCase().includes('0, facing back'));
         const iosMain = pureMainCams.find(d => d.label.toLowerCase() === 'back camera');
 
@@ -746,14 +755,13 @@
         const cameraConstraint = mainCamId ? { deviceId: { exact: mainCamId } } : { facingMode: "environment" };
 
         await html5QrCode.start(cameraConstraint, config, onScanSuccess, () => { });
-        
-        // Aktifkan hardware Continuous Autofocus jika didukung HP
+
         setTimeout(() => {
           const videoTrack = html5QrCode.getRunningTrack();
           if (videoTrack && videoTrack.applyConstraints) {
             videoTrack.applyConstraints({
               advanced: [{ focusMode: "continuous" }]
-            }).catch(() => {});
+            }).catch(() => { });
           }
         }, 600);
 
@@ -808,7 +816,6 @@
           currentSiswa = { nis: String(nis).trim(), nama: res.nama, role: userRole };
 
           const isUserAdmin = userRole === 'admin' || userName.includes('admin');
-
           if (isUserAdmin) {
             hideAlert('alert-siswa');
             document.getElementById('input-nis').value = '';
@@ -818,10 +825,8 @@
           }
 
           document.getElementById('info-siswa').innerText = `👤 Student: ${res.nama} (${nis})`;
-
           hideAlert('alert-siswa');
           document.getElementById('input-nis').value = '';
-
           showStep('step-buku');
 
           if (currentMode === 'return') {
@@ -843,25 +848,19 @@
       }
     }
 
-    // =========================================================================
-    // SCANNER BUKU (TESSERACT OCR) DENGAN AUTOFOCUS & OPTIMALISASI JARAK FOKUS
-    // =========================================================================
     async function startOcrCamera() {
       const videoEl = document.getElementById('ocr-video');
       const statusEl = document.getElementById('ocr-status');
 
       try {
         const mainCamId = await lockMainCamera();
-        
-        // Memaksa resolusi tinggi 1920x1080 dan mengaktifkan Continuous Autofocus
-        const videoConstraints = mainCamId 
+        const videoConstraints = mainCamId
           ? { deviceId: { exact: mainCamId }, width: { ideal: 1920 }, height: { ideal: 1080 } }
           : { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 } };
 
         ocrVideoStream = await navigator.mediaDevices.getUserMedia({ video: videoConstraints });
         videoEl.srcObject = ocrVideoStream;
 
-        // Terapkan Continuous Focus Mode langsung pada video track
         const track = ocrVideoStream.getVideoTracks()[0];
         if (track && track.getCapabilities) {
           const capabilities = track.getCapabilities();
@@ -870,13 +869,12 @@
           if (capabilities.focusMode && capabilities.focusMode.includes('continuous')) {
             constraintsToApply.focusMode = 'continuous';
           }
-          // Beri sedikit zoom (1.5x) agar tidak terlalu dekat ke kertas saat mengambil fokus
           if (capabilities.zoom) {
             constraintsToApply.zoom = Math.min(capabilities.zoom.max, 1.5);
           }
 
           if (Object.keys(constraintsToApply).length > 0) {
-            track.applyConstraints({ advanced: [constraintsToApply] }).catch(() => {});
+            track.applyConstraints({ advanced: [constraintsToApply] }).catch(() => { });
           }
         }
 
@@ -889,16 +887,16 @@
 
       } catch (err) {
         try {
-          ocrVideoStream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } }
-          });
+          ocrVideoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } } });
           videoEl.srcObject = ocrVideoStream;
-          
+
           statusEl.innerText = "Scanning text ....";
           isProcessingOcr = false;
+
           ocrInterval = setInterval(() => {
             captureAndRecognizeText();
           }, 1200);
+
         } catch (fallbackErr) {
           statusEl.innerText = "⚠️ Camera inactive. Use USB Scanner / Input Manual.";
         }
@@ -925,14 +923,12 @@
       isProcessingOcr = true;
       canvas.width = videoEl.videoWidth;
       canvas.height = videoEl.videoHeight;
+
       const ctx = canvas.getContext('2d');
-      
-      // Ambil frame snapshot
       ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
 
       try {
         const { data: { text } } = await ocrWorker.recognize(canvas);
-
         let rawText = text.replace(/\s+/g, '').toUpperCase();
         rawText = rawText.replace(/([8B])M4[0O]{2}C/g, 'BM400C');
 
@@ -940,18 +936,15 @@
 
         if (match) {
           let bookCode = match[1];
-
           if (/^8\d+$/.test(bookCode)) {
             bookCode = 'B' + bookCode.substring(1);
           }
-
           const year = match[0].split('/')[1];
           const detectedBarcode = `BM400C/${year}/${bookCode}`;
 
           playBeep();
           statusEl.innerText = `✅ Detected: ${detectedBarcode}`;
           stopOcrCamera();
-
           processBukuScan(detectedBarcode);
         } else {
           statusEl.innerText = "Scanning text ....";
@@ -976,7 +969,11 @@
       showAlert('alert-buku', '⏳ Verifying book availability...', 'success');
 
       const action = currentMode === 'borrow' ? 'pinjamBuku' : 'kembaliBuku';
-      const payload = { action: action, nis: String(currentSiswa.nis).trim(), barcode: String(barcode).trim() };
+      const payload = {
+        action: action,
+        nis: String(currentSiswa.nis).trim(),
+        barcode: String(barcode).trim()
+      };
 
       try {
         const response = await fetch(GAS_URL, {
@@ -984,6 +981,7 @@
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify(payload)
         });
+
         const res = await response.json();
 
         if (res.success) {
@@ -995,41 +993,104 @@
           } else {
             setTimeout(() => focusInputBarcode(), 800);
           }
+
           setTimeout(() => startOcrCamera(), 2000);
         } else {
           showAlert('alert-buku', res.message || 'Failed to process book transaction.', 'danger');
           document.getElementById('input-barcode').value = '';
-          setTimeout(() => { focusInputBarcode(); startOcrCamera(); }, 2500);
+          setTimeout(() => {
+            focusInputBarcode();
+            startOcrCamera();
+          }, 2500);
         }
       } catch (err) {
         showAlert('alert-buku', '❌ Failed to process transaction!', 'danger');
-        setTimeout(() => { focusInputBarcode(); startOcrCamera(); }, 2000);
+        setTimeout(() => {
+          focusInputBarcode();
+          startOcrCamera();
+        }, 2000);
+      }
+    }
+
+    // --- FUNGSI KEMBALIKAN BUKU DENGAN SEKALI KLIK TOMBOL (TANPA SCAN) ---
+    async function quickReturnBook(btnElement, barcode, title) {
+      if (!confirm(`Return "${title}" (${barcode}) now?`)) return;
+
+      btnElement.disabled = true;
+      btnElement.innerText = "Processing...";
+      stopOcrCamera();
+
+      showAlert('alert-buku', `⏳ Returning book "${title}"...`, 'success');
+
+      const payload = {
+        action: 'kembaliBuku',
+        nis: String(currentSiswa.nis).trim(),
+        barcode: String(barcode).trim()
+      };
+
+      try {
+        const response = await fetch(GAS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
+
+        const res = await response.json();
+
+        if (res.success) {
+          showAlert('alert-buku', res.message, 'success');
+          await loadBukuDipinjam(currentSiswa.nis);
+          setTimeout(() => startOcrCamera(), 1500);
+        } else {
+          showAlert('alert-buku', res.message || 'Failed to return book.', 'danger');
+          btnElement.disabled = false;
+          btnElement.innerText = "↩ Return";
+          setTimeout(() => startOcrCamera(), 1500);
+        }
+      } catch (err) {
+        showAlert('alert-buku', '❌ Failed to connect to server!', 'danger');
+        btnElement.disabled = false;
+        btnElement.innerText = "↩ Return";
+        setTimeout(() => startOcrCamera(), 1500);
       }
     }
 
     async function loadBukuDipinjam(nis) {
       const tbody = document.getElementById('tabel-pinjaman-body');
-      tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color: var(--text-muted);">Loading...</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color: var(--text-muted);">Loading...</td></tr>';
 
       try {
         const response = await fetch(`${GAS_URL}?action=getBukuDipinjamSiswa&nis=${encodeURIComponent(nis)}`);
         const res = await response.json();
-
         tbody.innerHTML = '';
+
         if (res.success && res.data && res.data.length > 0) {
           res.data.forEach(item => {
             const bTitle = item.judul || item.bookTitle || item.title || '-';
             const bCode = item.barcode || item.bookCode || '-';
             const tgl = item.tglPinjam || item.waktu || '-';
-            tbody.innerHTML += `<tr><td><b>${bTitle}</b></td><td>${bCode}</td><td>${tgl}</td></tr>`;
+
+            const titleEscaped = bTitle.replace(/'/g, "\\'");
+
+            tbody.innerHTML += `
+              <tr>
+                <td><b>${bTitle}</b></td>
+                <td>${bCode}</td>
+                <td>${tgl}</td>
+                <td>
+                  <button class="btn-quick-return" onclick="quickReturnBook(this, '${bCode}', '${titleEscaped}')">
+                    ↩ Return
+                  </button>
+                </td>
+              </tr>
+            `;
           });
         } else {
-          tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color: var(--text-muted);">No active loans found.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color: var(--text-muted);">No active loans found.</td></tr>';
         }
-
         setTimeout(() => focusInputBarcode(), 500);
       } catch (err) {
-        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color: var(--danger);">Failed to load data.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color: var(--danger);">Failed to load data.</td></tr>';
         setTimeout(() => focusInputBarcode(), 500);
       }
     }
