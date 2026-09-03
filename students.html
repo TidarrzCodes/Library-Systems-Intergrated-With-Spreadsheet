@@ -4,14 +4,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dasbor Perpustakaan | SmartSchool Bakti Mulya 400</title>
+  <title>Dasbor Perpustakaan | SmartLibrary</title>
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
-  <!-- Favicon Placeholder -->
-  <link rel="icon" type="image/png" href="https://via.placeholder.com/32/10b981/ffffff?text=BM">
+  <link rel="icon" type="image/png" href="./logo.png">
 
   <style>
     :root {
@@ -25,10 +24,29 @@
       --text-muted: #8e9baa;
       --border-color: #f1f5f9;
       --border-line: #e2e8f0;
+      --navbar-bg: #ffffff;
+      --table-header-bg: #f8fafc;
+      --input-bg: #f8fafc;
       --radius: 16px;
 
       --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
       --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.04);
+    }
+
+    [data-theme="dark"] {
+      --bg-color: #0f172a;
+      --card-bg: #1e293b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border-color: #334155;
+      --border-line: #334155;
+      --navbar-bg: #1e293b;
+      --table-header-bg: #0f172a;
+      --input-bg: #0f172a;
+      --bm-green-light: #064e3b;
+
+      --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
     }
 
     * {
@@ -45,16 +63,18 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      transition: background-color 0.3s ease, color 0.3s ease;
     }
 
     .top-navbar {
       width: 100%;
-      background: #ffffff;
+      background: var(--navbar-bg);
       border-bottom: 1px solid var(--border-line);
       padding: 12px 24px;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      transition: background-color 0.3s ease, border-color 0.3s ease;
     }
 
     .nav-left {
@@ -83,13 +103,13 @@
     .nav-title h1 {
       font-size: 16px;
       font-weight: 800;
-      color: #1e293b;
+      color: var(--text-main);
       line-height: 1.2;
     }
 
     .nav-title span {
       font-size: 12px;
-      color: var(--bm-green-dark);
+      color: var(--bm-green);
       font-weight: 700;
     }
 
@@ -118,16 +138,21 @@
       font-size: 14px;
     }
 
+    [data-theme="dark"] .user-avatar-nav {
+      background: #581c87;
+      color: #e9d5ff;
+    }
+
     .user-info-nav h4 {
       font-size: 14px;
       font-weight: 800;
-      color: #1e293b;
+      color: var(--text-main);
       line-height: 1.2;
     }
 
     .user-info-nav p {
       font-size: 11px;
-      color: #64748b;
+      color: var(--text-muted);
       font-weight: 500;
     }
 
@@ -147,22 +172,48 @@
     .page-header-flex h2 {
       font-size: 24px;
       font-weight: 800;
-      color: #1e293b;
+      color: var(--text-main);
     }
 
     .page-header-flex p {
       font-size: 13px;
-      color: #64748b;
+      color: var(--text-muted);
       margin-top: 4px;
       font-weight: 500;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-theme {
+      padding: 8px 14px;
+      border: 1px solid var(--border-line);
+      border-radius: 8px;
+      background: var(--card-bg);
+      color: var(--text-main);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-theme:hover {
+      background: var(--input-bg);
+      border-color: var(--bm-green);
     }
 
     .btn-back {
       padding: 8px 16px;
       border: 1px solid var(--border-line);
       border-radius: 8px;
-      background: #ffffff;
-      color: #475569;
+      background: var(--card-bg);
+      color: var(--text-main);
       font-size: 13px;
       font-weight: 700;
       cursor: pointer;
@@ -170,22 +221,22 @@
       align-items: center;
       gap: 8px;
       text-decoration: none;
-      transition: background 0.2s ease;
+      transition: all 0.2s ease;
     }
 
     .btn-back:hover {
-      background: #f1f5f9;
+      background: var(--input-bg);
     }
 
     .stats-tabs {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 16px;
       margin-bottom: 24px;
     }
 
     .stat-tab {
-      background: #ffffff;
+      background: var(--card-bg);
       border: 1px solid var(--border-line);
       border-radius: 16px;
       padding: 16px 20px;
@@ -200,12 +251,12 @@
 
     .stat-tab:hover {
       transform: translateY(-2px);
-      box-shadow: 0 6px 12px -2px rgba(0, 0, 0, 0.05);
+      box-shadow: 0 6px 12px -2px rgba(0, 0, 0, 0.1);
     }
 
     .stat-tab.active {
       border-color: var(--bm-green);
-      background: #f0fdf4;
+      background: var(--bm-green-light);
       box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
     }
 
@@ -235,6 +286,16 @@
       color: #b06000;
     }
 
+    .icon-attendance {
+      background: #e0f2fe;
+      color: #0284c7;
+    }
+
+    [data-theme="dark"] .icon-borrowed { background: #064e3b; color: #6ee7b7; }
+    [data-theme="dark"] .icon-overdue { background: #334155; color: #cbd5e1; }
+    [data-theme="dark"] .icon-total { background: #78350f; color: #fde047; }
+    [data-theme="dark"] .icon-attendance { background: #075985; color: #38bdf8; }
+
     .stat-info {
       display: flex;
       flex-direction: column;
@@ -243,7 +304,7 @@
     .stat-info span {
       font-size: 10px;
       font-weight: 800;
-      color: #80868b;
+      color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
@@ -251,7 +312,7 @@
     .stat-info h4 {
       font-size: 20px;
       font-weight: 800;
-      color: #202124;
+      color: var(--text-main);
       line-height: 1.2;
       margin-top: 2px;
     }
@@ -263,13 +324,14 @@
       border: 1px solid var(--border-line);
       box-shadow: var(--shadow-md);
       margin-bottom: 24px;
+      transition: background-color 0.3s ease, border-color 0.3s ease;
     }
 
     .table-container {
       border: 1px solid var(--border-line);
       border-radius: 16px;
       overflow-x: auto;
-      background: #ffffff;
+      background: var(--card-bg);
     }
 
     table {
@@ -286,7 +348,7 @@
     }
 
     th {
-      background: #f8fafc;
+      background: var(--table-header-bg);
       color: var(--text-muted);
       font-size: 11px;
       font-weight: 700;
@@ -295,6 +357,7 @@
 
     td {
       font-weight: 500;
+      color: var(--text-main);
     }
 
     tr:last-child td {
@@ -328,6 +391,17 @@
       color: #475569;
       border: 1px solid #cbd5e1;
     }
+
+    .badge-attendance {
+      background: #e0f2fe;
+      color: #0284c7;
+      border: 1px solid #bae6fd;
+    }
+
+    [data-theme="dark"] .badge-borrowed { background: #064e3b; color: #6ee7b7; border-color: #047857; }
+    [data-theme="dark"] .badge-overdue { background: #7f1d1d; color: #fca5a5; border-color: #991b1b; }
+    [data-theme="dark"] .badge-returned { background: #334155; color: #cbd5e1; border-color: #475569; }
+    [data-theme="dark"] .badge-attendance { background: #075985; color: #38bdf8; border-color: #0284c7; }
 
     .login-box {
       max-width: 500px;
@@ -385,17 +459,9 @@
     }
 
     @keyframes scan {
-      0% {
-        top: 5%;
-      }
-
-      50% {
-        top: 90%;
-      }
-
-      100% {
-        top: 5%;
-      }
+      0% { top: 5%; }
+      50% { top: 90%; }
+      100% { top: 5%; }
     }
 
     .form-group {
@@ -414,9 +480,9 @@
     .form-group input[type="text"] {
       width: 100%;
       padding: 12px 16px;
-      border: 1px solid #cbd5e1;
+      border: 1px solid var(--border-line);
       border-radius: 12px;
-      background: #f8fafc;
+      background: var(--input-bg);
       color: var(--text-main);
       font-size: 14px;
       outline: none;
@@ -425,7 +491,7 @@
 
     .form-group input[type="text"]:focus {
       border-color: var(--bm-green);
-      background: #ffffff;
+      background: var(--card-bg);
       box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
     }
 
@@ -443,6 +509,12 @@
       background: #fef2f2;
       color: #b91c1c;
       border: 1px solid #fca5a5;
+    }
+
+    [data-theme="dark"] .alert-danger {
+      background: #450a0a;
+      color: #fca5a5;
+      border-color: #7f1d1d;
     }
 
     @media (max-width: 900px) {
@@ -471,25 +543,23 @@
 
 <body>
 
-  <!-- TOP NAVBAR -->
   <div class="top-navbar">
     <div class="nav-left">
       <div class="nav-logo-box">
-        <!-- Placeholder Logo Gambar -->
-        <img src="data:image/png;base64,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" alt="Logo SmartSchool">
+        <img src="https://raditnex.my.id/logo.jpg" alt="Logo SmartSchool">
       </div>
       <div class="nav-title">
-        <h1>Bakti Mulya 400</h1>
-        <span>SmartSchool</span>
+        <h1>RNX School</h1>
+        <span>SmartLibrary</span>
       </div>
     </div>
 
     <div class="nav-right">
       <div class="user-profile-nav">
-        <div class="user-avatar-nav" id="nav-avatar">--</div>
+        <div class="user-avatar-nav" id="nav-avatar">?</div>
         <div class="user-info-nav">
           <h4 id="nav-nama">Nama Siswa</h4>
-          <p id="nav-detail">Siswa · SMA BAKTI MULYA 400</p>
+          <p id="nav-detail">Siswa · RNX School</p>
         </div>
       </div>
     </div>
@@ -498,7 +568,7 @@
   <div class="container">
 
     <div id="view-login" class="card login-box">
-      <h2>Perpustakaan Bakti Mulya 400</h2>
+      <h2>Perpustakaan RNX</h2>
       <p>Silakan scan QR Code pada ID Card Anda untuk melanjutkan</p>
 
       <div class="webcam-container">
@@ -520,9 +590,14 @@
       <div class="page-header-flex">
         <div>
           <h2>Perpustakaan</h2>
-          <p>Dasbor Siswa / <span style="color: #94a3b8;">Peminjaman Buku</span></p>
+          <p>Dasbor Siswa / <span style="color: var(--text-muted);">Peminjaman & Presensi</span></p>
         </div>
-        <div>
+        <div class="header-actions">
+          <button class="btn-theme" onclick="toggleTheme()" id="btn-theme-toggle">
+            <i class="fa-solid fa-moon" id="theme-icon"></i>
+            <span id="theme-text">Mode Gelap</span>
+          </button>
+
           <a href="https://app.baktimulya400.sch.id/dashboard/student" class="btn-back" onclick="clearStudentSession()">
             <i class="fa-solid fa-arrow-left"></i> Kembali ke Dasbor
           </a>
@@ -559,17 +634,27 @@
             <h4 id="st-total-history">0</h4>
           </div>
         </div>
+
+        <!-- TAB KEDATANGAN / PRESENSI -->
+        <div class="stat-tab" id="tab-attendance" onclick="switchTab('attendance')">
+          <div class="stat-icon icon-attendance">
+            <i class="fa-solid fa-user-check"></i>
+          </div>
+          <div class="stat-info">
+            <span>Kedatangan Perpus</span>
+            <h4 id="st-total-attendance">0</h4>
+          </div>
+        </div>
       </div>
 
       <div class="card" style="padding: 20px;">
         <div style="margin-bottom: 16px;">
-          <h2 style="font-size: 18px; font-weight: 800; color: var(--text-main);" id="table-title">Buku Sedang Dipinjam
-          </h2>
+          <h2 style="font-size: 18px; font-weight: 800; color: var(--text-main);" id="table-title">Buku Sedang Dipinjam</h2>
         </div>
 
         <div class="table-container">
           <table>
-            <thead>
+            <thead id="table-head">
               <tr>
                 <th>Judul Buku</th>
                 <th>Kode Buku</th>
@@ -579,7 +664,7 @@
             </thead>
             <tbody id="tabel-borrowed-body">
               <tr>
-                <td colspan="4" style="text-align: center; color: var(--text-muted);">Memuat data buku...</td>
+                <td colspan="4" style="text-align: center; color: var(--text-muted);">Memuat data...</td>
               </tr>
             </tbody>
           </table>
@@ -597,9 +682,39 @@
 
     let activeLoansData = [];
     let historyLoansData = [];
+    let attendanceData = [];
     let currentActiveTab = 'borrowed';
 
+    function initTheme() {
+      const savedTheme = localStorage.getItem('rnx_theme') || 'light';
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      updateThemeButton(savedTheme);
+    }
+
+    function toggleTheme() {
+      const currentTheme = document.documentElement.getAttribute('data-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', newTheme);
+      localStorage.setItem('rnx_theme', newTheme);
+      updateThemeButton(newTheme);
+    }
+
+    function updateThemeButton(theme) {
+      const icon = document.getElementById('theme-icon');
+      const text = document.getElementById('theme-text');
+      if (!icon || !text) return;
+
+      if (theme === 'dark') {
+        icon.className = 'fa-solid fa-sun';
+        text.innerText = 'Mode Terang';
+      } else {
+        icon.className = 'fa-solid fa-moon';
+        text.innerText = 'Mode Gelap';
+      }
+    }
+
     window.addEventListener('DOMContentLoaded', () => {
+      initTheme();
       const savedSession = sessionStorage.getItem('rnx_student_session');
       if (savedSession) {
         currentStudent = JSON.parse(savedSession);
@@ -682,12 +797,13 @@
       document.getElementById('nav-avatar').innerText = getInitials(currentStudent.nama);
 
       const tbody = document.getElementById('tabel-borrowed-body');
-      tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 30px;">Memuat data buku...</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 30px;">Memuat data...</td></tr>';
 
       try {
-        const [resActive, resLaporan] = await Promise.all([
-          fetch(`${GAS_URL}?action=getBukuDipinjamSiswa&nis=${encodeURIComponent(currentStudent.nis)}`).then(r => r.json()),
-          fetch(`${GAS_URL}?action=getLaporanTransaksi`).then(r => r.json())
+        const [resActive, resLaporan, resPresensi] = await Promise.all([
+          fetch(`${GAS_URL}?action=getBukuDipinjamSiswa&nis=${encodeURIComponent(currentStudent.nis)}`).then(r => r.json()).catch(() => ({ success: false })),
+          fetch(`${GAS_URL}?action=getLaporanTransaksi`).then(r => r.json()).catch(() => ({ success: false })),
+          fetch(`${GAS_URL}?action=getPresensiSiswa&nis=${encodeURIComponent(currentStudent.nis)}`).then(r => r.json()).catch(() => ({ success: false }))
         ]);
 
         if (resActive.success && resActive.data) {
@@ -698,13 +814,19 @@
           historyLoansData = resLaporan.data.filter(item => item.nis === currentStudent.nis);
         }
 
+        if (resPresensi.success && resPresensi.data) {
+          attendanceData = resPresensi.data;
+        }
+
         const totalBorrowed = activeLoansData.length;
         const totalOverdue = activeLoansData.filter(b => b.status === 'OVERDUE' || b.status === 'TELAT').length;
         const totalHistory = historyLoansData.length;
+        const totalAttendance = attendanceData.length;
 
         document.getElementById('st-total-borrowed').innerText = totalBorrowed;
         document.getElementById('st-total-overdue').innerText = totalOverdue;
         document.getElementById('st-total-history').innerText = totalHistory;
+        document.getElementById('st-total-attendance').innerText = totalAttendance;
 
         renderTableData();
 
@@ -725,6 +847,54 @@
     function renderTableData() {
       const tbody = document.getElementById('tabel-borrowed-body');
       const tableTitle = document.getElementById('table-title');
+      const tableHead = document.getElementById('table-head');
+
+      if (currentActiveTab === 'attendance') {
+        tableTitle.innerText = "Riwayat Kedatangan Siswa ke Perpustakaan";
+        tableHead.innerHTML = `
+          <tr>
+            <th>No</th>
+            <th>Waktu Kunjungan</th>
+            <th>Keterangan / Keperluan</th>
+            <th>Status</th>
+          </tr>
+        `;
+
+        if (attendanceData.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 30px;">Belum ada riwayat kedatangan.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = attendanceData.map((item, index) => {
+          const waktu = item.waktu || item.tanggal || '-';
+          const ket = item.keterangan || item.keperluan || 'Kunjungan Perpustakaan';
+          const status = (item.status || 'HADIR').toUpperCase();
+
+          return `
+            <tr>
+              <td><b>${index + 1}</b></td>
+              <td>${waktu}</td>
+              <td>${ket}</td>
+              <td>
+                <span class="badge-status badge-attendance">
+                  <i class="fa-solid fa-user-check"></i> ${status}
+                </span>
+              </td>
+            </tr>
+          `;
+        }).join('');
+        return;
+      }
+
+      // Render Header Standar Buku
+      tableHead.innerHTML = `
+        <tr>
+          <th>Judul Buku</th>
+          <th>Kode Buku</th>
+          <th>Waktu / Tanggal</th>
+          <th>Status</th>
+        </tr>
+      `;
 
       let filteredList = [];
 
